@@ -24,7 +24,7 @@ with st.form("expense_form"):
             'Description': [description]
         })
 
-        st.session_state.expenses = pd.concat({st.session_state.expenses, new_expense}, ignore_index=True)
+        st.session_state.expenses = pd.concat([st.session_state.expenses, new_expense], ignore_index=True)
         st.success("Expense added!")
     
 if not st.session_state.expenses.empty:
