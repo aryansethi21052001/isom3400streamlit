@@ -38,7 +38,7 @@ if not st.session_state.expenses.empty:
     category_totals = st.session_state.expenses.groupby('Category')['Amount'].sum()
 
     fig, ax = plt.subplots(figsize=(10,6))
-    ax.pie(category_totals.values, label=category_totals.index, autopct='%1.1f%%')
+    ax.pie(category_totals.values, labels=category_totals.index, autopct='%1.1f%%')
     ax.set_title("Expenses by Category")
     sy.pyplot(fig)
 else:
