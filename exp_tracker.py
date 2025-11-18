@@ -40,6 +40,6 @@ if not st.session_state.expenses.empty:
     fig, ax = plt.subplots(figsize=(10,6))
     ax.pie(category_totals.values, labels=category_totals.index, autopct='%1.1f%%')
     ax.set_title("Expenses by Category")
-    sy.pyplot(fig)
+    st.pyplot(fig)
 else:
     st.info("No expenses recorded yet. Add some expenses above.")
