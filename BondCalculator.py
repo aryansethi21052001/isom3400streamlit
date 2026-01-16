@@ -494,7 +494,7 @@ class BondCalculator:
             )
         
         # Price change calculations
-        st.markdown("### Price Sensitivity Estimates")
+        st.markdown("##### **Price Sensitivity Estimates**")
         
         # Create input for yield change
         col_yield1, col_yield2 = st.columns(2)
