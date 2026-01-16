@@ -5,7 +5,6 @@ import pandas as pd
 # Page configuration
 st.set_page_config(
     page_title="Bond Price Calculator",
-    page_icon="📈",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -61,13 +60,13 @@ class BondCalculator:
     def initialize_session_state(self):
         """Initialize session state variables"""
         if 'bond_type' not in st.session_state:
-            st.session_state.bond_type = "Zero Coupon"
+            st.session_state.bond_type = "Zero Coupon Bond"
         if 'calculation_done' not in st.session_state:
             st.session_state.calculation_done = False
     
     def calculate_discrete_price(self, params):
         """Calculate bond price using discrete compounding"""
-        if params['bond_type'] == "Zero Coupon":
+        if params['bond_type'] == "Zero Coupon Bond":
             # Zero Coupon Bond discrete model: P = F / (1 + r/n)^(n*t)
             r_per_period = params['interest_rate'] / params['compounding_periods']
             n_periods = params['maturity'] * params['compounding_periods']
@@ -93,7 +92,7 @@ class BondCalculator:
     
     def calculate_continuous_price(self, params):
         """Calculate bond price using continuous compounding"""
-        if params['bond_type'] == "Zero Coupon":
+        if params['bond_type'] == "Zero Coupon Bond":
             # Zero Coupon Bond continuous model: P = F * e^(-r*t)
             price = params['principal'] * math.exp(-params['interest_rate'] * params['maturity'])
             return price
@@ -120,8 +119,8 @@ class BondCalculator:
         # Bond type selection
         bond_type = st.sidebar.selectbox(
             "Bond Type",
-            ["Zero Coupon", "Coupon"],
-            index=0 if st.session_state.bond_type == "Zero Coupon" else 1,
+            ["Zero Coupon Bond", "Coupon Bond"],
+            index=0 if st.session_state.bond_type == "Zero Coupon Bond" else 1,
             key="bond_type_select"
         )
         st.session_state.bond_type = bond_type
@@ -138,10 +137,10 @@ class BondCalculator:
         # Maturity in years
         maturity = st.sidebar.slider(
             "Time to Maturity (years)",
-            min_value=1,
+            min_value=1.0,
             max_value=100.0,
             value=5.0,
-            step=1,
+            step=1.0,
             format="%.1f"
         )
         
@@ -157,7 +156,7 @@ class BondCalculator:
         
         # Coupon rate (only for coupon bonds)
         coupon_rate = 0.0
-        if bond_type == "Coupon":
+        if bond_type == "Coupon Bond":
             coupon_rate = st.sidebar.slider(
                 "Annual Coupon Rate",
                 min_value=0.0,
@@ -174,10 +173,10 @@ class BondCalculator:
             index=0  # Default to Annual
         )
         compounding_periods = FREQUENCY_OPTIONS[frequency]
-        payments_per_year = FREQUENCY_OPTIONS[frequency] if bond_type == "Coupon" else 1
+        payments_per_year = FREQUENCY_OPTIONS[frequency] if bond_type == "Coupon Bond" else 1
         
         # Calculate button
-        if st.sidebar.button("🚀 Calculate Bond Price", type="primary", use_container_width=True):
+        if st.sidebar.button("Calculate Bond Price", type="primary", use_container_width=True):
             params = {
                 'bond_type': bond_type,
                 'principal': principal,
@@ -192,11 +191,8 @@ class BondCalculator:
             st.session_state.calculation_done = True
         
         # Reset button
-        if st.sidebar.button("🔄 Reset", use_container_width=True):
+        if st.sidebar.button("Reset", use_container_width=True):
             st.session_state.calculation_done = False
-        
-        st.sidebar.markdown("---")
-        st.sidebar.info("💡 **Tip**: Adjust sliders and see real-time effects on bond pricing.")
     
     def display_results(self):
         """Display calculation results"""
@@ -225,13 +221,13 @@ class BondCalculator:
                 "Value": [
                     params['bond_type'],
                     f"${params['principal']:,.2f}",
-                    f"{params['maturity']:.2f} years",
+                    f"{params['maturity']:.1f} years",
                     f"{params['interest_rate']*100:.2f}%",
                     params['frequency_name']
                 ]
             }
             
-            if params['bond_type'] == "Coupon":
+            if params['bond_type'] == "Coupon Bond":
                 info_data["Parameter"].insert(4, "Annual Coupon Rate")
                 info_data["Value"].insert(4, f"{params['coupon_rate']*100:.2f}%")
             
@@ -271,7 +267,7 @@ class BondCalculator:
             )
         
         # Create tabs for additional views
-        tab1, tab2 = st.tabs(["📊 Detailed Analysis", "ℹ️ Explanation"])
+        tab1, tab2 = st.tabs(["Detailed Analysis", "Explanation"])
         
         with tab1:
             self.display_detailed_analysis(params, discrete_price, continuous_price)
@@ -285,7 +281,7 @@ class BondCalculator:
         
         with col1:
             st.markdown("##### 📅 Payment Schedule (Coupon Bonds Only)")
-            if params['bond_type'] == "Coupon":
+            if params['bond_type'] == "Coupon Bond":
                 # Generate payment schedule
                 num_payments = int(params['maturity'] * params['payments_per_year'])
                 coupon_payment = (params['coupon_rate'] * params['principal']) / params['payments_per_year']
@@ -333,7 +329,7 @@ class BondCalculator:
             st.markdown("##### 🔍 Key Metrics")
             
             # Calculate additional metrics
-            if params['bond_type'] == "Coupon":
+            if params['bond_type'] == "Coupon Bond":
                 # Current yield
                 coupon_payment_annual = params['coupon_rate'] * params['principal']
                 current_yield = (coupon_payment_annual / discrete_price) * 100
@@ -362,7 +358,7 @@ class BondCalculator:
             st.dataframe(metrics_df, use_container_width=True, hide_index=True)
             
             # Price comparison using Streamlit's built-in chart
-            st.markdown("##### 📊 Price Comparison")
+            st.markdown("##### Price Comparison")
             price_data = pd.DataFrame({
                 'Model': ['Discrete', 'Continuous'],
                 'Price': [discrete_price, continuous_price]
@@ -378,7 +374,7 @@ class BondCalculator:
         
         with col1:
             st.markdown("###### Discrete Compounding Model")
-            if params['bond_type'] == "Zero Coupon":
+            if params['bond_type'] == "Zero Coupon Bond":
                 st.latex(r'''
                 P = \frac{F}{(1 + \frac{r}{n})^{n \cdot t}}
                 ''')
@@ -406,7 +402,7 @@ class BondCalculator:
         
         with col2:
             st.markdown("###### Continuous Compounding Model")
-            if params['bond_type'] == "Zero Coupon":
+            if params['bond_type'] == "Zero Coupon Bond":
                 st.latex(r'''
                 P = F \cdot e^{-r \cdot t}
                 ''')
@@ -451,24 +447,32 @@ class BondCalculator:
         """Display welcome message when no calculation has been done"""
         st.markdown(f'<h1 class="main-header">📈 Bond Price Calculator</h1>', unsafe_allow_html=True)
         
-        col1, col2 = st.columns([3, 2])
-        
-        with col1:
-            st.markdown("""
-            ## Welcome to the Interactive Bond Calculator!
+        st.markdown("""
+            ## Welcome to the Bond Calculator!
             
             This tool helps you calculate bond prices using two different models:
             
             ### 🔷 **Discrete Compounding Model**
             - Uses periodic compounding (annual, semi-annual, etc.)
             - More common in practice
-            - Formula varies based on compounding frequency
-            
+            - Formula:""")
+        
+        st.latex(r'''
+                P = \sum_{k=1}^{n \cdot t} \frac{C}{(1 + \frac{r}{n})^{k}} + \frac{F}{(1 + \frac{r}{n})^{n \cdot t}}
+                ''')
+        
+        st.markdown("""    
             ### 🔶 **Continuous Compounding Model**
             - Assumes continuous compounding
             - Uses Euler's number (e)
             - Often used in theoretical finance
-            
+            - Formula:""")  
+        
+        st.latex(r'''
+                P = \sum_{i=1}^{m \cdot t} C \cdot e^{-r \cdot t_i} + F \cdot e^{-r \cdot t}
+                ''')
+        
+        st.markdown("""    
             ### 🎯 **Features:**
             1. **Zero Coupon Bonds**: Calculate prices for bonds with no periodic interest payments
             2. **Coupon Bonds**: Calculate prices for bonds with regular interest payments
@@ -481,28 +485,18 @@ class BondCalculator:
             3. Explore results in the **tabs below**
             """)
         
-        with col2:
-            st.markdown("""
-            ### Quick Start Guide
-            
-            | Step | Action | Location |
-            |------|--------|----------|
-            | 1️⃣ | Select Bond Type | Sidebar |
-            | 2️⃣ | Set Parameters | Sidebar Sliders |
-            | 3️⃣ | Click Calculate | Calculate Button |
-            | 4️⃣ | Explore Results | Main Area Tabs |
-            
+        st.markdown("""
             ### 📝 Example Parameters
             - **Principal**: $1,000
             - **Maturity**: 5 years
             - **Interest Rate**: 5%
-            - **Frequency**: Semi-annual
+            - **Frequency**: Annual
             
             Try these values to get started!
             """)
         
         st.markdown("---")
-        st.markdown("### 📊 Bond Pricing Concepts")
+        st.markdown("### Bond Pricing Concepts")
         
         concepts_col1, concepts_col2, concepts_col3 = st.columns(3)
         
