@@ -568,10 +568,10 @@ class BondCalculator:
         st.markdown("### 💡 Key Insights")
         
         insights = [
-            f"**📊 Interest Rate Sensitivity**: A 1% increase in yield would decrease the bond price by approximately **{modified_duration:.1f}%**",
-            f"**⏳ Cash Flow Timing**: The weighted average time to receive all cash flows is **{macaulay_duration:.1f} years**",
-            f"**📈 Convexity Benefit**: Positive convexity means the bond's price increases more when yields fall than it decreases when yields rise",
-            f"**🔍 Accuracy**: For small yield changes (±1%), duration alone provides a good estimate. For larger changes, convexity adjustment is important"
+            f"**📊 Interest Rate Sensitivity**: A 1% increase in yield would decrease the bond price by approximately **{modified_duration:.1f}%**.",
+            f"**⏳ Cash Flow Timing**: The weighted average time to receive all cash flows is **{macaulay_duration:.1f} years**.",
+            f"**📈 Convexity Benefit**: Positive convexity means the bond's price increases more when yields fall than it decreases when yields rise.",
+            f"**🔍 Accuracy**: For small yield changes (±1%), duration alone provides a good estimate. For larger changes, convexity adjustment is important."
         ]
         
         for insight in insights:
