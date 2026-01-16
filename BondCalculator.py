@@ -294,13 +294,13 @@ class BondCalculator:
         price_diff_pct = (price_diff / discrete_price) * 100 if discrete_price != 0 else 0
         
         # Main results header
-        st.markdown(f'<h1 class="main-header">📈 Bond Price Calculator</h1>', unsafe_allow_html=True)
+        st.markdown(f'<h1 class="main-header">Bond Price Calculator</h1>', unsafe_allow_html=True)
         
         # Bond Information
         col1, col2 = st.columns([2, 1])
         
         with col1:
-            st.markdown('<div class="sub-header">📋 Bond Information</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sub-header">Bond Information</div>', unsafe_allow_html=True)
             
             info_data = {
                 "Parameter": ["Bond Type", "Principal/Face Value", "Time to Maturity", 
@@ -322,7 +322,7 @@ class BondCalculator:
             st.dataframe(info_df, use_container_width=True, hide_index=True)
         
         with col2:
-            st.markdown('<div class="sub-header">💰 Price Results</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sub-header">Price Results</div>', unsafe_allow_html=True)
             
             # Display prices in metric boxes
             cols = st.columns(2)
@@ -370,7 +370,7 @@ class BondCalculator:
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("##### 📅 Payment Schedule (Coupon Bonds Only)")
+            st.markdown("##### Payment Schedule (Coupon Bonds Only)")
             if params['bond_type'] == "Coupon Bond":
                 # Generate payment schedule
                 num_payments = int(params['maturity'] * params['payments_per_year'])
@@ -416,7 +416,7 @@ class BondCalculator:
                 st.info("Payment schedule is only applicable for Coupon Bonds.")
         
         with col2:
-            st.markdown("##### 🔍 Key Metrics")
+            st.markdown("##### Key Metrics")
             
             # Calculate additional metrics
             if params['bond_type'] == "Coupon Bond":
@@ -458,7 +458,7 @@ class BondCalculator:
     
     def display_duration_analysis(self, params, discrete_price):
         """Display duration and risk analysis"""
-        st.markdown('<div class="sub-header">📊 Duration & Risk Analysis</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sub-header">Duration & Risk Analysis</div>', unsafe_allow_html=True)
         
         # Calculate Macaulay Duration
         macaulay_duration = self.calculate_macaulay_duration(params, discrete_price)
@@ -496,7 +496,7 @@ class BondCalculator:
             )
         
         # Price change calculations
-        st.markdown("### 🎯 Price Sensitivity Estimates")
+        st.markdown("### Price Sensitivity Estimates")
         
         # Create input for yield change
         col_yield1, col_yield2 = st.columns(2)
@@ -526,7 +526,7 @@ class BondCalculator:
             )
         
         # Display detailed calculations
-        st.markdown("##### 📝 Detailed Price Change Calculation")
+        st.markdown("##### Detailed Price Change Calculation")
         
         calc_data = {
             "Component": [
@@ -565,13 +565,13 @@ class BondCalculator:
         st.dataframe(calc_df, use_container_width=True, hide_index=True)
         
         # Duration insights
-        st.markdown("### 💡 Key Insights")
+        st.markdown("### Key Insights")
         
         insights = [
-            f"**📊 Interest Rate Sensitivity**: A 1% increase in yield would decrease the bond price by approximately **{modified_duration:.1f}%**.",
-            f"**⏳ Cash Flow Timing**: The weighted average time to receive all cash flows is **{macaulay_duration:.1f} years**.",
-            f"**📈 Convexity Benefit**: Positive convexity means the bond's price increases more when yields fall than it decreases when yields rise.",
-            f"**🔍 Accuracy**: For small yield changes (±1%), duration alone provides a good estimate. For larger changes, convexity adjustment is important."
+            f"**Interest Rate Sensitivity**: A 1% increase in yield would decrease the bond price by approximately **{modified_duration:.1f}%**.",
+            f"**Cash Flow Timing**: The weighted average time to receive all cash flows is **{macaulay_duration:.1f} years**.",
+            f"**Convexity Benefit**: Positive convexity means the bond's price increases more when yields fall than it decreases when yields rise.",
+            f"**Accuracy**: For small yield changes (±1%), duration alone provides a good estimate. For larger changes, convexity adjustment is important."
         ]
         
         for insight in insights:
@@ -579,7 +579,7 @@ class BondCalculator:
     
     def display_explanation(self, params):
         """Display explanation of the calculations"""
-        st.markdown("##### 📚 How Bond Prices Are Calculated")
+        st.markdown("### How Bond Prices Are Calculated")
         
         col1, col2 = st.columns(2)
         
@@ -641,7 +641,7 @@ class BondCalculator:
                 """)
         
         # Duration formulas
-        st.markdown("##### 📐 Duration Formulas")
+        st.markdown("#### Duration Formulas")
         
         col_dur1, col_dur2 = st.columns(2)
         
@@ -678,7 +678,7 @@ class BondCalculator:
             ''')
 
         # Display what duration means
-        st.markdown("### 📈 Understanding Duration")
+        st.markdown("### Understanding Duration")
         
         col_info1, col_info2, col_info3 = st.columns(3)
         
@@ -714,14 +714,14 @@ class BondCalculator:
             """)
         
         st.markdown("---")
-        st.markdown("##### 💡 Key Insights")
+        st.markdown("##### Key Insights")
         
         insights = [
-            "📊 **Interest Rate Sensitivity**: Bond prices move inversely to interest rates",
-            "⏳ **Time Value**: Longer maturity bonds are more sensitive to rate changes",
-            "🔄 **Compounding Effect**: More frequent compounding leads to slightly lower prices",
-            "📈 **Coupon Effect**: Higher coupon bonds are less sensitive to rate changes",
-            "🔍 **Model Difference**: Continuous compounding typically gives slightly different results than discrete"
+            "**Interest Rate Sensitivity**: Bond prices move inversely to interest rates",
+            "**Time Value**: Longer maturity bonds are more sensitive to rate changes",
+            "**Compounding Effect**: More frequent compounding leads to slightly lower prices",
+            "**Coupon Effect**: Higher coupon bonds are less sensitive to rate changes",
+            "**Model Difference**: Continuous compounding typically gives slightly different results than discrete"
         ]
         
         for insight in insights:
@@ -757,7 +757,7 @@ class BondCalculator:
                 ''')
         
         st.markdown("""    
-            ### 🎯 **Features:**
+            ### **Features:**
             1. **Zero Coupon Bonds**: Calculate prices for bonds with no periodic interest payments
             2. **Coupon Bonds**: Calculate prices for bonds with regular interest payments
             3. **Detailed Breakdown**: View payment schedules and present values
@@ -767,14 +767,14 @@ class BondCalculator:
             7. **Convexity**: Account for non-linear price-yield relationship
             8. **Price Sensitivity**: Estimate price changes for yield shifts
             
-            ### 🚀 **How to Use:**
+            ### **How to Use:**
             1. Adjust parameters in the **sidebar**
             2. Click **"Calculate Bond Price"**
             3. Explore results in the **tabs below**
             """)
         
         st.markdown("""
-            ### 📝 Example Parameters
+            ### Example Parameters
             - **Principal**: $1,000
             - **Maturity**: 5 years
             - **Interest Rate**: 5%
