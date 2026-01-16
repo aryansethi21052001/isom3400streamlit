@@ -414,37 +414,6 @@ class BondCalculator:
                 st.info("Payment schedule is only applicable for Coupon Bonds.")
         
         with col2:
-            st.markdown("##### Key Metrics")
-            
-            # Calculate additional metrics
-            if params['bond_type'] == "Coupon Bond":
-                # Current yield
-                coupon_payment_annual = params['coupon_rate'] * params['principal']
-                current_yield = (coupon_payment_annual / discrete_price) * 100
-                
-                # Yield to maturity approximation
-                ytm = params['interest_rate'] * 100
-                
-                metrics_data = {
-                    "Metric": ["Current Yield", "Yield to Maturity", "Duration (approx.)"],
-                    "Value": [
-                        f"{current_yield:.2f}%",
-                        f"{ytm:.2f}%",
-                        f"{params['maturity']:.1f} years"
-                    ]
-                }
-            else:
-                metrics_data = {
-                    "Metric": ["Discount Rate", "Compounding Periods"],
-                    "Value": [
-                        f"{params['interest_rate']*100:.2f}%",
-                        f"{params['compounding_periods']}"
-                    ]
-                }
-            
-            metrics_df = pd.DataFrame(metrics_data)
-            st.dataframe(metrics_df, use_container_width=True, hide_index=True)
-            
             # Price comparison using Streamlit's built-in chart
             st.markdown("##### Price Comparison")
             price_data = pd.DataFrame({
