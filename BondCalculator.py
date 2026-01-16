@@ -140,7 +140,6 @@ class BondCalculatorStreamlit:
             min_value=0.01,
             value=1000.0,
             step=100.0,
-            format="%.2f"
         )
         
         # Maturity in years
@@ -149,7 +148,6 @@ class BondCalculatorStreamlit:
             min_value=0.1,
             value=5.0,
             step=0.5,
-            format="%.1f years"
         )
         
         # Interest rate (yield)
@@ -158,7 +156,6 @@ class BondCalculatorStreamlit:
             min_value=0.0,
             value=5.0,
             step=0.1,
-            format="%.1f%%"
         ) / 100  # Convert to decimal
         
         # Coupon rate (only for coupon bonds)
@@ -169,7 +166,6 @@ class BondCalculatorStreamlit:
                 min_value=0.0,
                 value=5,
                 step=0.1,
-                format="%.1f%%"
             ) / 100  # Convert to decimal
         
         # Frequency selection
