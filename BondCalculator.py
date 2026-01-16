@@ -781,7 +781,6 @@ class BondCalculator:
             1. **Macaulay Duration**: Weighted average cash flow time
             2. **Modified Duration**: Price sensitivity to yield
             3. **Convexity**: Curvature adjustment
-            4. **Immunization**: Duration matching strategy
             """)
     
     def run(self):
