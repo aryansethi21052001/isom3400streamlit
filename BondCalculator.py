@@ -495,44 +495,6 @@ class BondCalculator:
                 help="Curvature of price-yield relationship"
             )
         
-        # Display what duration means
-        st.markdown("### 📈 Understanding Duration")
-        
-        col_info1, col_info2, col_info3 = st.columns(3)
-        
-        with col_info1:
-            st.markdown("""
-            #### **Macaulay Duration**
-            - **Definition**: Weighted average time to receive cash flows
-            - **Formula**: Σ(t × PV(CF_t)) / Price
-            - **Interpretation**: 
-                - Higher duration = More price sensitivity
-                - Zero-coupon bond duration = Maturity
-                - Coupon bond duration < Maturity
-            """)
-        
-        with col_info2:
-            st.markdown("""
-            #### **Modified Duration**
-            - **Definition**: Price sensitivity to yield changes
-            - **Formula**: Macaulay Duration / (1 + yield/periods)
-            - **Application**: 
-                - ΔPrice ≈ -Modified Duration × ΔYield × Price
-                - For 1% yield increase: Price ↓ by Modified Duration %
-                - Key measure for interest rate risk
-            """)
-        
-        with col_info3:
-            st.markdown("""
-            #### **Convexity**
-            - **Definition**: Measures curvature of price-yield curve
-            - **Importance**: 
-                - Adjusts duration for large yield changes
-                - Positive convexity = Price increases more than duration predicts
-                - Higher convexity = Better risk-return profile
-                - Always positive for non-callable bonds
-            """)
-        
         # Price change calculations
         st.markdown("### 🎯 Price Sensitivity Estimates")
         
@@ -714,6 +676,42 @@ class BondCalculator:
             st.latex(r'''
             \frac{\Delta P}{P} \approx -D_{mod} \cdot \Delta y
             ''')
+
+        # Display what duration means
+        st.markdown("### 📈 Understanding Duration")
+        
+        col_info1, col_info2, col_info3 = st.columns(3)
+        
+        with col_info1:
+            st.markdown("""
+            #### **Macaulay Duration**
+            - **Definition**: Weighted average time to receive cash flows
+            - **Interpretation**: 
+                - Higher duration = More price sensitivity
+                - Zero-coupon bond duration = Maturity
+                - Coupon bond duration < Maturity
+            """)
+        
+        with col_info2:
+            st.markdown("""
+            #### **Modified Duration**
+            - **Definition**: Price sensitivity to yield changes
+            - **Application**: 
+                - ΔPrice ≈ -Modified Duration × ΔYield × Price
+                - For 1% yield increase: Price ↓ by Modified Duration %
+                - Key measure for interest rate risk
+            """)
+        
+        with col_info3:
+            st.markdown("""
+            #### **Convexity**
+            - **Definition**: Measures curvature of price-yield curve
+            - **Importance**: 
+                - Adjusts duration for large yield changes
+                - Positive convexity = Price increases more than duration predicts
+                - Higher convexity = Better risk-return profile
+                - Always positive for non-callable bonds
+            """)
         
         st.markdown("---")
         st.markdown("##### 💡 Key Insights")
