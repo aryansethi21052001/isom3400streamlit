@@ -456,7 +456,7 @@ class BondCalculator:
     
     def display_duration_analysis(self, params, discrete_price):
         """Display duration and risk analysis"""
-        st.markdown('<div class="sub-header">**Duration & Risk Analysis**</div>', unsafe_allow_html=True)
+        st.markdown("##### Duration & Risk Analysis")
         
         # Calculate Macaulay Duration
         macaulay_duration = self.calculate_macaulay_duration(params, discrete_price)
