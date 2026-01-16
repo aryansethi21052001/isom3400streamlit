@@ -354,15 +354,13 @@ class BondCalculator:
             )
         
         # Create tabs for additional views
-        tab1, tab2, tab3 = st.tabs(["Detailed Analysis", "Duration & Risk", "Explanation"])
+        tab1, tab2 = st.tabs(["Detailed Analysis", "Explanation"])
         
         with tab1:
             self.display_detailed_analysis(params, discrete_price, continuous_price)
-        
-        with tab2:
             self.display_duration_analysis(params, discrete_price)
-        
-        with tab3:
+            
+        with tab2:
             self.display_explanation(params)
     
     def display_detailed_analysis(self, params, discrete_price, continuous_price):
