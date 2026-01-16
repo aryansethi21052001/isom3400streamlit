@@ -54,7 +54,7 @@ FREQUENCY_OPTIONS = {
     "Daily": 365
 }
 
-class BondCalculatorStreamlit:
+class BondCalculator:
     def __init__(self):
         self.initialize_session_state()
     
@@ -130,7 +130,6 @@ class BondCalculatorStreamlit:
         principal = st.sidebar.number_input(
             "Principal/Face Value ($)",
             min_value=0.01,
-            max_value=1000000000.0,
             value=1000.0,
             step=100.0,
             format="%.2f"
@@ -139,18 +138,18 @@ class BondCalculatorStreamlit:
         # Maturity in years
         maturity = st.sidebar.slider(
             "Time to Maturity (years)",
-            min_value=0.1,
-            max_value=50.0,
+            min_value=1,
+            max_value=100.0,
             value=5.0,
-            step=0.5,
-            format="%.1f years"
+            step=1,
+            format="%.1f"
         )
         
         # Interest rate (yield)
         interest_rate = st.sidebar.slider(
             "Annual Interest Rate (Yield)",
             min_value=0.0,
-            max_value=20.0,
+            max_value=100.0,
             value=5.0,
             step=0.1,
             format="%.1f%%"
@@ -162,7 +161,7 @@ class BondCalculatorStreamlit:
             coupon_rate = st.sidebar.slider(
                 "Annual Coupon Rate",
                 min_value=0.0,
-                max_value=20.0,
+                max_value=100.0,
                 value=3.5,
                 step=0.1,
                 format="%.1f%%"
@@ -172,7 +171,7 @@ class BondCalculatorStreamlit:
         frequency = st.sidebar.selectbox(
             "Compounding/Payment Frequency",
             list(FREQUENCY_OPTIONS.keys()),
-            index=1  # Default to Semi-annual
+            index=0  # Default to Annual
         )
         compounding_periods = FREQUENCY_OPTIONS[frequency]
         payments_per_year = FREQUENCY_OPTIONS[frequency] if bond_type == "Coupon" else 1
@@ -548,5 +547,5 @@ class BondCalculatorStreamlit:
 
 # Run the application
 if __name__ == "__main__":
-    calculator = BondCalculatorStreamlit()
+    calculator = BondCalculator()
     calculator.run()
