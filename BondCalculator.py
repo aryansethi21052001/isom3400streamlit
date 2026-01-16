@@ -714,7 +714,7 @@ class BondCalculator:
             """)
         
         st.markdown("---")
-        st.markdown("##### Key Insights")
+        st.markdown("### Key Insights")
         
         insights = [
             "**Interest Rate Sensitivity**: Bond prices move inversely to interest rates",
