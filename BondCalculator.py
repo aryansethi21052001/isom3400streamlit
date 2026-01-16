@@ -759,11 +759,15 @@ class BondCalculator:
                 ''')
         
         st.markdown("""    
-            ### 🎯 **New Features:**
-            1. **Duration Analysis**: Calculate Macaulay and Modified Duration
-            2. **Risk Assessment**: Measure interest rate sensitivity
-            3. **Convexity**: Account for non-linear price-yield relationship
-            4. **Price Sensitivity**: Estimate price changes for yield shifts
+            ### 🎯 **Features:**
+            1. **Zero Coupon Bonds**: Calculate prices for bonds with no periodic interest payments
+            2. **Coupon Bonds**: Calculate prices for bonds with regular interest payments
+            3. **Detailed Breakdown**: View payment schedules and present values
+            4. **Visual Comparisons**: Charts to understand relationships 
+            5. **Duration Analysis**: Calculate Macaulay and Modified Duration
+            6. **Risk Assessment**: Measure interest rate sensitivity
+            7. **Convexity**: Account for non-linear price-yield relationship
+            8. **Price Sensitivity**: Estimate price changes for yield shifts
             
             ### 🚀 **How to Use:**
             1. Adjust parameters in the **sidebar**
