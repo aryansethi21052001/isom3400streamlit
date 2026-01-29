@@ -23,8 +23,17 @@ def black_scholes_put(S, K, T, r, sigma):
     return put_price, d1, d2
 
 # Sidebar for navigation
-st.sidebar.title("Navigation")
-page = st.sidebar.radio("", ["Home", "Calculator"])
+with st.sidebar:
+    st.title("Navigation")
+    
+    # Create the navigation menu
+    page = st.navigation([
+        st.Page(lambda: None, title="Home"),
+        st.Page(lambda: None, title="Calculator"),
+    ])
+    
+    # Run the navigation
+    page.run()
 
 # Home Page
 if page == "Home":
