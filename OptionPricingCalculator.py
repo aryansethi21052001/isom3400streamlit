@@ -98,7 +98,59 @@ if page == "Home":
             - $d_1 = \dfrac{\ln(S_0/K) + (r + \sigma^2/2)T}{\sigma\sqrt{T}}$
             - $d_2 = d_1 - \sigma\sqrt{T}$
             """)
+
+    st.markdown("<h2 class='sub-header'>Understanding Option Moneyness</h2>", unsafe_allow_html=True)
+
+    st.markdown("""
+    **Moneyness** indicates whether an option would be profitable if exercised immediately:
+    """)
     
+    # Centered table using HTML
+    st.markdown("""
+    <div style="display: flex; justify-content: center;">
+    <table>
+        <tr>
+            <th>Status</th>
+            <th>Call Condition</th>
+            <th>Put Condition</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><strong>In-The-Money (ITM)</strong></td>
+            <td>S > K</td>
+            <td>S < K</td>
+            <td>Option has intrinsic value</td>
+        </tr>
+        <tr>
+            <td><strong>At-The-Money (ATM)</strong></td>
+            <td>S = K</td>
+            <td>S = K</td>
+            <td>Stock price equals strike price</td>
+        </tr>
+        <tr>
+            <td><strong>Out-of-The-Money (OTM)</strong></td>
+            <td>S < K</td>
+            <td>S > K</td>
+            <td>Option has no intrinsic value</td>
+        </tr>
+    </table>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("**Intrinsic Value Formulas:**")
+    
+    st.latex(r"\text{Call Option: } C_{\text{IV}} = \max(0, S - K)")
+    st.latex(r"\text{Put Option: } P_{\text{IV}} = \max(0, K - S)")
+    
+    st.markdown("""
+    **Where:**
+    - **S** = Current Stock Price
+    - **K** = Strike Price
+    - **C_{\text{IV}}** = Call Intrinsic Value
+    - **P_{\text{IV}}** = Put Intrinsic Value
+    """)
+
     st.markdown("<h2 class='sub-header'>Option Greeks</h2>", unsafe_allow_html=True)
     
     st.markdown('The "Greeks" measure the sensitivity of the option price to various factors:', unsafe_allow_html=True)
@@ -122,58 +174,6 @@ if page == "Home":
             st.markdown("</div>", unsafe_allow_html=True)
             
             st.markdown(f"<div style='text-align: center; font-size: 0.9rem; color: #666;'>{desc}</div>", unsafe_allow_html=True)
-
-    st.markdown("<h2 class='sub-header'>Understanding Option Moneyness</h2>", unsafe_allow_html=True)
-
-    st.markdown("""
-    **Moneyness** indicates whether an option would be profitable if exercised immediately:
-    """)
-    
-    # Centered table using HTML
-    st.markdown("""
-    <div style="display: flex; justify-content: center;">
-    <table>
-        <tr>
-            <th>Status</th>
-            <th>Call Condition</th>
-            <th>Put Condition</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td><strong>In-The-Money (ITM)</strong></td>
-            <td>$S > K$</td>
-            <td>$S < K$</td>
-            <td>Option has intrinsic value</td>
-        </tr>
-        <tr>
-            <td><strong>At-The-Money (ATM)</strong></td>
-            <td>$S = K$</td>
-            <td>$S = K$</td>
-            <td>Stock price equals strike price</td>
-        </tr>
-        <tr>
-            <td><strong>Out-of-The-Money (OTM)</strong></td>
-            <td>$S < K$</td>
-            <td>$S > K$</td>
-            <td>Option has no intrinsic value</td>
-        </tr>
-    </table>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("**Intrinsic Value Formulas:**")
-    
-    st.latex(r"\text{Call Option: } C_{\text{IV}} = \max(0, S - K)")
-    st.latex(r"\text{Put Option: } P_{\text{IV}} = \max(0, K - S)")
-    
-    st.markdown("""
-    **Where:**
-    - **$S$** = Current Stock Price
-    - **$K$** = Strike Price
-    - **$C_{\text{IV}}$** = Call Intrinsic Value
-    - **$P_{\text{IV}}$** = Put Intrinsic Value
-    """)
 
 # Calculator Page
 elif page == "Calculator":
