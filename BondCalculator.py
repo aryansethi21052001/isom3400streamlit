@@ -9,36 +9,72 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better styling
+# Custom CSS for better styling with dark mode support
 st.markdown("""
 <style>
+    /* Main header styling */
     .main-header {
         font-size: 2.5rem;
-        color: #1E3A8A;
+        color: var(--primary-color, #1E3A8A);
         text-align: center;
         margin-bottom: 1rem;
     }
+    
+    /* Sub-header styling - visible in both modes */
     .sub-header {
         font-size: 1.5rem;
-        color: #374151;
+        color: var(--text-color, #374151);
         margin-top: 1.5rem;
         margin-bottom: 1rem;
+        font-weight: 600;
     }
+    
+    /* Dark mode override for sub-headers */
+    [data-theme="dark"] .sub-header {
+        color: #fafafa !important;
+    }
+    
+    /* Result box styling */
     .result-box {
-        background-color: #F3F4F6;
-        border-radius: 10px;
-        padding: 20px;
-        margin: 10px 0;
-        border-left: 5px solid #3B82F6;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin: 1rem 0;
+        border: 1px solid var(--border-color, #e0e0e0);
+        background-color: var(--background-color-secondary, #f8f9fa);
     }
+    
+    /* Dark mode override for result box */
+    [data-theme="dark"] .result-box {
+        background-color: #1a1a1a !important;
+        border-color: #444 !important;
+    }
+    
+    .result-box h4 {
+        color: var(--text-color, #262730);
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+    }
+    
+    [data-theme="dark"] .result-box h4 {
+        color: #fafafa !important;
+    }
+    
+    /* Price difference styling */
     .price-difference {
         font-weight: bold;
         font-size: 1.2rem;
     }
+    
     .positive-diff {
         color: #10B981;
     }
+    
     .negative-diff {
+        color: #EF4444;
+    }
+    
+    /* Table styling for negative values */
+    .negative-value {
         color: #EF4444;
     }
 </style>
@@ -67,24 +103,19 @@ class BondCalculator:
     def calculate_discrete_price(self, params):
         """Calculate bond price using discrete compounding"""
         if params['bond_type'] == "Zero Coupon Bond":
-            # Zero Coupon Bond discrete model: P = F / (1 + r/n)^(n*t)
             r_per_period = params['interest_rate'] / params['compounding_periods']
             n_periods = params['maturity'] * params['compounding_periods']
             price = params['principal'] / ((1 + r_per_period) ** n_periods)
             return price
         else:
-            # Coupon Bond discrete model
             r_per_period = params['interest_rate'] / params['compounding_periods']
             n_periods = params['maturity'] * params['compounding_periods']
-            # Calculate coupon payment per period
             coupon_payment = (params['coupon_rate'] * params['principal']) / params['payments_per_year']
             
-            # Calculate PV of coupon payments
             pv_coupons = 0
             for k in range(1, int(n_periods) + 1):
                 pv_coupons += coupon_payment / ((1 + r_per_period) ** k)
             
-            # Calculate PV of principal
             pv_principal = params['principal'] / ((1 + r_per_period) ** n_periods)
             
             price = pv_coupons + pv_principal
@@ -93,117 +124,77 @@ class BondCalculator:
     def calculate_continuous_price(self, params):
         """Calculate bond price using continuous compounding"""
         if params['bond_type'] == "Zero Coupon Bond":
-            # Zero Coupon Bond continuous model: P = F * e^(-r*t)
             price = params['principal'] * math.exp(-params['interest_rate'] * params['maturity'])
             return price
         else:
-            # Coupon Bonds with continuous discounting
             price = 0
-            # Calculate coupon payment
             coupon_payment = (params['coupon_rate'] * params['principal']) / params['payments_per_year']
             
-            # Calculate present value of coupon payments
             for i in range(1, int(params['maturity'] * params['payments_per_year']) + 1):
                 t = i / params['payments_per_year']
-                if t <= params['maturity']:
-                    price += coupon_payment * math.exp(-params['interest_rate'] * t)
+                price += coupon_payment * math.exp(-params['interest_rate'] * t)
             
-            # Add present value of principal
             price += params['principal'] * math.exp(-params['interest_rate'] * params['maturity'])
             return price
     
     def calculate_macaulay_duration(self, params, discrete_price):
         """Calculate Macaulay Duration for the bond"""
         if params['bond_type'] == "Zero Coupon Bond":
-            # For zero coupon bonds, Macaulay Duration = time to maturity
-            macaulay_duration = params['maturity']
-            return macaulay_duration
+            return params['maturity']
         else:
-            # For coupon bonds
             r_per_period = params['interest_rate'] / params['compounding_periods']
             n_periods = params['maturity'] * params['compounding_periods']
             coupon_payment = (params['coupon_rate'] * params['principal']) / params['payments_per_year']
             
-            # Calculate weighted average time of cash flows
             weighted_sum = 0
-            
-            # Weight coupon payments
             for k in range(1, int(n_periods) + 1):
                 time_years = k / params['compounding_periods']
                 cash_flow = coupon_payment
                 present_value = cash_flow / ((1 + r_per_period) ** k)
                 weighted_sum += time_years * present_value
             
-            # Weight principal payment at maturity
             time_years = params['maturity']
             cash_flow = params['principal']
             present_value = cash_flow / ((1 + r_per_period) ** n_periods)
             weighted_sum += time_years * present_value
             
-            # Macaulay Duration = weighted_sum / bond price
-            macaulay_duration = weighted_sum / discrete_price
-            return macaulay_duration
+            return weighted_sum / discrete_price
     
     def calculate_modified_duration(self, params, macaulay_duration):
         """Calculate Modified Duration for the bond"""
-        if params['bond_type'] == "Zero Coupon Bond":
-            # For zero coupon bonds
-            r_per_period = params['interest_rate'] / params['compounding_periods']
-            n_periods = params['compounding_periods']
-            
-            # Modified Duration = Macaulay Duration / (1 + yield per period)
-            modified_duration = macaulay_duration / (1 + r_per_period)
-            return modified_duration
-        else:
-            # For coupon bonds
-            r_per_period = params['interest_rate'] / params['compounding_periods']
-            
-            # Modified Duration = Macaulay Duration / (1 + yield per period)
-            modified_duration = macaulay_duration / (1 + r_per_period)
-            return modified_duration
+        r_per_period = params['interest_rate'] / params['compounding_periods']
+        return macaulay_duration / (1 + r_per_period)
     
     def calculate_convexity(self, params, discrete_price):
         """Calculate Convexity for the bond"""
         if params['bond_type'] == "Zero Coupon Bond":
-            # For zero coupon bonds
             r_per_period = params['interest_rate'] / params['compounding_periods']
             n_periods = params['maturity'] * params['compounding_periods']
-            
-            # Convexity = [n*(n+1)] / [(1+r_per_period)^2]
             convexity = (n_periods * (n_periods + 1)) / ((1 + r_per_period) ** 2)
-            convexity = convexity / (params['compounding_periods'] ** 2)  # Convert to years²
-            return convexity
+            return convexity / (params['compounding_periods'] ** 2)
         else:
-            # For coupon bonds
             r_per_period = params['interest_rate'] / params['compounding_periods']
             n_periods = params['maturity'] * params['compounding_periods']
             coupon_payment = (params['coupon_rate'] * params['principal']) / params['payments_per_year']
             
-            # Calculate convexity
             convexity_sum = 0
-            
-            # Convexity contributions from coupon payments
             for k in range(1, int(n_periods) + 1):
                 time_years = k / params['compounding_periods']
                 cash_flow = coupon_payment
                 present_value = cash_flow / ((1 + r_per_period) ** k)
                 convexity_sum += time_years * (time_years + 1/params['compounding_periods']) * present_value
             
-            # Convexity contribution from principal payment
             time_years = params['maturity']
             cash_flow = params['principal']
             present_value = cash_flow / ((1 + r_per_period) ** n_periods)
             convexity_sum += time_years * (time_years + 1/params['compounding_periods']) * present_value
             
-            # Convexity = convexity_sum / [bond_price * (1+r_per_period)^2]
-            convexity = convexity_sum / (discrete_price * ((1 + r_per_period) ** 2))
-            return convexity
+            return convexity_sum / (discrete_price * ((1 + r_per_period) ** 2))
     
     def create_input_section(self):
         """Create the input section in sidebar"""
         st.sidebar.header("📊 Bond Parameters")
         
-        # Bond type selection
         bond_type = st.sidebar.selectbox(
             "Bond Type",
             ["Zero Coupon Bond", "Coupon Bond"],
@@ -212,7 +203,6 @@ class BondCalculator:
         )
         st.session_state.bond_type = bond_type
         
-        # Principal amount
         principal = st.sidebar.number_input(
             "Principal/Face Value ($)",
             min_value=0.01,
@@ -221,7 +211,6 @@ class BondCalculator:
             format="%.2f"
         )
         
-        # Maturity in years
         maturity = st.sidebar.slider(
             "Time to Maturity (years)",
             min_value=1.0,
@@ -231,7 +220,6 @@ class BondCalculator:
             format="%.1f"
         )
         
-        # Interest rate (yield)
         interest_rate = st.sidebar.slider(
             "Annual Interest Rate (Yield)",
             min_value=0.0,
@@ -239,9 +227,8 @@ class BondCalculator:
             value=5.0,
             step=0.1,
             format="%.1f%%"
-        ) / 100  # Convert to decimal
+        ) / 100
         
-        # Coupon rate (only for coupon bonds)
         coupon_rate = 0.0
         if bond_type == "Coupon Bond":
             coupon_rate = st.sidebar.slider(
@@ -251,18 +238,16 @@ class BondCalculator:
                 value=3.5,
                 step=0.1,
                 format="%.1f%%"
-            ) / 100  # Convert to decimal
+            ) / 100
         
-        # Frequency selection
         frequency = st.sidebar.selectbox(
             "Compounding/Payment Frequency",
             list(FREQUENCY_OPTIONS.keys()),
-            index=0  # Default to Annual
+            index=0
         )
         compounding_periods = FREQUENCY_OPTIONS[frequency]
         payments_per_year = FREQUENCY_OPTIONS[frequency] if bond_type == "Coupon Bond" else 1
         
-        # Calculate button
         if st.sidebar.button("Calculate Bond Price", type="primary", use_container_width=True):
             params = {
                 'bond_type': bond_type,
@@ -277,7 +262,6 @@ class BondCalculator:
             st.session_state.calculation_params = params
             st.session_state.calculation_done = True
         
-        # Reset button
         if st.sidebar.button("Reset", use_container_width=True):
             st.session_state.calculation_done = False
     
@@ -285,22 +269,18 @@ class BondCalculator:
         """Display calculation results"""
         params = st.session_state.calculation_params
         
-        # Calculate prices
         discrete_price = self.calculate_discrete_price(params)
         continuous_price = self.calculate_continuous_price(params)
         
-        # Calculate differences
         price_diff = continuous_price - discrete_price
         price_diff_pct = (price_diff / discrete_price) * 100 if discrete_price != 0 else 0
         
-        # Main results header
         st.markdown(f'<h1 class="main-header">Bond Price Calculator</h1>', unsafe_allow_html=True)
         
-        # Bond Information
         col1, col2 = st.columns([2, 1])
         
         with col1:
-            st.markdown('<div class="sub-header">Bond Information</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sub-header">📋 Bond Information</div>', unsafe_allow_html=True)
             
             info_data = {
                 "Parameter": ["Bond Type", "Principal/Face Value", "Time to Maturity", 
@@ -322,9 +302,8 @@ class BondCalculator:
             st.dataframe(info_df, use_container_width=True, hide_index=True)
         
         with col2:
-            st.markdown('<div class="sub-header">Price Results</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sub-header">💰 Price Results</div>', unsafe_allow_html=True)
             
-            # Display prices in metric boxes
             cols = st.columns(2)
             with cols[0]:
                 st.metric(
@@ -339,52 +318,6 @@ class BondCalculator:
                     delta=None
                 )
             
-            # Price difference
-            st.markdown("""
-            <style>
-                /* Default (light mode) */
-                .result-box {
-                    padding: 1rem;
-                    border-radius: 0.5rem;
-                    margin: 1rem 0;
-                    border: 1px solid #e0e0e0;
-                    background-color: #f8f9fa;
-                }
-                
-                .result-box h4 {
-                    color: #262730;
-                    margin-top: 0;
-                    margin-bottom: 0.5rem;
-                }
-                
-                /* Dark mode override */
-                [data-theme="dark"] .result-box {
-                    background-color: #1a1a1a !important;
-                    border-color: #444 !important;
-                }
-                
-                [data-theme="dark"] .result-box h4 {
-                    color: #fafafa !important;
-                }
-                
-                /* Price difference styles */
-                .positive-diff {
-                    color: #10b981;
-                    font-weight: bold;
-                }
-                
-                .negative-diff {
-                    color: #ef4444;
-                    font-weight: bold;
-                }
-                
-                .price-difference {
-                    font-size: 1.2rem;
-                    margin: 0.5rem 0;
-                }
-            </style>
-            """, unsafe_allow_html=True)
-            
             diff_color = "positive-diff" if price_diff >= 0 else "negative-diff"
             diff_sign = "+" if price_diff >= 0 else ""
             st.markdown(
@@ -398,8 +331,7 @@ class BondCalculator:
                 unsafe_allow_html=True
             )
         
-        # Create tabs for additional views
-        tab1, tab2 = st.tabs(["Detailed Analysis", "Explanation"])
+        tab1, tab2 = st.tabs(["📊 Detailed Analysis", "📚 Explanation"])
         
         with tab1:
             self.display_detailed_analysis(params, discrete_price, continuous_price)
@@ -415,32 +347,27 @@ class BondCalculator:
         with col1:
             st.markdown("##### Payment Schedule (Coupon Bonds Only)")
             if params['bond_type'] == "Coupon Bond":
-                # Generate payment schedule
                 num_payments = int(params['maturity'] * params['payments_per_year'])
                 coupon_payment = (params['coupon_rate'] * params['principal']) / params['payments_per_year']
                 
                 payments = []
                 for i in range(1, num_payments + 1):
                     payment_time = i / params['payments_per_year']
-                    if payment_time <= params['maturity']:
-                        # Discrete discount factor
-                        r_per_period = params['interest_rate'] / params['compounding_periods']
-                        discount_factor_discrete = 1 / ((1 + r_per_period) ** (i))
-                        pv_discrete = coupon_payment * discount_factor_discrete
-                        
-                        # Continuous discount factor
-                        discount_factor_continuous = math.exp(-params['interest_rate'] * payment_time)
-                        pv_continuous = coupon_payment * discount_factor_continuous
-                        
-                        payments.append({
-                            "Payment #": i,
-                            "Time (years)": f"{payment_time:.2f}",
-                            "Coupon Payment": f"${coupon_payment:.2f}",
-                            "PV (Discrete)": f"${pv_discrete:.2f}",
-                            "PV (Continuous)": f"${pv_continuous:.2f}"
-                        })
+                    r_per_period = params['interest_rate'] / params['compounding_periods']
+                    discount_factor_discrete = 1 / ((1 + r_per_period) ** (i))
+                    pv_discrete = coupon_payment * discount_factor_discrete
+                    
+                    discount_factor_continuous = math.exp(-params['interest_rate'] * payment_time)
+                    pv_continuous = coupon_payment * discount_factor_continuous
+                    
+                    payments.append({
+                        "Payment #": i,
+                        "Time (years)": f"{payment_time:.2f}",
+                        "Coupon Payment": f"${coupon_payment:.2f}",
+                        "PV (Discrete)": f"${pv_discrete:.2f}",
+                        "PV (Continuous)": f"${pv_continuous:.2f}"
+                    })
                 
-                # Add principal payment at maturity
                 discount_factor_discrete_principal = 1 / ((1 + params['interest_rate']/params['compounding_periods']) ** 
                                                         (params['maturity'] * params['compounding_periods']))
                 discount_factor_continuous_principal = math.exp(-params['interest_rate'] * params['maturity'])
@@ -459,7 +386,6 @@ class BondCalculator:
                 st.info("Payment schedule is only applicable for Coupon Bonds.")
         
         with col2:
-            # Price comparison using Streamlit's built-in chart
             st.markdown("##### Price Comparison")
             price_data = pd.DataFrame({
                 'Model': ['Discrete', 'Continuous'],
@@ -472,13 +398,8 @@ class BondCalculator:
         """Display duration and risk analysis"""
         st.markdown("##### Duration & Risk Analysis")
         
-        # Calculate Macaulay Duration
         macaulay_duration = self.calculate_macaulay_duration(params, discrete_price)
-        
-        # Calculate Modified Duration
         modified_duration = self.calculate_modified_duration(params, macaulay_duration)
-        
-        # Calculate Convexity
         convexity = self.calculate_convexity(params, discrete_price)
         
         col1, col2, col3 = st.columns(3)
@@ -507,10 +428,8 @@ class BondCalculator:
                 help="Curvature of price-yield relationship"
             )
         
-        # Price change calculations
         st.markdown("##### **Price Sensitivity Estimates**")
         
-        # Create input for yield change
         col_yield1, col_yield2 = st.columns(2)
         
         with col_yield1:
@@ -521,10 +440,9 @@ class BondCalculator:
                 value=1.0,
                 step=0.1,
                 format="%.1f%%"
-            ) / 100  # Convert to decimal
+            ) / 100
         
         with col_yield2:
-            # Calculate estimated price changes
             price_change_duration = -modified_duration * yield_change * discrete_price
             price_change_convexity = 0.5 * convexity * (yield_change ** 2) * discrete_price
             total_price_change = price_change_duration + price_change_convexity
@@ -537,8 +455,13 @@ class BondCalculator:
                 delta_color="inverse"
             )
         
-        # Display detailed calculations
         st.markdown("##### Detailed Price Change Calculation")
+        
+        # Format negative values with $ sign before the negative sign
+        def format_currency(value):
+            if value < 0:
+                return f"-${abs(value):,.2f}"
+            return f"${value:,.2f}"
         
         calc_data = {
             "Component": [
@@ -556,27 +479,26 @@ class BondCalculator:
                 f"{modified_duration:.2f}",
                 f"{convexity:.2f}",
                 f"{yield_change*100:+.2f}%",
-                f"${price_change_duration:,.2f}",
-                f"${price_change_convexity:,.2f}",
-                f"${total_price_change:,.2f}",
+                format_currency(price_change_duration),
+                format_currency(price_change_convexity),
+                format_currency(total_price_change),
                 f"${new_price_estimate:,.2f}"
             ],
             "Formula": [
-                "-",
-                "Macaulay Duration / (1 + yield/periods)",
-                "Σ[t(t+1)PV(CF_t)] / [Price × (1+yield)²]",
-                "Given",
-                "-Modified Duration × ΔYield × Price",
-                "0.5 × Convexity × (ΔYield)² × Price",
-                "Duration Effect + Convexity Effect",
-                "Current Price + Total Price Change"
+                "$$P$$",
+                "$$\\frac{D_{mac}}{1 + \\frac{y}{m}}$$",
+                "$$\\frac{\\sum_{t=1}^{T} t(t+\\frac{1}{m}) PV(CF_t)}{P(1+\\frac{y}{m})^2}$$",
+                "$$\\Delta y$$",
+                "$$-D_{mod} \\times \\Delta y \\times P$$",
+                "$$0.5 \\times C \\times (\\Delta y)^2 \\times P$$",
+                "$$\\Delta P_{duration} + \\Delta P_{convexity}$$",
+                "$$P + \\Delta P_{total}$$"
             ]
         }
         
         calc_df = pd.DataFrame(calc_data)
         st.dataframe(calc_df, use_container_width=True, hide_index=True)
         
-        # Duration insights
         st.markdown("### Key Insights")
         
         insights = [
@@ -652,7 +574,6 @@ class BondCalculator:
                 - **m** = Payments per year
                 """)
         
-        # Duration formulas
         st.markdown("#### Duration Formulas")
         
         col_dur1, col_dur2 = st.columns(2)
@@ -689,7 +610,6 @@ class BondCalculator:
             \frac{\Delta P}{P} \approx -D_{mod} \cdot \Delta y
             ''')
 
-        # Display what duration means
         st.markdown("### Understanding Duration")
         
         col_info1, col_info2, col_info3 = st.columns(3)
@@ -830,17 +750,14 @@ class BondCalculator:
     
     def run(self):
         """Main application runner"""
-        # Create sidebar
         with st.sidebar:
             self.create_input_section()
         
-        # Main content area
         if st.session_state.get('calculation_done', False):
             self.display_results()
         else:
             self.display_welcome()
 
-# Run the application
 if __name__ == "__main__":
     calculator = BondCalculator()
     calculator.run()
