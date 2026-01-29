@@ -539,11 +539,17 @@ class BondCalculator:
             st.markdown("""
             **Formulas:**
             - **Modified Duration**: $D_{mod} = \\frac{D_{mac}}{1 + \\frac{y}{m}}$
+            
             - **Convexity**: $C = \\frac{\\sum_{t=1}^{T} t(t+\\frac{1}{m}) PV(CF_t)}{P(1+\\frac{y}{m})^2}$
+            
             - **Duration Effect**: $\\Delta P_{duration} = -D_{mod} \\times \\Delta y \\times P$
+            
             - **Convexity Effect**: $\\Delta P_{convexity} = 0.5 \\times C \\times (\\Delta y)^2 \\times P$
+            
             - **Total Price Change**: $\\Delta P_{total} = \\Delta P_{duration} + \\Delta P_{convexity}$
+            
             - **New Price**: $P_{new} = P + \\Delta P_{total}$
+            
             """)
         
         st.markdown("### Key Insights")
