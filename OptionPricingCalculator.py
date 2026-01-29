@@ -125,7 +125,6 @@ if page == "Home":
 
 # Calculator Page
 elif page == "Calculator":
-    st.markdown("<h1 class='main-header'>Option Pricing Calculator</h1>", unsafe_allow_html=True)
     
     # Instructions at the top
     st.markdown("**Instructions:** Fill in all parameters in the sidebar and click 'Calculate Option Price' to compute the theoretical option value.")
