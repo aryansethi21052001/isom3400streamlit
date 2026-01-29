@@ -27,7 +27,7 @@ with st.sidebar:
     st.title("Navigation")
     
     # Create the navigation menu
-     page = st.selectbox(
+    page = st.selectbox(
         "Select Page:",
         ["Home", "Calculator",
         label_visibility="collapsed" )
