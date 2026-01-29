@@ -563,66 +563,66 @@ class BondCalculator:
             st.markdown(f"- {insight}")
     
     def display_explanation(self, params):
-        """Display explanation of the calculations"""
+    """Display explanation of the calculations with all formulas in LaTeX"""
         st.header("How Bond Prices Are Calculated")
         
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("*Discrete Compounding Model*")
+            st.subheader("Discrete Compounding Model")
             if params['bond_type'] == "Zero Coupon Bond":
                 st.latex(r'''
                 P = \frac{F}{(1 + \frac{r}{n})^{n \cdot t}}
                 ''')
-                st.markdown("""
+                st.markdown(r"""
                 Where:
-                - **P** = Price of the bond
-                - **F** = Face value/principal
-                - **r** = Annual interest rate (decimal)
-                - **n** = Compounding periods per year
-                - **t** = Time to maturity in years
+                - $P$ = Price of the bond
+                - $F$ = Face value/principal
+                - $r$ = Annual interest rate (decimal)
+                - $n$ = Compounding periods per year
+                - $t$ = Time to maturity in years
                 """)
             else:
                 st.latex(r'''
                 P = \sum_{k=1}^{n \cdot t} \frac{C}{(1 + \frac{r}{n})^{k}} + \frac{F}{(1 + \frac{r}{n})^{n \cdot t}}
                 ''')
-                st.markdown("""
+                st.markdown(r"""
                 Where:
-                - **P** = Price of the bond
-                - **C** = Coupon payment per period = (coupon rate × F) / payments per year
-                - **F** = Face value/principal
-                - **r** = Annual interest rate (decimal)
-                - **n** = Compounding periods per year
-                - **t** = Time to maturity in years
+                - $P$ = Price of the bond
+                - $C$ = Coupon payment per period $= \frac{\text{coupon rate} \times F}{\text{payments per year}}$
+                - $F$ = Face value/principal
+                - $r$ = Annual interest rate (decimal)
+                - $n$ = Compounding periods per year
+                - $t$ = Time to maturity in years
                 """)
         
         with col2:
-            st.subheader("*Continuous Compounding Model*")
+            st.subheader("Continuous Compounding Model")
             if params['bond_type'] == "Zero Coupon Bond":
                 st.latex(r'''
                 P = F \cdot e^{-r \cdot t}
                 ''')
-                st.markdown("""
+                st.markdown(r"""
                 Where:
-                - **P** = Price of the bond
-                - **F** = Face value/principal
-                - **r** = Annual interest rate (decimal)
-                - **t** = Time to maturity in years
-                - **e** = Euler's number (≈ 2.71828)
+                - $P$ = Price of the bond
+                - $F$ = Face value/principal
+                - $r$ = Annual interest rate (decimal)
+                - $t$ = Time to maturity in years
+                - $e$ = Euler's number ($\approx 2.71828$)
                 """)
             else:
                 st.latex(r'''
                 P = \sum_{i=1}^{m \cdot t} C \cdot e^{-r \cdot t_i} + F \cdot e^{-r \cdot t}
                 ''')
-                st.markdown("""
+                st.markdown(r"""
                 Where:
-                - **P** = Price of the bond
-                - **C** = Coupon payment per period
-                - **F** = Face value/principal
-                - **r** = Annual interest rate (decimal)
-                - **tᵢ** = Time of i-th coupon payment
-                - **t** = Time to maturity in years
-                - **m** = Payments per year
+                - $P$ = Price of the bond
+                - $C$ = Coupon payment per period
+                - $F$ = Face value/principal
+                - $r$ = Annual interest rate (decimal)
+                - $t_i$ = Time of $i$-th coupon payment
+                - $t$ = Time to maturity in years
+                - $m$ = Payments per year
                 """)
         
         st.subheader("Duration Formulas")
@@ -630,69 +630,122 @@ class BondCalculator:
         col_dur1, col_dur2 = st.columns(2)
         
         with col_dur1:
-            st.subheader("*Macaulay Duration*")
+            st.subheader("Macaulay Duration")
             st.latex(r'''
-            D_{mac} = \frac{\sum_{t=1}^{T} t \cdot PV(CF_t)}{P}
+            D_{\text{mac}} = \frac{\sum_{t=1}^{T} t \cdot PV(CF_t)}{P}
             ''')
-            st.markdown("""
+            st.markdown(r"""
             Where:
-            - **Dₘₐ꜀** = Macaulay Duration (years)
-            - **t** = Time of cash flow (years)
-            - **PV(CFₜ)** = Present value of cash flow at time t
-            - **P** = Bond price
-            - **T** = Maturity
+            - $D_{\text{mac}}$ = Macaulay Duration (years)
+            - $t$ = Time of cash flow (years)
+            - $PV(CF_t)$ = Present value of cash flow at time $t$
+            - $P$ = Bond price
+            - $T$ = Maturity
             """)
         
         with col_dur2:
-            st.subheader("*Modified Duration*")
+            st.subheader("Modified Duration")
             st.latex(r'''
-            D_{mod} = \frac{D_{mac}}{1 + \frac{y}{m}}
+            D_{\text{mod}} = \frac{D_{\text{mac}}}{1 + \frac{y}{m}}
             ''')
-            st.markdown("""
+            st.markdown(r"""
             Where:
-            - **Dₘₒₔ** = Modified Duration (years)
-            - **Dₘₐ꜀** = Macaulay Duration (years)
-            - **y** = Yield to maturity (annual)
-            - **m** = Number of compounding periods per year
+            - $D_{\text{mod}}$ = Modified Duration (years)
+            - $D_{\text{mac}}$ = Macaulay Duration (years)
+            - $y$ = Yield to maturity (annual)
+            - $m$ = Number of compounding periods per year
             
             **Price Sensitivity:**
             """)
             st.latex(r'''
-            \frac{\Delta P}{P} \approx -D_{mod} \cdot \Delta y
+            \frac{\Delta P}{P} \approx -D_{\text{mod}} \cdot \Delta y
             ''')
-
-        st.subheader("Understanding Duration")
+            st.markdown(r"""
+            Where:
+            - $\Delta P$ = Change in bond price
+            - $\Delta y$ = Change in yield
+            """)
+    
+        st.subheader("Convexity Formula")
+        
+        col_conv1, col_conv2 = st.columns([2, 1])
+        
+        with col_conv1:
+            st.latex(r'''
+            C = \frac{\sum_{t=1}^{T} t(t+1) \cdot PV(CF_t)}{P \cdot (1 + \frac{y}{m})^2}
+            ''')
+            st.markdown(r"""
+            Where:
+            - $C$ = Convexity
+            - $t$ = Time of cash flow (years)
+            - $PV(CF_t)$ = Present value of cash flow at time $t$
+            - $P$ = Bond price
+            - $y$ = Yield to maturity (annual)
+            - $m$ = Number of compounding periods per year
+            - $T$ = Maturity
+            """)
+        
+        with col_conv2:
+            st.latex(r'''
+            \Delta P_{\text{convexity}} = \frac{1}{2} \cdot C \cdot (\Delta y)^2 \cdot P
+            ''')
+            st.markdown(r"""
+            Where:
+            - $\Delta P_{\text{convexity}}$ = Price change due to convexity
+            - $C$ = Convexity
+            - $\Delta y$ = Change in yield
+            - $P$ = Bond price
+            """)
+        
+        st.subheader("Price Sensitivity with Convexity Adjustment")
+        st.latex(r'''
+        \Delta P \approx -D_{\text{mod}} \cdot \Delta y \cdot P + \frac{1}{2} \cdot C \cdot (\Delta y)^2 \cdot P
+        ''')
+        st.latex(r'''
+        P_{\text{new}} = P + \Delta P
+        ''')
+        st.markdown(r"""
+        Where:
+        - $P_{\text{new}}$ = New estimated bond price
+        - $P$ = Current bond price
+        - $\Delta P$ = Total estimated price change
+        """)
+    
+        st.subheader("Understanding Duration and Convexity")
         
         col_info1, col_info2, col_info3 = st.columns(3)
         
         with col_info1:
-            st.markdown("""
-            #### *Macaulay Duration*
+            st.markdown(r"""
+            #### **Macaulay Duration**
             - **Definition**: Weighted average time to receive cash flows
+            - **Formula**: $D_{\text{mac}} = \frac{\sum t \cdot PV(CF_t)}{P}$
             - **Interpretation**: 
-                - Higher duration = More price sensitivity
-                - Zero-coupon bond duration = Maturity
-                - Coupon bond duration < Maturity
+                - Higher $D_{\text{mac}}$ = More price sensitivity
+                - Zero-coupon bond: $D_{\text{mac}} = t$
+                - Coupon bond: $D_{\text{mac}} < t$
             """)
         
         with col_info2:
-            st.markdown("""
-            #### *Modified Duration*
+            st.markdown(r"""
+            #### **Modified Duration**
             - **Definition**: Price sensitivity to yield changes
+            - **Formula**: $D_{\text{mod}} = \frac{D_{\text{mac}}}{1 + \frac{y}{m}}$
             - **Application**: 
-                - ΔPrice ≈ -Modified Duration × ΔYield × Price
-                - For 1% yield increase: Price ↓ by Modified Duration %
+                - $\Delta P \approx -D_{\text{mod}} \cdot \Delta y \cdot P$
+                - For 1% yield increase: Price $\downarrow$ by $D_{\text{mod}}$%
                 - Key measure for interest rate risk
             """)
         
         with col_info3:
-            st.markdown("""
-            #### *Convexity*
+            st.markdown(r"""
+            #### **Convexity**
             - **Definition**: Measures curvature of price-yield curve
+            - **Formula**: $C = \frac{\sum t(t+1) \cdot PV(CF_t)}{P(1+\frac{y}{m})^2}$
             - **Importance**: 
                 - Adjusts duration for large yield changes
-                - Positive convexity = Price increases more than duration predicts
-                - Higher convexity = Better risk-return profile
+                - Positive convexity: Price $\uparrow$ more than duration predicts
+                - Higher $C$ = Better risk-return profile
                 - Always positive for non-callable bonds
             """)
         
@@ -700,15 +753,27 @@ class BondCalculator:
         st.subheader("Key Insights")
         
         insights = [
-            "**Interest Rate Sensitivity**: Bond prices move inversely to interest rates.",
-            "**Time Value**: Longer maturity bonds are more sensitive to rate changes.",
-            "**Compounding Effect**: More frequent compounding leads to slightly lower prices.",
-            "**Coupon Effect**: Higher coupon bonds are less sensitive to rate changes.",
-            "**Model Difference**: Continuous compounding typically gives slightly different results than discrete."
+            r"**Interest Rate Sensitivity**: Bond prices move inversely to interest rates: $\frac{\partial P}{\partial y} < 0$",
+            r"**Time Value**: Longer maturity bonds ($t \uparrow$) are more sensitive to rate changes",
+            r"**Compounding Effect**: More frequent compounding ($n \uparrow$) leads to slightly lower prices",
+            r"**Coupon Effect**: Higher coupon bonds ($C \uparrow$) are less sensitive to rate changes",
+            r"**Model Difference**: Continuous compounding ($e^{-rt}$) typically gives slightly different results than discrete ($(1+\frac{r}{n})^{-nt}$)"
         ]
         
         for insight in insights:
             st.markdown(f"- {insight}")
+        
+        # Add mathematical relationship summary
+        st.subheader("Mathematical Relationships")
+        st.markdown(r"""
+        **Summary of Key Relationships:**
+        
+        1. **Price-Yield Relationship**: $P \downarrow$ as $y \uparrow$
+        2. **Duration Effect**: $\frac{\Delta P}{P} \propto -D_{\text{mod}} \cdot \Delta y$
+        3. **Convexity Adjustment**: $\frac{\Delta P}{P} \propto \frac{1}{2}C \cdot (\Delta y)^2$
+        4. **Total Price Change**: $\Delta P = -D_{\text{mod}} \cdot \Delta y \cdot P + \frac{1}{2}C \cdot (\Delta y)^2 \cdot P$
+        5. **Frequency Impact**: As $n \rightarrow \infty$, discrete $\rightarrow$ continuous: $(1+\frac{r}{n})^{nt} \rightarrow e^{rt}$
+        """)
     
     def display_welcome(self):
         """Display welcome message when no calculation has been done"""
