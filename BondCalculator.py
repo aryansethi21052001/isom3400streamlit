@@ -553,8 +553,8 @@ class BondCalculator:
             ],
             "Value": [
                 f"${discrete_price:,.2f}",
-                f"{modified_duration:.4f}",
-                f"{convexity:.4f}",
+                f"{modified_duration:.2f}",
+                f"{convexity:.2f}",
                 f"{yield_change*100:+.2f}%",
                 f"${price_change_duration:,.2f}",
                 f"${price_change_convexity:,.2f}",
