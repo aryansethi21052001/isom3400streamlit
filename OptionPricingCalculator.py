@@ -105,7 +105,7 @@ if page == "Home":
     
     st.markdown("<h2 class='sub-header'>Option Greeks</h2>", unsafe_allow_html=True)
     
-    st.markdown("The "Greeks" measure the sensitivity of the option price to various factors:")
+    st.markdown('The "Greeks" measure the sensitivity of the option price to various factors:')
     
     st.markdown("""
     <style>
