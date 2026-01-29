@@ -569,7 +569,7 @@ class BondCalculator:
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("Discrete Compounding Model")
+            st.subheader("*Discrete Compounding Model*")
             if params['bond_type'] == "Zero Coupon Bond":
                 st.latex(r'''
                 P = \frac{F}{(1 + \frac{r}{n})^{n \cdot t}}
