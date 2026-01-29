@@ -569,7 +569,7 @@ class BondCalculator:
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("*Discrete Compounding Model*")
+            st.subheader("*Discrete Compounding Model:*")
             if params['bond_type'] == "Zero Coupon Bond":
                 st.latex(r'''
                 P = \frac{F}{(1 + \frac{r}{n})^{n \cdot t}}
@@ -597,7 +597,7 @@ class BondCalculator:
                 """)
         
         with col2:
-            st.subheader("*Continuous Compounding Model*")
+            st.subheader("*Continuous Compounding Model:*")
             if params['bond_type'] == "Zero Coupon Bond":
                 st.latex(r'''
                 P = F \cdot e^{-r \cdot t}
@@ -632,7 +632,7 @@ class BondCalculator:
         col_dur1, col_dur2, col_dur3 = st.columns(3)
         
         with col_dur1:
-            st.subheader("*Macaulay Duration*")
+            st.subheader("*Macaulay Duration:*")
             st.latex(r'''
             D_{\text{mac}} = \frac{\sum_{t=1}^{T} t \cdot PV(CF_t)}{P}
             ''')
@@ -646,7 +646,7 @@ class BondCalculator:
             """)
         
         with col_dur2:
-            st.subheader("*Modified Duration*")
+            st.subheader("*Modified Duration:*")
             st.latex(r'''
             D_{\text{mod}} = \frac{D_{\text{mac}}}{1 + \frac{y}{m}}
             ''')
