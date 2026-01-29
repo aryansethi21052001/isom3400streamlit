@@ -164,7 +164,7 @@ with tab2:
     
     st.markdown("**Instructions:** Fill in all parameters in the sidebar and click 'Calculate Option Price' to compute the theoretical option value.")
     
-    with st.sidebar:
+    with st.form:
         st.markdown("### Input Parameters")
         
         # Option Type
@@ -221,7 +221,7 @@ with tab2:
         )
         
         # Calculate button in sidebar
-        calculate_button = st.button(
+        calculate_button = st.form_submit_button(
             "Calculate Option Price",
             type="primary",
             use_container_width=True
