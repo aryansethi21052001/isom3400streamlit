@@ -713,7 +713,7 @@ class BondCalculator:
     
     def display_welcome(self):
         """Display welcome message when no calculation has been done"""
-        st.title("Bond Price Calculator", text_alignment="center)
+        st.title("Bond Price Calculator", text_alignment="center")
         
         st.markdown("""
             ## Welcome to the Bond Calculator!
