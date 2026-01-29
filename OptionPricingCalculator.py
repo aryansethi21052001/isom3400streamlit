@@ -123,6 +123,65 @@ if page == "Home":
             
             st.markdown(f"<div style='text-align: center; font-size: 0.9rem; color: #666;'>{desc}</div>", unsafe_allow_html=True)
 
+    st.markdown("<h2 class='sub-header'>Option Moneyness Explained</h2>", unsafe_allow_html=True)
+
+    st.markdown("""
+    **Moneyness** describes the relationship between the current stock price (S) and the option's strike price (K):
+    """)
+    
+    moneyness_table = """
+    <div style='overflow-x: auto;'>
+    <table style='width: 100%; border-collapse: collapse; text-align: center;'>
+        <thead>
+            <tr style='background-color: #1E88E5; color: white;'>
+                <th style='padding: 12px; border: 1px solid #ddd;'>Status</th>
+                <th style='padding: 12px; border: 1px solid #ddd;'>Call Option</th>
+                <th style='padding: 12px; border: 1px solid #ddd;'>Put Option</th>
+                <th style='padding: 12px; border: 1px solid #ddd;'>Intrinsic Value</th>
+                <th style='padding: 12px; border: 1px solid #ddd;'>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr style='background-color: #E8F5E9;'>
+                <td style='padding: 10px; border: 1px solid #ddd;'><strong>In-The-Money (ITM)</strong></td>
+                <td style='padding: 10px; border: 1px solid #ddd;'>S > K</td>
+                <td style='padding: 10px; border: 1px solid #ddd;'>S < K</td>
+                <td style='padding: 10px; border: 1px solid #ddd;'>Positive</td>
+                <td style='padding: 10px; border: 1px solid #ddd;'>Option has immediate value if exercised</td>
+            </tr>
+            <tr style='background-color: #FFF3E0;'>
+                <td style='padding: 10px; border: 1px solid #ddd;'><strong>At-The-Money (ATM)</strong></td>
+                <td style='padding: 10px; border: 1px solid #ddd;'>S = K</td>
+                <td style='padding: 10px; border: 1px solid #ddd;'>S = K</td>
+                <td style='padding: 10px; border: 1px solid #ddd;'>Zero</td>
+                <td style='padding: 10px; border: 1px solid #ddd;'>Stock price equals strike price</td>
+            </tr>
+            <tr style='background-color: #FFEBEE;'>
+                <td style='padding: 10px; border: 1px solid #ddd;'><strong>Out-of-The-Money (OTM)</strong></td>
+                <td style='padding: 10px; border: 1px solid #ddd;'>S < K</td>
+                <td style='padding: 10px; border: 1px solid #ddd;'>S > K</td>
+                <td style='padding: 10px; border: 1px solid #ddd;'>Zero</td>
+                <td style='padding: 10px; border: 1px solid #ddd;'>Option has no intrinsic value</td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+    """
+    
+    st.markdown(moneyness_table, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div style='background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 20px;'>
+    <p><strong>Formula Reference:</strong></p>
+    <ul style='color: #333;'>
+    <li><strong>Call Intrinsic Value:</strong> $\\max(0, S - K)$</li>
+    <li><strong>Put Intrinsic Value:</strong> $\\max(0, K - S)$</li>
+    <li><strong>Total Option Price:</strong> Intrinsic Value + Time Value</li>
+    </ul>
+    <p style='margin-top: 10px;'><em>Time Value represents the premium for potential future price movement before expiration.</em></p>
+    </div>
+    """, unsafe_allow_html=True)
+
 # Calculator Page
 elif page == "Calculator":
     
