@@ -53,7 +53,6 @@ if page == "Home":
     and earned Scholes and Robert Merton the 1997 Nobel Prize in Economics.
     """)
     
-    st.markdown("<h3 class='sub-header'>About the Black-Scholes Model</h3>", unsafe_allow_html=True)
     st.markdown("""
     The model is based on these key assumptions:
     
@@ -105,25 +104,44 @@ if page == "Home":
             """)
     
     st.markdown("<h2 class='sub-header'>Option Greeks</h2>", unsafe_allow_html=True)
-    
+
     st.markdown("""
     The "Greeks" measure the sensitivity of the option price to various factors:
     """)
     
-    greek_cols = st.columns(5)
-    greeks = [
-        ("Δ (Delta)", r"\frac{\partial V}{\partial S}", "Price sensitivity to underlying asset"),
-        ("Γ (Gamma)", r"\frac{\partial^2 V}{\partial S^2}", "Delta's sensitivity to price changes"),
-        ("Θ (Theta)", r"\frac{\partial V}{\partial t}", "Time decay of option value"),
-        ("ν (Vega)", r"\frac{\partial V}{\partial \sigma}", "Sensitivity to volatility changes"),
-        ("ρ (Rho)", r"\frac{\partial V}{\partial r}", "Sensitivity to interest rate changes")
-    ]
+    col1, col2, col3, col4 = st.columns([1, 1, 2, 3])
     
-    for col, (name, formula, desc) in zip(greek_cols, greeks):
-        with col:
-            st.markdown(f"**{name}**")
-            st.latex(formula)
-            st.caption(desc)
+    with col1:
+        st.markdown("<div style='text-align: center; font-weight: bold; padding: 10px; background-color: #1E88E5; color: white; border-radius: 5px 0 0 0;'>Greek</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: #f8f9fa;'>Delta</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: white;'>Gamma</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: #f8f9fa;'>Theta</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: white;'>Vega</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 0 0 0 5px;'>Rho</div>", unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("<div style='text-align: center; font-weight: bold; padding: 10px; background-color: #1E88E5; color: white;'>Symbol</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: #f8f9fa; font-size: 1.2rem;'>Δ</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: white; font-size: 1.2rem;'>Γ</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: #f8f9fa; font-size: 1.2rem;'>Θ</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: white; font-size: 1.2rem;'>ν</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: #f8f9fa; font-size: 1.2rem;'>ρ</div>", unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown("<div style='text-align: center; font-weight: bold; padding: 10px; background-color: #1E88E5; color: white;'>Formula</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: #f8f9fa;'>$\frac{\partial V}{\partial S}$</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: white;'>$\frac{\partial^2 V}{\partial S^2}$</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: #f8f9fa;'>$\frac{\partial V}{\partial t}$</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: white;'>$\frac{\partial V}{\partial \sigma}$</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: #f8f9fa;'>$\frac{\partial V}{\partial r}$</div>", unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown("<div style='text-align: center; font-weight: bold; padding: 10px; background-color: #1E88E5; color: white; border-radius: 0 5px 0 0;'>Description</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: #f8f9fa;'>Price sensitivity to underlying asset</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: white;'>Delta's sensitivity to price changes</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: #f8f9fa;'>Time decay of option value</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: white;'>Sensitivity to volatility changes</div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 0 0 5px 0;'>Sensitivity to interest rate changes</div>", unsafe_allow_html=True)
 
 # Calculator Page
 elif page == "Calculator":
