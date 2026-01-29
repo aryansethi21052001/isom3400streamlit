@@ -423,7 +423,7 @@ class BondCalculator:
                 })
                 
                 payments_df = pd.DataFrame(payments)
-                st.dataframe(payments_df, use_container_width=True)
+                st.dataframe(payments_df, use_container_width=True, hide_index=True)
             else:
                 st.info("Payment schedule is only applicable for Coupon Bonds.")
         
