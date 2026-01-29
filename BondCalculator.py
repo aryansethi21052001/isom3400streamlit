@@ -225,7 +225,7 @@ class BondCalculator:
     
     def create_input_section(self):
         """Create the input section in sidebar"""
-        st.sidebar.header("📊 Bond Parameters")
+        st.sidebar.header("Bond Parameters")
         
         bond_type = st.sidebar.selectbox(
             "Bond Type",
@@ -319,7 +319,7 @@ class BondCalculator:
         
         with col1:
             # Use HTML with class for proper dark mode styling
-            st.markdown('<div class="sub-header">📋 Bond Information</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sub-header">Bond Information</div>', unsafe_allow_html=True)
             
             info_data = {
                 "Parameter": ["Bond Type", "Principal/Face Value", "Time to Maturity", 
@@ -342,7 +342,7 @@ class BondCalculator:
         
         with col2:
             # Use HTML with class for proper dark mode styling
-            st.markdown('<div class="sub-header">💰 Price Results</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sub-header">Price Results</div>', unsafe_allow_html=True)
             
             cols = st.columns(2)
             with cols[0]:
@@ -375,7 +375,7 @@ class BondCalculator:
                 unsafe_allow_html=True
             )
         
-        tab1, tab2 = st.tabs(["📊 Detailed Analysis", "📚 Explanation"])
+        tab1, tab2 = st.tabs(["Detailed Analysis", "Explanation"])
         
         with tab1:
             self.display_detailed_analysis(params, discrete_price, continuous_price)
