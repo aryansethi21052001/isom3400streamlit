@@ -340,6 +340,51 @@ class BondCalculator:
                 )
             
             # Price difference
+            st.markdown("""
+            <style>
+                /* Default (light mode) */
+                .result-box {
+                    padding: 1rem;
+                    border-radius: 0.5rem;
+                    margin: 1rem 0;
+                    border: 1px solid #e0e0e0;
+                    background-color: #f8f9fa;
+                }
+                
+                .result-box h4 {
+                    color: #262730;
+                    margin-top: 0;
+                    margin-bottom: 0.5rem;
+                }
+                
+                /* Dark mode override */
+                [data-theme="dark"] .result-box {
+                    background-color: #1a1a1a !important;
+                    border-color: #444 !important;
+                }
+                
+                [data-theme="dark"] .result-box h4 {
+                    color: #fafafa !important;
+                }
+                
+                /* Price difference styles */
+                .positive-diff {
+                    color: #10b981;
+                    font-weight: bold;
+                }
+                
+                .negative-diff {
+                    color: #ef4444;
+                    font-weight: bold;
+                }
+                
+                .price-difference {
+                    font-size: 1.2rem;
+                    margin: 0.5rem 0;
+                }
+            </style>
+            """, unsafe_allow_html=True)
+            
             diff_color = "positive-diff" if price_diff >= 0 else "negative-diff"
             diff_sign = "+" if price_diff >= 0 else ""
             st.markdown(
