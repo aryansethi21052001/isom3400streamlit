@@ -27,16 +27,13 @@ with st.sidebar:
     st.title("Navigation")
     
     # Create the navigation menu
-    page = st.navigation([
-        st.Page(lambda: None, title="Home"),
-        st.Page(lambda: None, title="Calculator"),
-    ])
-    
-    # Run the navigation
-    page.run()
+     page = st.selectbox(
+        "Select Page:",
+        ["Home", "Calculator",
+        label_visibility="collapsed" )
 
 # Home Page
-if page.title == "Home":
+if page == "Home":
     st.markdown("<h2 class='sub-header'>Introduction</h2>", unsafe_allow_html=True)
     st.write("""
     Welcome to the **Black-Scholes Option Pricing Calculator**! This professional tool allows you to:
@@ -170,7 +167,7 @@ if page.title == "Home":
             st.markdown(f"<div style='text-align: center; font-size: 0.9rem; color: #666;'>{desc}</div>", unsafe_allow_html=True)
 
 # Calculator Page
-elif page.title == "Calculator":
+elif page == "Calculator":
     
     st.markdown("**Instructions:** Fill in all parameters in the sidebar and click 'Calculate Option Price' to compute the theoretical option value.")
     
