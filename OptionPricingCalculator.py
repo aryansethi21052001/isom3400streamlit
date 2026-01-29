@@ -28,8 +28,6 @@ page = st.sidebar.radio("", ["Home", "Calculator"])
 
 # Home Page
 if page == "Home":
-    st.markdown("<h1 class='main-header'>Black-Scholes Option Pricing Calculator</h1>", unsafe_allow_html=True)
-
     st.markdown("<h2 class='sub-header'>Introduction</h2>", unsafe_allow_html=True)
     st.write("""
     Welcome to the **Black-Scholes Option Pricing Calculator**! This professional tool allows you to:
