@@ -318,7 +318,7 @@ class BondCalculator:
         col1, col2 = st.columns([2, 1])
         
         with col1:
-            st.subheader(Bond Information)
+            st.subheader("Bond Information")
             
             info_data = {
                 "Parameter": ["Bond Type", "Principal/Face Value", "Time to Maturity", 
