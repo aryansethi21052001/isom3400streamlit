@@ -340,7 +340,7 @@ class BondCalculator:
             st.dataframe(info_df, use_container_width=True, hide_index=True)
         
         with col2:
-            st.subheader(Price Results)
+            st.subheader("Price Results")
             
             cols = st.columns(2)
             with cols[0]:
