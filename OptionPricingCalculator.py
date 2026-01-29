@@ -249,7 +249,7 @@ elif page == "Calculator":
                 st.metric(label=name, value=value)
                 st.caption(desc)
 
-        st.markdown("<h2 class='sub-header'>📊 Payoff Visualization</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 class='sub-header'>Payoff Visualization</h2>", unsafe_allow_html=True)
     
         # Create payoff diagram
         spot_prices = np.linspace(S * 0.5, S * 1.5, 200)
