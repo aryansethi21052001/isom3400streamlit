@@ -105,11 +105,7 @@ if page == "Home":
     
     st.markdown("<h2 class='sub-header'>Option Greeks</h2>", unsafe_allow_html=True)
     
-    st.markdown("""
-    <div style="text-align: center;">
-    The "Greeks" measure the sensitivity of the option price to various factors:
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown('The "Greeks" measure the sensitivity of the option price to various factors:', unsafe_allow_html=True)
     
     greek_cols = st.columns(5)
     
