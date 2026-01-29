@@ -9,7 +9,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better styling with dark mode support
+# CSS Styling for dark mode support
 st.markdown("""
 <style>
     /* Main header styling */
@@ -318,7 +318,6 @@ class BondCalculator:
         col1, col2 = st.columns([2, 1])
         
         with col1:
-            # Use HTML with class for proper dark mode styling
             st.markdown('<div class="sub-header">Bond Information</div>', unsafe_allow_html=True)
             
             info_data = {
@@ -341,7 +340,6 @@ class BondCalculator:
             st.dataframe(info_df, use_container_width=True, hide_index=True)
         
         with col2:
-            # Use HTML with class for proper dark mode styling
             st.markdown('<div class="sub-header">Price Results</div>', unsafe_allow_html=True)
             
             cols = st.columns(2)
@@ -501,7 +499,7 @@ class BondCalculator:
         
         st.markdown("##### Detailed Price Change Calculation")
         
-        # Create a custom DataFrame display with LaTeX formulas
+        # Create a DataFrame display with formulas
         calc_data = {
             "Component": [
                 "Current Bond Price",
@@ -531,32 +529,29 @@ class BondCalculator:
         # Display the DataFrame
         st.dataframe(calc_df, use_container_width=True, hide_index=True)
         
-        # Display LaTeX formulas separately
+        # Display formulas separately
         st.markdown("##### **Formulas Used**")
-        formulas = st.columns(1)
         
-        with formulas[0]:
-            st.markdown("""
-            **Formulas:**
-            - **Modified Duration**: $D_{mod} = \\frac{D_{mac}}{1 + \\frac{y}{m}}$
-            
-            - **Convexity**: $C = \\frac{\\sum_{t=1}^{T} t(t+\\frac{1}{m}) PV(CF_t)}{P(1+\\frac{y}{m})^2}$
-            
-            - **Duration Effect**: $\\Delta P_{duration} = -D_{mod} \\times \\Delta y \\times P$
-            
-            - **Convexity Effect**: $\\Delta P_{convexity} = 0.5 \\times C \\times (\\Delta y)^2 \\times P$
-            
-            - **Total Price Change**: $\\Delta P_{total} = \\Delta P_{duration} + \\Delta P_{convexity}$
-            
-            - **New Price**: $P_{new} = P + \\Delta P_{total}$
-            
-            """)
+        st.markdown("""
+        - **Modified Duration**: $D_{mod} = \\frac{D_{mac}}{1 + \\frac{y}{m}}$
+        
+        - **Convexity**: $C = \\frac{\\sum_{t=1}^{T} t(t+\\frac{1}{m}) PV(CF_t)}{P(1+\\frac{y}{m})^2}$
+        
+        - **Duration Effect**: $\\Delta P_{duration} = -D_{mod} \\times \\Delta y \\times P$
+        
+        - **Convexity Effect**: $\\Delta P_{convexity} = 0.5 \\times C \\times (\\Delta y)^2 \\times P$
+        
+        - **Total Price Change**: $\\Delta P_{total} = \\Delta P_{duration} + \\Delta P_{convexity}$
+        
+        - **New Price**: $P_{new} = P + \\Delta P_{total}$
+        
+        """)
         
         st.markdown("### Key Insights")
         
         insights = [
-            f"**Interest Rate Sensitivity**: A 1% increase in yield would decrease the bond price by approximately **{modified_duration:.1f}%**.",
-            f"**Cash Flow Timing**: The weighted average time to receive all cash flows is **{macaulay_duration:.1f} years**.",
+            f"**Interest Rate Sensitivity**: A 1% increase in yield would decrease the bond price by approximately **{modified_duration:.2f}%**.",
+            f"**Cash Flow Timing**: The weighted average time to receive all cash flows is **{macaulay_duration:.2f} years**.",
             f"**Convexity Benefit**: Positive convexity means the bond's price increases more when yields fall than it decreases when yields rise.",
             f"**Accuracy**: For small yield changes (±1%), duration alone provides a good estimate. For larger changes, convexity adjustment is important."
         ]
