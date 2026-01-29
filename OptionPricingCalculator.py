@@ -25,7 +25,17 @@ st.title("Black-Scholes Option Pricing Calculator", text_alignment="center")
 # Sidebar for navigation
 with st.sidebar:
     st.title("Navigation")
-    
+
+     st.markdown("""
+    <style>
+        /* Disable typing in selectbox */
+        div[data-testid="stSelectbox"] input {
+            pointer-events: none;
+            cursor: pointer;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
     # Create the navigation menu
     page = st.selectbox(
         "Select Page:",
