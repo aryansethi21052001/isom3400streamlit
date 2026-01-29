@@ -3,10 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 
-# Page configuration
-st.set_page_config(layout="wide")
-st.title("Black-Scholes Option Pricing Calculator", text_alignment="center")
-
 # Black-Scholes Formula Functions
 def black_scholes_call(S, K, T, r, sigma):
     """Calculate Black-Scholes call option price"""
@@ -22,6 +18,10 @@ def black_scholes_put(S, K, T, r, sigma):
     put_price = K * np.exp(-r * T) * norm.cdf(-d2) - S * norm.cdf(-d1)
     return put_price, d1, d2
 
+# Page configuration
+st.set_page_config(layout="wide")
+st.title("Black-Scholes Option Pricing Calculator", text_alignment="center")
+
 # Sidebar for navigation
 with st.sidebar:
     st.title("Navigation")
@@ -36,7 +36,7 @@ with st.sidebar:
     page.run()
 
 # Home Page
-if page == "Home":
+if page.title == "Home":
     st.markdown("<h2 class='sub-header'>Introduction</h2>", unsafe_allow_html=True)
     st.write("""
     Welcome to the **Black-Scholes Option Pricing Calculator**! This professional tool allows you to:
@@ -170,7 +170,7 @@ if page == "Home":
             st.markdown(f"<div style='text-align: center; font-size: 0.9rem; color: #666;'>{desc}</div>", unsafe_allow_html=True)
 
 # Calculator Page
-elif page == "Calculator":
+elif page.title == "Calculator":
     
     st.markdown("**Instructions:** Fill in all parameters in the sidebar and click 'Calculate Option Price' to compute the theoretical option value.")
     
