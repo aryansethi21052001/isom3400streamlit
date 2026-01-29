@@ -126,10 +126,8 @@ if page == "Home":
 # Calculator Page
 elif page == "Calculator":
     
-    # Instructions at the top
     st.markdown("**Instructions:** Fill in all parameters in the sidebar and click 'Calculate Option Price' to compute the theoretical option value.")
     
-    # Input parameters in sidebar - ONE PER ROW
     with st.sidebar:
         st.markdown("### Input Parameters")
         
@@ -208,9 +206,19 @@ elif page == "Calculator":
         # Display result
         st.markdown(f"""
         <div class='result-box'>
-            <h3 style='color: #0D47A1; margin: 0; font-size: 1.5rem;'>{option_type} Option Price</h3>
-            <h1 style='color: #1E88E5; margin: 15px 0; font-size: 3rem;'>${price:.2f}</h1>
-            <p style='color: #666; margin: 0; font-size: 1rem;'>Theoretical price based on the Black-Scholes model</p>
+        <div style='text-align: center; padding: 25px;'>
+        <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);'>
+            <div style='color: white; font-size: 1rem; font-weight: 600; letter-spacing: 1px; margin-bottom: 10px;'>
+                {option_type} OPTION PRICE
+            </div>
+            <div style='color: white; font-size: 3.5rem; font-weight: 700; margin: 10px 0;'>
+                ${price:.2f}
+            </div>
+            <div style='color: rgba(255,255,255,0.9); font-size: 0.9rem;'>
+                Theoretical price based on Black-Scholes model
+            </div>
+        </div>
+        </div>
         </div>
         """, unsafe_allow_html=True)
         
