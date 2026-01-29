@@ -118,14 +118,14 @@ if page == "Home":
     ]
     
     for col, (name, formula, desc) in zip(greek_cols, greeks):
-    with col:
-        st.markdown(f"<div style='text-align: center; font-weight: bold;'>{name}</div>", unsafe_allow_html=True)
-        
-        st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
-        st.latex(formula)
-        st.markdown("</div>", unsafe_allow_html=True)
-        
-        st.markdown(f"<div style='text-align: center; font-size: 0.9rem; color: #666;'>{desc}</div>", unsafe_allow_html=True)
+        with col:
+            st.markdown(f"<div style='text-align: center; font-weight: bold;'>{name}</div>", unsafe_allow_html=True)
+            
+            st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+            st.latex(formula)
+            st.markdown("</div>", unsafe_allow_html=True)
+            
+            st.markdown(f"<div style='text-align: center; font-size: 0.9rem; color: #666;'>{desc}</div>", unsafe_allow_html=True)
 
 # Calculator Page
 elif page == "Calculator":
