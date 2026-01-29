@@ -734,7 +734,6 @@ class BondCalculator:
             #### *Modified Duration*
             - **Definition**: Price sensitivity to yield changes
             - **Application**: 
-                - ΔPrice ≈ -Modified Duration × ΔYield × Price
                 - For 1% yield increase: Price ↓ by Modified Duration %
                 - Key measure for interest rate risk
             """)
