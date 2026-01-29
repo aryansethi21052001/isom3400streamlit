@@ -108,16 +108,16 @@ if page == "Home":
     moneyness_table = """
     | Status | Call Condition | Put Condition | Description |
     |--------|----------------|---------------|-------------|
-    | **In-The-Money (ITM)** | $S > K$ | $S < K$ | Option has intrinsic value |
-    | **At-The-Money (ATM)** | $S = K$ | $S = K$ | Stock price equals strike price |
-    | **Out-of-The-Money (OTM)** | $S < K$ | $S > K$ | Option has no intrinsic value |
+    | *In-The-Money (ITM)* | $S > K$ | $S < K$ | Option has intrinsic value |
+    | *At-The-Money (ATM)* | $S = K$ | $S = K$ | Stock price equals strike price |
+    | *Out-of-The-Money (OTM)* | $S < K$ | $S > K$ | Option has no intrinsic value |
     """
     
     st.markdown(moneyness_table)
     
     # Add formulas with st.latex()
     st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("**Intrinsic Value Formulas:**")
+    st.markdown("## **Intrinsic Value Formulas:**")
     
     col1, col2 = st.columns(2)
     with col1:
