@@ -345,7 +345,7 @@ elif page == "Calculator":
                 max_profit = "Unlimited"
                 breakeven_explanation = f"Stock must rise above ${breakeven_price:.2f} to profit"
             else:
-                max_profit = f"${K - 0 - price:.2f} (if stock goes to $0)"
+                max_profit = f"\\${K - 0 - price:.2f} (if stock goes to \\$0)"
                 breakeven_explanation = f"Stock must fall below ${breakeven_price:.2f} to profit"
             
             st.markdown(f"""
