@@ -22,28 +22,11 @@ def black_scholes_put(S, K, T, r, sigma):
 st.set_page_config(layout="wide")
 st.title("Black-Scholes Option Pricing Calculator", text_alignment="center")
 
-# Sidebar for navigation
-with st.sidebar:
-    st.title("Navigation")
-
-    st.markdown("""
-    <style>
-        /* Disable typing in selectbox */
-        div[data-testid="stSelectbox"] input {
-            pointer-events: none;
-            cursor: pointer;
-        }
-    </style>
-    """, unsafe_allow_html=True)
-
-    # Create the navigation menu
-    page = st.selectbox(
-        "Select Page:",
-        ["Home", "Calculator"],
-        label_visibility="collapsed")
+# Navigation
+tab1, tab2 = st.tabs(["Home", "Calculator"])
 
 # Home Page
-if page == "Home":
+with tab1:
     st.markdown("<h2 class='sub-header'>Introduction</h2>", unsafe_allow_html=True)
     st.write("""
     Welcome to the **Black-Scholes Option Pricing Calculator**! This professional tool allows you to:
@@ -177,7 +160,7 @@ if page == "Home":
             st.markdown(f"<div style='text-align: center; font-size: 0.9rem; color: #666;'>{desc}</div>", unsafe_allow_html=True)
 
 # Calculator Page
-elif page == "Calculator":
+with tab2:
     
     st.markdown("**Instructions:** Fill in all parameters in the sidebar and click 'Calculate Option Price' to compute the theoretical option value.")
     
