@@ -335,9 +335,8 @@ elif page == "Calculator":
             - **Strike Price**: ${K:.2f}
             - **Breakeven Price**: ${breakeven_price:.2f}
             - **Option Premium**: ${price:.2f}
-            
-            *The payoff shows the option's value at expiration without*""")
-            st.markdown("*considering the premium paid.*")
+            """)
+            st.markdown("*The payoff shows the option's value at expiration without considering the premium paid.*")
         
         with col_exp2:
             max_loss = price
