@@ -336,8 +336,8 @@ elif page == "Calculator":
             - **Breakeven Price**: ${breakeven_price:.2f}
             - **Option Premium**: ${price:.2f}
             
-            *The payoff shows the option's value at expiration without \nconsidering the premium paid.*
-            """)
+            *The payoff shows the option's value at expiration without*""")
+            st.markdown("*considering the premium paid.*")
         
         with col_exp2:
             max_loss = -price
@@ -354,7 +354,7 @@ elif page == "Calculator":
             - **Maximum Loss**: ${max_loss:.2f} (premium paid)
             - **Maximum Profit**: {max_profit}
             - **Breakeven**: {breakeven_explanation}
-            - **Moneyness**: {"ITM" if (option_type == "Call" and S > K) or (option_type == "Put" and S < K) else "OTM" if (option_type == "Call" and S < K) or (option_type == "Put" and S > K) else "ATM"}
+            - **Moneyness**: {"In-The-Money (ITM)" if (option_type == "Call" and S > K) or (option_type == "Put" and S < K) else "Out-of-The-Money (OTM)" if (option_type == "Call" and S < K) or (option_type == "Put" and S > K) else "At-The-Money (ATM)"}
             
             *Net profit/loss accounts for the ${price:.2f} premium paid.*
             """)
