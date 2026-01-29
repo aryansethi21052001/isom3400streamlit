@@ -313,12 +313,12 @@ class BondCalculator:
         price_diff = continuous_price - discrete_price
         price_diff_pct = (price_diff / discrete_price) * 100 if discrete_price != 0 else 0
         
-        st.markdown(f'<h1 class="main-header">Bond Price Calculator</h1>', unsafe_allow_html=True)
+        st.header(Bond Price Calculator)
         
         col1, col2 = st.columns([2, 1])
         
         with col1:
-            st.markdown('<div class="sub-header">Bond Information</div>', unsafe_allow_html=True)
+            st.subheader(Bond Information)
             
             info_data = {
                 "Parameter": ["Bond Type", "Principal/Face Value", "Time to Maturity", 
@@ -340,7 +340,7 @@ class BondCalculator:
             st.dataframe(info_df, use_container_width=True, hide_index=True)
         
         with col2:
-            st.markdown('<div class="sub-header">Price Results</div>', unsafe_allow_html=True)
+            st.subheader(Price Results)
             
             cols = st.columns(2)
             with cols[0]:
@@ -387,7 +387,7 @@ class BondCalculator:
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("##### Payment Schedule (Coupon Bonds Only)")
+            st.subheader("Payment Schedule (Coupon Bonds Only)")
             if params['bond_type'] == "Coupon Bond":
                 num_payments = int(params['maturity'] * params['payments_per_year'])
                 coupon_payment = (params['coupon_rate'] * params['principal']) / params['payments_per_year']
@@ -428,7 +428,7 @@ class BondCalculator:
                 st.info("Payment schedule is only applicable for Coupon Bonds.")
         
         with col2:
-            st.markdown("##### Price Comparison")
+            st.subheader("Price Comparison")
             price_data = pd.DataFrame({
                 'Model': ['Discrete', 'Continuous'],
                 'Price': [discrete_price, continuous_price]
@@ -470,7 +470,7 @@ class BondCalculator:
                 help="Curvature of price-yield relationship"
             )
         
-        st.markdown("##### **Price Sensitivity Estimates**")
+        st.subheader("Price Sensitivity Estimates")
         
         col_yield1, col_yield2 = st.columns(2)
         
@@ -497,7 +497,7 @@ class BondCalculator:
                 delta_color="inverse"
             )
         
-        st.markdown("##### Detailed Price Change Calculation")
+        st.subheader("Detailed Price Change Calculation")
 
         col_calc_data1, col_calc_data2 = st.columns(2)
 
@@ -534,7 +534,7 @@ class BondCalculator:
 
         with col_calc_data2:
             # Display formulas separately
-            st.markdown("##### **Formulas Used**")
+            st.subheader("Formulas Used")
             
             st.markdown("""
             - **Modified Duration**: $D_{mod} = \\frac{D_{mac}}{1 + \\frac{y}{m}}$
@@ -551,7 +551,7 @@ class BondCalculator:
             
             """)
         
-        st.markdown("### Key Insights")
+        st.subheader("Key Insights")
         
         insights = [
             f"**Interest Rate Sensitivity**: A 1% increase in yield would decrease the bond price by approximately **{modified_duration:.2f}%**.",
@@ -565,12 +565,12 @@ class BondCalculator:
     
     def display_explanation(self, params):
         """Display explanation of the calculations"""
-        st.markdown("### How Bond Prices Are Calculated")
+        st.header("How Bond Prices Are Calculated")
         
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("###### Discrete Compounding Model")
+            st.subheader("Discrete Compounding Model")
             if params['bond_type'] == "Zero Coupon Bond":
                 st.latex(r'''
                 P = \frac{F}{(1 + \frac{r}{n})^{n \cdot t}}
@@ -598,7 +598,7 @@ class BondCalculator:
                 """)
         
         with col2:
-            st.markdown("###### Continuous Compounding Model")
+            st.subheader("Continuous Compounding Model")
             if params['bond_type'] == "Zero Coupon Bond":
                 st.latex(r'''
                 P = F \cdot e^{-r \cdot t}
@@ -626,12 +626,12 @@ class BondCalculator:
                 - **m** = Payments per year
                 """)
         
-        st.markdown("#### Duration Formulas")
+        st.subheader("Duration Formulas")
         
         col_dur1, col_dur2 = st.columns(2)
         
         with col_dur1:
-            st.markdown("###### Macaulay Duration")
+            st.subheader("Macaulay Duration")
             st.latex(r'''
             D_{mac} = \frac{\sum_{t=1}^{T} t \cdot PV(CF_t)}{P}
             ''')
@@ -645,7 +645,7 @@ class BondCalculator:
             """)
         
         with col_dur2:
-            st.markdown("###### Modified Duration")
+            st.subheader("Modified Duration")
             st.latex(r'''
             D_{mod} = \frac{D_{mac}}{1 + \frac{y}{m}}
             ''')
@@ -662,7 +662,7 @@ class BondCalculator:
             \frac{\Delta P}{P} \approx -D_{mod} \cdot \Delta y
             ''')
 
-        st.markdown("### Understanding Duration")
+        st.subheader("Understanding Duration")
         
         col_info1, col_info2, col_info3 = st.columns(3)
         
@@ -697,8 +697,8 @@ class BondCalculator:
                 - Always positive for non-callable bonds
             """)
         
-        st.markdown("---")
-        st.markdown("### Key Insights")
+        st.write("---")
+        st.subheader("Key Insights")
         
         insights = [
             "**Interest Rate Sensitivity**: Bond prices move inversely to interest rates",
@@ -713,7 +713,7 @@ class BondCalculator:
     
     def display_welcome(self):
         """Display welcome message when no calculation has been done"""
-        st.markdown(f'<h1 class="main-header">📈 Bond Price Calculator</h1>', unsafe_allow_html=True)
+        st.header("Bond Price Calculator)
         
         st.markdown("""
             ## Welcome to the Bond Calculator!
@@ -767,8 +767,8 @@ class BondCalculator:
             Try these values to get started!
             """)
         
-        st.markdown("---")
-        st.markdown("### Bond Pricing Concepts")
+        st.write("---")
+        st.subheader("Bond Pricing Concepts")
         
         concepts_col1, concepts_col2, concepts_col3 = st.columns(3)
         
