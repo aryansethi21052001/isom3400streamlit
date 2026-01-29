@@ -668,7 +668,7 @@ class BondCalculator:
             - $\Delta y$ = Change in yield
             """)
         
-        st.subheader("*Convexity Formula*")
+        st.subheader("Convexity Formula")
         
         col_conv1, col_conv2 = st.columns([2, 1])
         
@@ -715,7 +715,7 @@ class BondCalculator:
         
         st.write("---")
         
-        st.subheader("Understanding Duration and Convexity")
+        st.subheader("Understanding Duration & Convexity")
         
         col_info1, col_info2, col_info3 = st.columns(3)
         
