@@ -257,8 +257,8 @@ class BondCalculator:
             min_value=0.0,
             max_value=100.0,
             value=5.0,
-            step=0.1,
-            format="%.1f%%") / 100
+            step=1.0,
+            format="%.1f") / 100
         
         coupon_rate = 0.0
         if bond_type == "Coupon Bond":
@@ -268,7 +268,7 @@ class BondCalculator:
                 max_value=100.0,
                 value=3.5,
                 step=0.1,
-                format="%.1f%%") / 100
+                format="%.1f") / 100
         
         frequency = st.sidebar.selectbox(
             "Compounding/Payment Frequency",
