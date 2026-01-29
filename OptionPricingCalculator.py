@@ -312,18 +312,7 @@ elif page == "Calculator":
             - Green area: Profit zone
             - Red area: Loss zone
                 """)
-    else:
-        # Initial state when calculator is loaded
-        st.markdown("## Ready to Calculate")
-        st.markdown("""
-        Please configure all parameters in the sidebar and click 
-        **'Calculate Option Price'** to see the results here.
-        
-        You will see the:
-        - Theoretical Option Price
-        - Option Greeks
-        - Payoff Visualisation
-        """)
+    
 
 
     
