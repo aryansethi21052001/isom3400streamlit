@@ -34,7 +34,7 @@ if page == "Home":
     
     - Calculate theoretical prices for European call and put options  
     - Understand the Black-Scholes model in detail  
-    - Visualize option payoffs and Greeks  
+    - Visualise option payoffs and Greeks  
     - Make informed financial decisions  
     
     Options are financial derivatives that give the holder the right, but not the obligation, 
@@ -52,13 +52,13 @@ if page == "Home":
     st.markdown("""
     The model is based on these key assumptions:
     
-    1. **European Exercise**: Options can only be exercised at expiration
-    2. **No Dividends**: No dividends are paid during the option's life
-    3. **Efficient Markets**: No arbitrage opportunities exist
-    4. **Constant Parameters**: Risk-free rate and volatility are constant
-    5. **Lognormal Returns**: Stock returns follow a log-normal distribution
-    6. **Frictionless Markets**: No transaction costs or taxes
-    7. **Continuous Trading**: Trading occurs continuously
+    1. **European Exercise**: Options can only be exercised at expiration.
+    2. **No Dividends**: No dividends are paid during the option's life.
+    3. **Efficient Markets**: No arbitrage opportunities exist.
+    4. **Constant Parameters**: Risk-free rate and volatility are constant.
+    5. **Lognormal Returns**: Stock returns follow a log-normal distribution.
+    6. **Frictionless Markets**: No transaction costs or taxes.
+    7. **Continuous Trading**: Trading occurs continuously.
     """)
     
     col1, col2 = st.columns(2)
