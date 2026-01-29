@@ -105,8 +105,22 @@ if page == "Home":
     
     st.markdown("<h2 class='sub-header'>Option Greeks</h2>", unsafe_allow_html=True)
     
-    st.markdown('The "Greeks" measure the sensitivity of the option price to various factors:')
+    st.markdown("""
+    <div style="text-align: center;">
+    The "Greeks" measure the sensitivity of the option price to various factors:
+    </div>
+    """, unsafe_allow_html=True)
     
+    greek_cols = st.columns(5)
+    
+    greeks = [
+        ("Δ (Delta)", r"\frac{\partial V}{\partial S}", "Price sensitivity to underlying asset"),
+        ("Γ (Gamma)", r"\frac{\partial^2 V}{\partial S^2}", "Delta's sensitivity to price changes"),
+        ("Θ (Theta)", r"\frac{\partial V}{\partial t}", "Time decay of option value"),
+        ("ν (Vega)", r"\frac{\partial V}{\partial \sigma}", "Sensitivity to volatility changes"),
+        ("ρ (Rho)", r"\frac{\partial V}{\partial r}", "Sensitivity to interest rate changes")
+    ]
+
     st.markdown("""
     <style>
     div[data-testid="column"] {
@@ -115,39 +129,11 @@ if page == "Home":
     </style>
     """, unsafe_allow_html=True)
     
-    col1, col2, col3, col4 = st.columns([1, 1, 2, 3])
-    
-    # Header row
-    with col1:
-        st.markdown("**Greek**")
-    with col2:
-        st.markdown("**Symbol**")
-    with col3:
-        st.markdown("**Formula**")
-    with col4:
-        st.markdown("**Description**")
-        
-    st.markdown("---")
-    
-    # Data rows
-    greeks = [
-        ("Delta", "Δ", r"\frac{\partial V}{\partial S}", "Price sensitivity to underlying asset"),
-        ("Gamma", "Γ", r"\frac{\partial^2 V}{\partial S^2}", "Delta's sensitivity to price changes"),
-        ("Theta", "Θ", r"\frac{\partial V}{\partial t}", "Time decay of option value"),
-        ("Vega", "ν", r"\frac{\partial V}{\partial \sigma}", "Sensitivity to volatility changes"),
-        ("Rho", "ρ", r"\frac{\partial V}{\partial r}", "Sensitivity to interest rate changes")
-    ]
-    
-    for greek_name, symbol, formula, description in greeks:
-        col1, col2, col3, col4 = st.columns([1, 1, 2, 3])
-        with col1:
-            st.markdown(greek_name)
-        with col2:
-            st.markdown(symbol)
-        with col3:
+    for col, (name, formula, desc) in zip(greek_cols, greeks):
+        with col:
+            st.markdown(f"**{name}**")
             st.latex(formula)
-        with col4:
-            st.markdown(description)
+            st.caption(desc)
 
 # Calculator Page
 elif page == "Calculator":
