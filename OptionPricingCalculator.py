@@ -4,10 +4,8 @@ import matplotlib.pyplot as plt
 from scipy.stats import norm
 
 # Page configuration
-st.set_page_config(
-    page_title="Option Pricing Calculator",
-    layout="wide"
-)
+st.set_page_config(layout="wide")
+st.title("Black-Scholes Option Pricing Calculator", text_alignment="center")
 
 # Black-Scholes Formula Functions
 def black_scholes_call(S, K, T, r, sigma):
