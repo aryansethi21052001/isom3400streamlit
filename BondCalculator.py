@@ -597,7 +597,7 @@ class BondCalculator:
                 """)
         
         with col2:
-            st.subheader("Continuous Compounding Model")
+            st.subheader("*Continuous Compounding Model*")
             if params['bond_type'] == "Zero Coupon Bond":
                 st.latex(r'''
                 P = F \cdot e^{-r \cdot t}
@@ -630,7 +630,7 @@ class BondCalculator:
         col_dur1, col_dur2 = st.columns(2)
         
         with col_dur1:
-            st.subheader("Macaulay Duration")
+            st.subheader("*Macaulay Duration*")
             st.latex(r'''
             D_{mac} = \frac{\sum_{t=1}^{T} t \cdot PV(CF_t)}{P}
             ''')
@@ -644,7 +644,7 @@ class BondCalculator:
             """)
         
         with col_dur2:
-            st.subheader("Modified Duration")
+            st.subheader("*Modified Duration*")
             st.latex(r'''
             D_{mod} = \frac{D_{mac}}{1 + \frac{y}{m}}
             ''')
@@ -667,7 +667,7 @@ class BondCalculator:
         
         with col_info1:
             st.markdown("""
-            #### **Macaulay Duration**
+            #### *Macaulay Duration*
             - **Definition**: Weighted average time to receive cash flows
             - **Interpretation**: 
                 - Higher duration = More price sensitivity
@@ -677,7 +677,7 @@ class BondCalculator:
         
         with col_info2:
             st.markdown("""
-            #### **Modified Duration**
+            #### *Modified Duration*
             - **Definition**: Price sensitivity to yield changes
             - **Application**: 
                 - ΔPrice ≈ -Modified Duration × ΔYield × Price
@@ -687,7 +687,7 @@ class BondCalculator:
         
         with col_info3:
             st.markdown("""
-            #### **Convexity**
+            #### *Convexity*
             - **Definition**: Measures curvature of price-yield curve
             - **Importance**: 
                 - Adjusts duration for large yield changes
@@ -700,11 +700,11 @@ class BondCalculator:
         st.subheader("Key Insights")
         
         insights = [
-            "**Interest Rate Sensitivity**: Bond prices move inversely to interest rates",
-            "**Time Value**: Longer maturity bonds are more sensitive to rate changes",
-            "**Compounding Effect**: More frequent compounding leads to slightly lower prices",
-            "**Coupon Effect**: Higher coupon bonds are less sensitive to rate changes",
-            "**Model Difference**: Continuous compounding typically gives slightly different results than discrete"
+            "**Interest Rate Sensitivity**: Bond prices move inversely to interest rates.",
+            "**Time Value**: Longer maturity bonds are more sensitive to rate changes.",
+            "**Compounding Effect**: More frequent compounding leads to slightly lower prices.",
+            "**Coupon Effect**: Higher coupon bonds are less sensitive to rate changes.",
+            "**Model Difference**: Continuous compounding typically gives slightly different results than discrete."
         ]
         
         for insight in insights:
