@@ -204,21 +204,70 @@ elif page == "Calculator":
             option_formula = r"P = K e^{-rT} N(-d_2) - S_0 N(-d_1)"
         
         # Display result
+        st.markdown("""
+        <style>
+            .price-badge {
+                display: inline-block;
+                background: #f8f9fa;
+                padding: 5px 15px;
+                border-radius: 20px;
+                font-size: 0.8rem;
+                font-weight: 600;
+                color: #1E88E5;
+                border: 1px solid #e0e0e0;
+                margin-bottom: 15px;
+            }
+            .currency-symbol {
+                font-size: 2rem;
+                color: #666;
+                vertical-align: super;
+                margin-right: 5px;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+        
         st.markdown(f"""
         <div class='result-box'>
-        <div style='text-align: center; padding: 25px;'>
-        <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);'>
-            <div style='color: white; font-size: 1rem; font-weight: 600; letter-spacing: 1px; margin-bottom: 10px;'>
-                {option_type} OPTION PRICE
+            <div style='text-align: center; padding: 25px;'>
+                <div class='price-badge'>
+                    {option_type} Option • Black-Scholes Model
+                </div>
+                
+                <div style='margin: 25px 0;'>
+                    <div style='font-size: 0.9rem; color: #666; margin-bottom: 5px;'>
+                        Theoretical Price
+                    </div>
+                    <div style='display: flex; align-items: baseline; justify-content: center;'>
+                        <span class='currency-symbol'>$</span>
+                        <span style='font-size: 4rem; font-weight: 700; color: #0D47A1;'>
+                            {price:.4f}
+                        </span>
+                    </div>
+                </div>
+                
+                <div style='background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px;'>
+                    <div style='display: flex; justify-content: space-around;'>
+                        <div style='text-align: center;'>
+                            <div style='font-size: 0.8rem; color: #666;'>Moneyness</div>
+                            <div style='font-size: 1.1rem; font-weight: 600; color: #333;'>
+                                {"ITM" if (option_type == "Call" and S > K) or (option_type == "Put" and S < K) else "OTM" if (option_type == "Call" and S < K) or (option_type == "Put" and S > K) else "ATM"}
+                            </div>
+                        </div>
+                        <div style='text-align: center;'>
+                            <div style='font-size: 0.8rem; color: #666;'>Intrinsic Value</div>
+                            <div style='font-size: 1.1rem; font-weight: 600; color: #333;'>
+                                ${max(S-K, 0) if option_type == "Call" else max(K-S, 0):.4f}
+                            </div>
+                        </div>
+                        <div style='text-align: center;'>
+                            <div style='font-size: 0.8rem; color: #666;'>Time Value</div>
+                            <div style='font-size: 1.1rem; font-weight: 600; color: #333;'>
+                                ${price - max(S-K, 0) if option_type == "Call" else price - max(K-S, 0):.4f}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div style='color: white; font-size: 3.5rem; font-weight: 700; margin: 10px 0;'>
-                ${price:.2f}
-            </div>
-            <div style='color: rgba(255,255,255,0.9); font-size: 0.9rem;'>
-                Theoretical price based on Black-Scholes model
-            </div>
-        </div>
-        </div>
         </div>
         """, unsafe_allow_html=True)
         
