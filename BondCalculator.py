@@ -569,7 +569,7 @@ class BondCalculator:
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("Discrete Compounding Model")
+            st.subheader("*Discrete Compounding Model*")
             if params['bond_type'] == "Zero Coupon Bond":
                 st.latex(r'''
                 P = \frac{F}{(1 + \frac{r}{n})^{n \cdot t}}
@@ -597,7 +597,7 @@ class BondCalculator:
                 """)
         
         with col2:
-            st.subheader("Continuous Compounding Model")
+            st.subheader("*Continuous Compounding Model*")
             if params['bond_type'] == "Zero Coupon Bond":
                 st.latex(r'''
                 P = F \cdot e^{-r \cdot t}
@@ -624,13 +624,15 @@ class BondCalculator:
                 - $t$ = Time to maturity in years
                 - $m$ = Payments per year
                 """)
+
+        st.write("---")
         
         st.subheader("Duration Formulas")
         
-        col_dur1, col_dur2 = st.columns(2)
+        col_dur1, col_dur2, col_dur3 = st.columns(3)
         
         with col_dur1:
-            st.subheader("Macaulay Duration")
+            st.subheader("*Macaulay Duration*")
             st.latex(r'''
             D_{\text{mac}} = \frac{\sum_{t=1}^{T} t \cdot PV(CF_t)}{P}
             ''')
@@ -644,7 +646,7 @@ class BondCalculator:
             """)
         
         with col_dur2:
-            st.subheader("Modified Duration")
+            st.subheader("*Modified Duration*")
             st.latex(r'''
             D_{\text{mod}} = \frac{D_{\text{mac}}}{1 + \frac{y}{m}}
             ''')
@@ -654,9 +656,9 @@ class BondCalculator:
             - $D_{\text{mac}}$ = Macaulay Duration (years)
             - $y$ = Yield to maturity (annual)
             - $m$ = Number of compounding periods per year
-            
-            **Price Sensitivity:**
             """)
+        with col_dur3:
+            st.subheader("*Price Sensitivity:*")
             st.latex(r'''
             \frac{\Delta P}{P} \approx -D_{\text{mod}} \cdot \Delta y
             ''')
@@ -665,8 +667,8 @@ class BondCalculator:
             - $\Delta P$ = Change in bond price
             - $\Delta y$ = Change in yield
             """)
-    
-        st.subheader("Convexity Formula")
+        
+        st.subheader("*Convexity Formula*")
         
         col_conv1, col_conv2 = st.columns([2, 1])
         
@@ -710,42 +712,41 @@ class BondCalculator:
         - $P$ = Current bond price
         - $\Delta P$ = Total estimated price change
         """)
-    
+        
+        st.write("---")
+        
         st.subheader("Understanding Duration and Convexity")
         
         col_info1, col_info2, col_info3 = st.columns(3)
         
         with col_info1:
-            st.markdown(r"""
-            #### **Macaulay Duration**
+            st.markdown("""
+            #### *Macaulay Duration*
             - **Definition**: Weighted average time to receive cash flows
-            - **Formula**: $D_{\text{mac}} = \frac{\sum t \cdot PV(CF_t)}{P}$
             - **Interpretation**: 
-                - Higher $D_{\text{mac}}$ = More price sensitivity
-                - Zero-coupon bond: $D_{\text{mac}} = t$
-                - Coupon bond: $D_{\text{mac}} < t$
+                - Higher duration = More price sensitivity
+                - Zero-coupon bond duration = Maturity
+                - Coupon bond duration < Maturity
             """)
         
         with col_info2:
-            st.markdown(r"""
-            #### **Modified Duration**
+            st.markdown("""
+            #### *Modified Duration*
             - **Definition**: Price sensitivity to yield changes
-            - **Formula**: $D_{\text{mod}} = \frac{D_{\text{mac}}}{1 + \frac{y}{m}}$
             - **Application**: 
-                - $\Delta P \approx -D_{\text{mod}} \cdot \Delta y \cdot P$
-                - For 1% yield increase: Price $\downarrow$ by $D_{\text{mod}}$%
+                - ΔPrice ≈ -Modified Duration × ΔYield × Price
+                - For 1% yield increase: Price ↓ by Modified Duration %
                 - Key measure for interest rate risk
             """)
         
         with col_info3:
-            st.markdown(r"""
-            #### **Convexity**
+            st.markdown("""
+            #### *Convexity*
             - **Definition**: Measures curvature of price-yield curve
-            - **Formula**: $C = \frac{\sum t(t+1) \cdot PV(CF_t)}{P(1+\frac{y}{m})^2}$
             - **Importance**: 
                 - Adjusts duration for large yield changes
-                - Positive convexity: Price $\uparrow$ more than duration predicts
-                - Higher $C$ = Better risk-return profile
+                - Positive convexity = Price increases more than duration predicts
+                - Higher convexity = Better risk-return profile
                 - Always positive for non-callable bonds
             """)
         
@@ -753,27 +754,15 @@ class BondCalculator:
         st.subheader("Key Insights")
         
         insights = [
-            r"**Interest Rate Sensitivity**: Bond prices move inversely to interest rates: $\frac{\partial P}{\partial y} < 0$",
-            r"**Time Value**: Longer maturity bonds ($t \uparrow$) are more sensitive to rate changes",
-            r"**Compounding Effect**: More frequent compounding ($n \uparrow$) leads to slightly lower prices",
-            r"**Coupon Effect**: Higher coupon bonds ($C \uparrow$) are less sensitive to rate changes",
-            r"**Model Difference**: Continuous compounding ($e^{-rt}$) typically gives slightly different results than discrete ($(1+\frac{r}{n})^{-nt}$)"
+            "**Interest Rate Sensitivity**: Bond prices move inversely to interest rates.",
+            "**Time Value**: Longer maturity bonds are more sensitive to rate changes.",
+            "**Compounding Effect**: More frequent compounding leads to slightly lower prices.",
+            "**Coupon Effect**: Higher coupon bonds are less sensitive to rate changes.",
+            "**Model Difference**: Continuous compounding typically gives slightly different results than discrete."
         ]
         
         for insight in insights:
             st.markdown(f"- {insight}")
-        
-        # Add mathematical relationship summary
-        st.subheader("Mathematical Relationships")
-        st.markdown(r"""
-        **Summary of Key Relationships:**
-        
-        1. **Price-Yield Relationship**: $P \downarrow$ as $y \uparrow$
-        2. **Duration Effect**: $\frac{\Delta P}{P} \propto -D_{\text{mod}} \cdot \Delta y$
-        3. **Convexity Adjustment**: $\frac{\Delta P}{P} \propto \frac{1}{2}C \cdot (\Delta y)^2$
-        4. **Total Price Change**: $\Delta P = -D_{\text{mod}} \cdot \Delta y \cdot P + \frac{1}{2}C \cdot (\Delta y)^2 \cdot P$
-        5. **Frequency Impact**: As $n \rightarrow \infty$, discrete $\rightarrow$ continuous: $(1+\frac{r}{n})^{nt} \rightarrow e^{rt}$
-        """)
     
     def display_welcome(self):
         """Display welcome message when no calculation has been done"""
