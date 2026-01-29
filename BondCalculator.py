@@ -498,54 +498,58 @@ class BondCalculator:
             )
         
         st.markdown("##### Detailed Price Change Calculation")
-        
-        # Create a DataFrame display with formulas
-        calc_data = {
-            "Component": [
-                "Current Bond Price",
-                "Modified Duration",
-                "Convexity",
-                "Yield Change",
-                "Duration Effect",
-                "Convexity Effect",
-                "Total Price Change",
-                "Estimated New Price"
-            ],
-            "Value": [
-                f"${discrete_price:,.2f}",
-                f"{modified_duration:.2f}",
-                f"{convexity:.2f}",
-                f"{yield_change*100:+.2f}%",
-                self.format_currency(price_change_duration),
-                self.format_currency(price_change_convexity),
-                self.format_currency(total_price_change),
-                f"${new_price_estimate:,.2f}"
-            ]
-        }
-        
-        # Create DataFrame
-        calc_df = pd.DataFrame(calc_data)
-        
-        # Display the DataFrame
-        st.dataframe(calc_df, use_container_width=True, hide_index=True)
-        
-        # Display formulas separately
-        st.markdown("##### **Formulas Used**")
-        
-        st.markdown("""
-        - **Modified Duration**: $D_{mod} = \\frac{D_{mac}}{1 + \\frac{y}{m}}$
-        
-        - **Convexity**: $C = \\frac{\\sum_{t=1}^{T} t(t+\\frac{1}{m}) PV(CF_t)}{P(1+\\frac{y}{m})^2}$
-        
-        - **Duration Effect**: $\\Delta P_{duration} = -D_{mod} \\times \\Delta y \\times P$
-        
-        - **Convexity Effect**: $\\Delta P_{convexity} = 0.5 \\times C \\times (\\Delta y)^2 \\times P$
-        
-        - **Total Price Change**: $\\Delta P_{total} = \\Delta P_{duration} + \\Delta P_{convexity}$
-        
-        - **New Price**: $P_{new} = P + \\Delta P_{total}$
-        
-        """)
+
+        col_calc_data1, col_calc_data2 = st.columns(2)
+
+        with col_calc_data1:
+            # Create a DataFrame display with formulas
+            calc_data = {
+                "Component": [
+                    "Current Bond Price",
+                    "Modified Duration",
+                    "Convexity",
+                    "Yield Change",
+                    "Duration Effect",
+                    "Convexity Effect",
+                    "Total Price Change",
+                    "Estimated New Price"
+                ],
+                "Value": [
+                    f"${discrete_price:,.2f}",
+                    f"{modified_duration:.2f}",
+                    f"{convexity:.2f}",
+                    f"{yield_change*100:+.2f}%",
+                    self.format_currency(price_change_duration),
+                    self.format_currency(price_change_convexity),
+                    self.format_currency(total_price_change),
+                    f"${new_price_estimate:,.2f}"
+                ]
+            }
+            
+            # Create DataFrame
+            calc_df = pd.DataFrame(calc_data)
+            
+            # Display the DataFrame
+            st.dataframe(calc_df, use_container_width=True, hide_index=True)
+
+        with col_calc_data2:
+            # Display formulas separately
+            st.markdown("##### **Formulas Used**")
+            
+            st.markdown("""
+            - **Modified Duration**: $D_{mod} = \\frac{D_{mac}}{1 + \\frac{y}{m}}$
+            
+            - **Convexity**: $C = \\frac{\\sum_{t=1}^{T} t(t+\\frac{1}{m}) PV(CF_t)}{P(1+\\frac{y}{m})^2}$
+            
+            - **Duration Effect**: $\\Delta P_{duration} = -D_{mod} \\times \\Delta y \\times P$
+            
+            - **Convexity Effect**: $\\Delta P_{convexity} = 0.5 \\times C \\times (\\Delta y)^2 \\times P$
+            
+            - **Total Price Change**: $\\Delta P_{total} = \\Delta P_{duration} + \\Delta P_{convexity}$
+            
+            - **New Price**: $P_{new} = P + \\Delta P_{total}$
+            
+            """)
         
         st.markdown("### Key Insights")
         
