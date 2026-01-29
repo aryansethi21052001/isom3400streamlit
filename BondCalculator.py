@@ -717,8 +717,15 @@ class BondCalculator:
         st.title("Bond Price Calculator", text_alignment="center")
         
         st.markdown("""
-            ## Welcome to the Bond Calculator!
-            
+            ### **How to Use:**
+            1. Adjust parameters in the **sidebar**
+            2. Click **"Calculate Bond Price"**
+            3. Explore results in the **tabs below**
+            """)
+        
+        st.write("---")
+        
+        st.markdown("""
             This tool helps you calculate bond prices using two different models:
             
             ### 🔷 **Discrete Compounding Model**
@@ -751,24 +758,8 @@ class BondCalculator:
             6. **Risk Assessment**: Measure interest rate sensitivity
             7. **Convexity**: Account for non-linear price-yield relationship
             8. **Price Sensitivity**: Estimate price changes for yield shifts
-            
-            ### **How to Use:**
-            1. Adjust parameters in the **sidebar**
-            2. Click **"Calculate Bond Price"**
-            3. Explore results in the **tabs below**
             """)
-        
-        st.markdown("""
-            ### Example Parameters
-            - **Principal**: $1,000
-            - **Maturity**: 5 years
-            - **Interest Rate**: 5%
-            - **Frequency**: Annual
             
-            Try these values to get started!
-            """)
-        
-        st.write("---")
         st.subheader("Bond Pricing Concepts")
         
         concepts_col1, concepts_col2, concepts_col3 = st.columns(3)
