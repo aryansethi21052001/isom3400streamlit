@@ -19,7 +19,6 @@ def black_scholes_put(S, K, T, r, sigma):
     return put_price, d1, d2
 
 # Page configuration
-st.set_page_config(layout="wide")
 st.title("Black-Scholes Option Pricing Calculator", text_alignment="center")
 
 # Navigation
