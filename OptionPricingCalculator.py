@@ -26,7 +26,7 @@ st.title("Black-Scholes Option Pricing Calculator", text_alignment="center")
 with st.sidebar:
     st.title("Navigation")
 
-     st.markdown("""
+    st.markdown("""
     <style>
         /* Disable typing in selectbox */
         div[data-testid="stSelectbox"] input {
