@@ -2,7 +2,6 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm
-import time
 
 # Page configuration
 st.set_page_config(
@@ -239,7 +238,6 @@ elif page == "Calculator":
         # Calculate and display option price
         if st.button("Calculate Option Price", type="primary"):
             with st.spinner("Calculating..."):
-                time.sleep(0.5)  # Simulate calculation time
                 
                 if option_type == "Call":
                     price = black_scholes_call(S, K, T, r, sigma)
@@ -408,7 +406,6 @@ elif page == "Monte Carlo Simulation":
                 
                 # Simulate progress
                 for i in range(100):
-                    time.sleep(0.01)
                     progress_bar.progress(i + 1)
                 
                 # Actual simulation
