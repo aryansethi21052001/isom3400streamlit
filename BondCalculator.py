@@ -313,7 +313,7 @@ class BondCalculator:
         price_diff = continuous_price - discrete_price
         price_diff_pct = (price_diff / discrete_price) * 100 if discrete_price != 0 else 0
         
-        st.header("Bond Price Calculator", text_alignment="center")
+        st.title("Bond Price Calculator", text_alignment="center")
         
         col1, col2 = st.columns([2, 1])
         
