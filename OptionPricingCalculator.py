@@ -204,6 +204,7 @@ with tab2:
         r = st.number_input(
             "**Risk-Free Rate (r)**",
             min_value=0.0,
+            max_value=1.0,
             value=0.05,
             step=0.01,
             help="Annual risk-free interest rate (e.g., 0.05 for 5%)."
