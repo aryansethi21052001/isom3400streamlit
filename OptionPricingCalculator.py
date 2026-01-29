@@ -351,7 +351,7 @@ elif page == "Calculator":
             st.markdown(f"""
             **Profit/Loss Analysis:**
             
-            - **Maximum Loss**: ${max_loss:.2f} (premium paid)
+            - **Maximum Loss**: {max_loss:.2f} (premium paid)
             - **Maximum Profit**: {max_profit}
             - **Breakeven**: {breakeven_explanation}
             - **Moneyness**: {"In-The-Money (ITM)" if (option_type == "Call" and S > K) or (option_type == "Put" and S < K) else "Out-of-The-Money (OTM)" if (option_type == "Call" and S < K) or (option_type == "Put" and S > K) else "At-The-Money (ATM)"}
