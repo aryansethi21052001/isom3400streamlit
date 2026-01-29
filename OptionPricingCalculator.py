@@ -207,13 +207,13 @@ elif page == "Calculator":
         st.markdown(f"""
         <div style='text-align: center; background: linear-gradient(135deg, #1E88E5, #0D47A1); padding: 30px; border-radius: 12px; margin: 20px 0;'>
             <div style='color: white; font-size: 1.1rem; margin-bottom: 10px;'>
-                {option_type} OPTION
+                {option_type} Option Price
             </div>
             <div style='color: white; font-size: 4rem; font-weight: bold; margin: 20px 0;'>
                 ${price:.2f}
             </div>
             <div style='color: rgba(255,255,255,0.9); font-size: 0.9rem;'>
-                Theoretical Price
+                Theoretical Price based on the Black-Scholes Model
             </div>
         </div>
         """, unsafe_allow_html=True)
