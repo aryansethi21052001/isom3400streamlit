@@ -122,18 +122,18 @@ if page == "Home":
     col1, col2 = st.columns(2)
     with col1:
         st.markdown("**Call Option:**")
-        st.latex(r"\text{Intrinsic Value} = \max(0, S - K)")
+        st.latex(r"C_{\text{IV}} = \max(0, S - K)")
         
     with col2:
         st.markdown("**Put Option:**")
-        st.latex(r"\text{Intrinsic Value} = \max(0, K - S)")
+        st.latex(r"\C_{\text{IV}} = \max(0, K - S)")
     
     st.markdown("""
     **Where:**
     - **$S$** = Current Stock Price
     - **$K$** = Strike Price
-    - **Intrinsic Value** = Immediate profit if exercised now
-    - **Time Value** = Premium for potential future price movement (Option Price = Intrinsic Value + Time Value)
+    - **$C_{\text{IV}}$** = Call Intrinsic Value
+    - **$P_{\text{IV}}$** = Put Intrinsic Value
     """)
 
     st.markdown("<h2 class='sub-header'>Option Greeks</h2>", unsafe_allow_html=True)
