@@ -243,7 +243,7 @@ class BondCalculator:
             format="%.2f"
         )
         
-        maturity = st.sidebar.slider(
+        maturity = st.sidebar.number_input(
             "Time to Maturity (years)",
             min_value=1.0,
             max_value=100.0,
@@ -252,7 +252,7 @@ class BondCalculator:
             format="%.1f"
         )
         
-        interest_rate = st.sidebar.slider(
+        interest_rate = st.sidebar.number_input(
             "Annual Interest Rate (Yield)",
             min_value=0.0,
             max_value=100.0,
@@ -263,7 +263,7 @@ class BondCalculator:
         
         coupon_rate = 0.0
         if bond_type == "Coupon Bond":
-            coupon_rate = st.sidebar.slider(
+            coupon_rate = st.sidebar.number_input(
                 "Annual Coupon Rate",
                 min_value=0.0,
                 max_value=100.0,
