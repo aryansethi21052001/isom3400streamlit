@@ -5,92 +5,9 @@ from scipy.stats import norm
 
 # Page configuration
 st.set_page_config(
-    page_title="Black-Scholes Option Pricing Calculator",
-    page_icon="📈",
+    page_title="Option Pricing Calculator",
     layout="wide"
 )
-
-# Custom CSS for better styling
-st.markdown("""
-<style>
-    .main-header {
-        font-size: 2.5rem;
-        color: #1E88E5;
-        text-align: center;
-        margin-bottom: 2rem;
-        font-weight: bold;
-    }
-    .sub-header {
-        font-size: 1.8rem;
-        color: #0D47A1;
-        margin-top: 2rem;
-        margin-bottom: 1.5rem;
-        font-weight: 600;
-        border-bottom: 2px solid #1E88E5;
-        padding-bottom: 0.5rem;
-    }
-    .section-header {
-        font-size: 1.4rem;
-        color: #1565C0;
-        margin-top: 1.5rem;
-        margin-bottom: 1rem;
-        font-weight: 600;
-    }
-    .formula-container {
-        background-color: #f8f9fa;
-        padding: 20px;
-        border-radius: 10px;
-        border-left: 5px solid #1E88E5;
-        margin: 15px 0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .result-box {
-        background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
-        padding: 20px;
-        border-radius: 10px;
-        border: 2px solid #1E88E5;
-        text-align: center;
-        margin: 20px 0;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .info-box {
-        background-color: #FFF3E0;
-        padding: 15px;
-        border-radius: 10px;
-        border-left: 4px solid #FF9800;
-        margin: 10px 0;
-    }
-    .parameter-box {
-        background-color: #f5f5f5;
-        padding: 15px;
-        border-radius: 8px;
-        margin: 10px 0;
-        border: 1px solid #e0e0e0;
-    }
-    .stButton > button {
-        background-color: #1E88E5;
-        color: white;
-        font-weight: bold;
-        padding: 10px 24px;
-        border-radius: 5px;
-        border: none;
-        width: 100%;
-        transition: all 0.3s ease;
-    }
-    .stButton > button:hover {
-        background-color: #0D47A1;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-    .latex-formula {
-        font-size: 1.1rem;
-        padding: 10px;
-        background-color: #f8f9fa;
-        border-radius: 5px;
-        margin: 10px 0;
-    }
-</style>
-""", unsafe_allow_html=True)
 
 # Black-Scholes Formula Functions
 def black_scholes_call(S, K, T, r, sigma):
@@ -108,67 +25,51 @@ def black_scholes_put(S, K, T, r, sigma):
     return put_price, d1, d2
 
 # Sidebar for navigation
-st.sidebar.title("📊 Navigation")
-page = st.sidebar.radio("", ["🏠 Home", "🧮 Calculator", "ℹ️ How to Use"])
+st.sidebar.title("Navigation")
+page = st.sidebar.radio("", ["Home", "Calculator"])
 
 # Home Page
-if page == "🏠 Home":
+if page == "Home":
     st.markdown("<h1 class='main-header'>Black-Scholes Option Pricing Calculator</h1>", unsafe_allow_html=True)
+
+    st.markdown("<h2 class='sub-header'>Introduction</h2>", unsafe_allow_html=True)
+    st.write("""
+    Welcome to the **Black-Scholes Option Pricing Calculator**! This professional tool allows you to:
     
-    col1, col2 = st.columns([2, 1])
+    - Calculate theoretical prices for European call and put options  
+    - Understand the Black-Scholes model in detail  
+    - Visualize option payoffs and Greeks  
+    - Make informed financial decisions  
     
-    with col1:
-        st.markdown("<h2 class='sub-header'>Introduction</h2>", unsafe_allow_html=True)
-        st.write("""
-        Welcome to the **Black-Scholes Option Pricing Calculator**! This professional tool allows you to:
-        
-        ✅ Calculate theoretical prices for European call and put options  
-        ✅ Understand the Black-Scholes model in detail  
-        ✅ Visualize option payoffs and Greeks  
-        ✅ Make informed financial decisions  
-        
-        Options are financial derivatives that give the holder the right, but not the obligation, 
-        to buy or sell an underlying asset at a specified price (strike price) on or before a certain date (expiration).
-        """)
-        
-        st.markdown("<h2 class='sub-header'>About the Black-Scholes Model</h2>", unsafe_allow_html=True)
-        
-        st.markdown("""
-        The **Black-Scholes model**, developed by Fischer Black and Myron Scholes in 1973, is a groundbreaking 
-        mathematical model for pricing European-style options. It revolutionized the field of quantitative finance 
-        and earned Scholes and Robert Merton the 1997 Nobel Prize in Economics.
-        """)
-        
-        with st.expander("📋 Model Assumptions", expanded=False):
-            st.markdown("""
-            The model is based on these key assumptions:
-            
-            1. **European Exercise**: Options can only be exercised at expiration
-            2. **No Dividends**: No dividends are paid during the option's life
-            3. **Efficient Markets**: No arbitrage opportunities exist
-            4. **Constant Parameters**: Risk-free rate and volatility are constant
-            5. **Lognormal Returns**: Stock returns follow a log-normal distribution
-            6. **Frictionless Markets**: No transaction costs or taxes
-            7. **Continuous Trading**: Trading occurs continuously
-            """)
+    Options are financial derivatives that give the holder the right, but not the obligation, 
+    to buy or sell an underlying asset at a specified price (strike price) on or before a certain date (expiration).
+    """)
     
-    with col2:
-        st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Black-scholes-formulae.svg/800px-Black-scholes-formulae.svg.png", 
-                caption="Black-Scholes Formula Visualization", use_column_width=True)
-        
-        st.markdown("<div class='info-box'>", unsafe_allow_html=True)
-        st.markdown("**💡 Did You Know?**")
-        st.markdown("The Black-Scholes model was first published in *The Journal of Political Economy* in 1973.")
-        st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("<h2 class='sub-header'>About the Black-Scholes Model</h2>", unsafe_allow_html=True)
     
-    st.markdown("<h2 class='sub-header'>The Black-Scholes Formulas</h2>", unsafe_allow_html=True)
+    st.markdown("""
+    The **Black-Scholes model**, developed by Fischer Black and Myron Scholes in 1973, is a groundbreaking 
+    mathematical model for pricing European-style options. It revolutionized the field of quantitative finance 
+    and earned Scholes and Robert Merton the 1997 Nobel Prize in Economics.
+    """)
+    
+    st.markdown("<h3 class='sub-header'>About the Black-Scholes Model</h3>", unsafe_allow_html=True)
+    st.markdown("""
+    The model is based on these key assumptions:
+    
+    1. **European Exercise**: Options can only be exercised at expiration
+    2. **No Dividends**: No dividends are paid during the option's life
+    3. **Efficient Markets**: No arbitrage opportunities exist
+    4. **Constant Parameters**: Risk-free rate and volatility are constant
+    5. **Lognormal Returns**: Stock returns follow a log-normal distribution
+    6. **Frictionless Markets**: No transaction costs or taxes
+    7. **Continuous Trading**: Trading occurs continuously
+    """)
     
     col1, col2 = st.columns(2)
     
     with col1:
         st.markdown("<h3 class='section-header'>Call Option Formula</h3>", unsafe_allow_html=True)
-        
-        st.markdown("<div class='formula-container'>", unsafe_allow_html=True)
         st.latex(r"C = S_0 N(d_1) - K e^{-rT} N(d_2)")
         st.markdown("</div>", unsafe_allow_html=True)
         
@@ -187,8 +88,6 @@ if page == "🏠 Home":
     
     with col2:
         st.markdown("<h3 class='section-header'>Put Option Formula</h3>", unsafe_allow_html=True)
-        
-        st.markdown("<div class='formula-container'>", unsafe_allow_html=True)
         st.latex(r"P = K e^{-rT} N(-d_2) - S_0 N(-d_1)")
         st.markdown("</div>", unsafe_allow_html=True)
         
@@ -213,11 +112,11 @@ if page == "🏠 Home":
     
     greek_cols = st.columns(5)
     greeks = [
-        ("Δ Delta", r"\frac{\partial V}{\partial S}", "Price sensitivity to underlying asset"),
-        ("Γ Gamma", r"\frac{\partial^2 V}{\partial S^2}", "Delta's sensitivity to price changes"),
-        ("Θ Theta", r"\frac{\partial V}{\partial t}", "Time decay of option value"),
-        ("ν Vega", r"\frac{\partial V}{\partial \sigma}", "Sensitivity to volatility changes"),
-        ("ρ Rho", r"\frac{\partial V}{\partial r}", "Sensitivity to interest rate changes")
+        ("Δ (Delta)", r"\frac{\partial V}{\partial S}", "Price sensitivity to underlying asset"),
+        ("Γ (Gamma)", r"\frac{\partial^2 V}{\partial S^2}", "Delta's sensitivity to price changes"),
+        ("Θ (Theta)", r"\frac{\partial V}{\partial t}", "Time decay of option value"),
+        ("ν (Vega)", r"\frac{\partial V}{\partial \sigma}", "Sensitivity to volatility changes"),
+        ("ρ (Rho)", r"\frac{\partial V}{\partial r}", "Sensitivity to interest rate changes")
     ]
     
     for col, (name, formula, desc) in zip(greek_cols, greeks):
@@ -226,113 +125,59 @@ if page == "🏠 Home":
             st.latex(formula)
             st.caption(desc)
 
-# How to Use Page
-elif page == "ℹ️ How to Use":
-    st.markdown("<h1 class='main-header'>How to Use the Calculator</h1>", unsafe_allow_html=True)
-    
-    st.markdown("""
-    Follow these simple steps to calculate option prices:
-    """)
-    
-    steps = [
-        ("1️⃣ Navigate to Calculator", "Click on '🧮 Calculator' in the sidebar navigation."),
-        ("2️⃣ Select Option Type", "Choose between 'Call' or 'Put' option."),
-        ("3️⃣ Enter Parameters", "Fill in all required input fields in the sidebar."),
-        ("4️⃣ Click Calculate", "Press the 'Calculate Option Price' button."),
-        ("5️⃣ View Results", "Check the calculated price and visualize the results.")
-    ]
-    
-    for step, description in steps:
-        st.markdown(f"### {step}")
-        st.markdown(f"{description}")
-        st.markdown("---")
-    
-    st.markdown("<h2 class='sub-header'>Parameter Guide</h2>", unsafe_allow_html=True)
-    
-    parameters = {
-        "Stock Price (S)": "Current price of the underlying stock/asset",
-        "Strike Price (K)": "Price at which the option can be exercised",
-        "Time to Expiration (T)": "Time remaining until option expiry in years",
-        "Risk-Free Rate (r)": "Annualized risk-free interest rate (as decimal)",
-        "Volatility (σ)": "Annualized standard deviation of stock returns (as decimal)"
-    }
-    
-    for param, desc in parameters.items():
-        st.markdown(f"**{param}**")
-        st.markdown(f"{desc}")
-        st.markdown("")
-
 # Calculator Page
-elif page == "🧮 Calculator":
+elif page == "Calculator":
     st.markdown("<h1 class='main-header'>Option Pricing Calculator</h1>", unsafe_allow_html=True)
     
     # Instructions at the top
-    st.markdown("<div class='info-box'>", unsafe_allow_html=True)
-    st.markdown("**📝 Instructions:** Fill in all parameters in the sidebar and click 'Calculate Option Price' to compute the theoretical option value.")
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("**Instructions:** Fill in all parameters in the sidebar and click 'Calculate Option Price' to compute the theoretical option value.")
     
     # Input parameters in sidebar - ONE PER ROW
     with st.sidebar:
-        st.markdown("### ⚙️ Input Parameters")
-        st.markdown("---")
+        st.markdown("### Input Parameters")
         
         # Option Type
         option_type = st.selectbox(
             "**Option Type**",
             ["Call", "Put"],
-            help="Select Call for right to buy, Put for right to sell"
+            help="Select 'Call' for right to buy, 'Put' for right to sell."
         )
-        
-        st.markdown("---")
         
         # Stock Price
         S = st.number_input(
-            "**Stock Price (S)**",
+            "**Asset Price (S)**",
             min_value=0.01,
-            max_value=10000.0,
             value=100.0,
             step=1.0,
-            help="Current market price of the underlying asset"
+            help="Current market price of the underlying asset."
         )
-        
-        st.markdown("---")
         
         # Strike Price
         K = st.number_input(
             "**Strike Price (K)**",
             min_value=0.01,
-            max_value=10000.0,
             value=100.0,
             step=1.0,
-            help="Price at which the option can be exercised"
+            help="Price at which the option can be exercised."
         )
-        
-        st.markdown("---")
         
         # Time to Expiration
         T = st.number_input(
             "**Time to Expiration (T in years)**",
             min_value=0.01,
-            max_value=50.0,
             value=1.0,
             step=0.25,
-            help="Time remaining until the option expires"
+            help="Time remaining until the option expires."
         )
-        
-        st.markdown("---")
         
         # Risk-Free Rate
         r = st.number_input(
             "**Risk-Free Rate (r)**",
             min_value=0.0,
-            max_value=1.0,
             value=0.05,
             step=0.01,
-            format="%.3f",
-            help="Annual risk-free interest rate (e.g., 0.05 for 5%)"
+            help="Annual risk-free interest rate (e.g., 0.05 for 5%)."
         )
-        
-        st.markdown("---")
         
         # Volatility
         sigma = st.slider(
@@ -341,122 +186,70 @@ elif page == "🧮 Calculator":
             max_value=1.0,
             value=0.2,
             step=0.01,
-            help="Annualized volatility of the underlying asset (e.g., 0.2 for 20%)"
+            help="Annualised volatility of the underlying asset (e.g., 0.2 for 20%)."
         )
-        
-        st.markdown("---")
         
         # Calculate button in sidebar
         calculate_button = st.button(
-            "📊 Calculate Option Price",
+            "Calculate Option Price",
             type="primary",
             use_container_width=True
         )
     
     # Main content area
-    col1, col2 = st.columns([1, 1])
-    
-    with col1:
-        st.markdown("<h2 class='section-header'>📋 Parameters Summary</h2>", unsafe_allow_html=True)
-        
-        # Display parameters in a nice format
-        params_data = {
-            "Option Type": option_type,
-            "Stock Price (S)": f"${S:.2f}",
-            "Strike Price (K)": f"${K:.2f}",
-            "Time to Expiration (T)": f"{T:.2f} years",
-            "Risk-Free Rate (r)": f"{r*100:.2f}%",
-            "Volatility (σ)": f"{sigma*100:.2f}%"
-        }
-        
-        for param, value in params_data.items():
-            st.markdown(f"<div class='parameter-box'><strong>{param}:</strong> {value}</div>", unsafe_allow_html=True)
-    
-    with col2:
-        if calculate_button:
-            st.markdown("<h2 class='section-header'>📈 Calculation Results</h2>", unsafe_allow_html=True)
-            
-            # Calculate option price
-            if option_type == "Call":
-                price, d1, d2 = black_scholes_call(S, K, T, r, sigma)
-                option_formula = r"C = S_0 N(d_1) - K e^{-rT} N(d_2)"
-            else:
-                price, d1, d2 = black_scholes_put(S, K, T, r, sigma)
-                option_formula = r"P = K e^{-rT} N(-d_2) - S_0 N(-d_1)"
-            
-            # Display result
-            st.markdown(f"""
-            <div class='result-box'>
-                <h3 style='color: #0D47A1; margin: 0; font-size: 1.5rem;'>{option_type} Option Price</h3>
-                <h1 style='color: #1E88E5; margin: 15px 0; font-size: 3rem;'>${price:.4f}</h1>
-                <p style='color: #666; margin: 0; font-size: 1rem;'>Theoretical price based on Black-Scholes model</p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Show formula with calculated values
-            st.markdown("<h3 class='section-header'>🔢 Calculation Details</h3>", unsafe_allow_html=True)
-            
-            st.latex(r"d_1 = \frac{\ln(S/K) + (r + \sigma^2/2)T}{\sigma\sqrt{T}}")
-            st.latex(r"d_2 = d_1 - \sigma\sqrt{T}")
-            
-            col_d1, col_d2 = st.columns(2)
-            with col_d1:
-                st.metric("d₁ Value", f"{d1:.4f}")
-            with col_d2:
-                st.metric("d₂ Value", f"{d2:.4f}")
-            
-            st.latex(option_formula)
-            
-            # Display Greeks
-            st.markdown("<h3 class='section-header'>📊 Option Greeks</h3>", unsafe_allow_html=True)
-            
-            # Calculate Greeks
-            if option_type == "Call":
-                delta = norm.cdf(d1)
-                gamma = norm.pdf(d1) / (S * sigma * np.sqrt(T))
-                theta = (-(S * norm.pdf(d1) * sigma) / (2 * np.sqrt(T)) - r * K * np.exp(-r * T) * norm.cdf(d2)) / 365
-            else:
-                delta = norm.cdf(d1) - 1
-                gamma = norm.pdf(d1) / (S * sigma * np.sqrt(T))
-                theta = (-(S * norm.pdf(d1) * sigma) / (2 * np.sqrt(T)) + r * K * np.exp(-r * T) * norm.cdf(-d2)) / 365
-            
-            vega = S * norm.pdf(d1) * np.sqrt(T) * 0.01
-            rho = K * T * np.exp(-r * T) * (norm.cdf(d2) if option_type == "Call" else norm.cdf(-d2)) * 0.01
-            
-            # Display Greeks in columns
-            greek_cols = st.columns(5)
-            greeks_data = [
-                ("Δ Delta", f"{delta:.4f}", "Price sensitivity"),
-                ("Γ Gamma", f"{gamma:.4f}", "Delta sensitivity"),
-                ("Θ Theta", f"{theta:.4f}", "Daily time decay"),
-                ("ν Vega", f"{vega:.4f}", "Volatility sensitivity"),
-                ("ρ Rho", f"{rho:.4f}", "Interest rate sensitivity")
-            ]
-            
-            for col, (name, value, desc) in zip(greek_cols, greeks_data):
-                with col:
-                    st.metric(label=name, value=value)
-                    st.caption(desc)
-        else:
-            # Initial state when calculator is loaded
-            st.markdown("<div class='info-box'>", unsafe_allow_html=True)
-            st.markdown("## ⏳ Ready to Calculate")
-            st.markdown("""
-            Please configure all parameters in the sidebar and click 
-            **'Calculate Option Price'** to see the results here.
-            
-            You will see:
-            - Theoretical option price
-            - Calculation details
-            - Option Greeks (sensitivities)
-            - Payoff visualization
-            """)
-            st.markdown("</div>", unsafe_allow_html=True)
-    
-    # Visualization (always shown when calculation is done)
     if calculate_button:
-        st.markdown("<h2 class='sub-header'>📊 Payoff Visualization</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 class='section-header'>Calculation Results</h2>", unsafe_allow_html=True)
         
+        # Calculate option price
+        if option_type == "Call":
+            price, d1, d2 = black_scholes_call(S, K, T, r, sigma)
+            option_formula = r"C = S_0 N(d_1) - K e^{-rT} N(d_2)"
+        else:
+            price, d1, d2 = black_scholes_put(S, K, T, r, sigma)
+            option_formula = r"P = K e^{-rT} N(-d_2) - S_0 N(-d_1)"
+        
+        # Display result
+        st.markdown(f"""
+        <div class='result-box'>
+            <h3 style='color: #0D47A1; margin: 0; font-size: 1.5rem;'>{option_type} Option Price</h3>
+            <h1 style='color: #1E88E5; margin: 15px 0; font-size: 3rem;'>${price:.2f}</h1>
+            <p style='color: #666; margin: 0; font-size: 1rem;'>Theoretical price based on the Black-Scholes model</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Display Greeks
+        st.markdown("<h3 class='section-header'>Option Greeks</h3>", unsafe_allow_html=True)
+        
+        # Calculate Greeks
+        if option_type == "Call":
+            delta = norm.cdf(d1)
+            gamma = norm.pdf(d1) / (S * sigma * np.sqrt(T))
+            theta = (-(S * norm.pdf(d1) * sigma) / (2 * np.sqrt(T)) - r * K * np.exp(-r * T) * norm.cdf(d2)) / 365
+        else:
+            delta = norm.cdf(d1) - 1
+            gamma = norm.pdf(d1) / (S * sigma * np.sqrt(T))
+            theta = (-(S * norm.pdf(d1) * sigma) / (2 * np.sqrt(T)) + r * K * np.exp(-r * T) * norm.cdf(-d2)) / 365
+        
+        vega = S * norm.pdf(d1) * np.sqrt(T) * 0.01
+        rho = K * T * np.exp(-r * T) * (norm.cdf(d2) if option_type == "Call" else norm.cdf(-d2)) * 0.01
+        
+        # Display Greeks in columns
+        greek_cols = st.columns(5)
+        greeks_data = [
+            ("Δ (Delta)", f"{delta:.2f}", "Price sensitivity"),
+            ("Γ (Gamma)", f"{gamma:.2f}", "Delta sensitivity"),
+            ("Θ (Theta)", f"{theta:.2f}", "Daily time decay"),
+            ("ν (Vega)", f"{vega:.2f}", "Volatility sensitivity"),
+            ("ρ (Rho)", f"{rho:.2f}", "Interest rate sensitivity")
+        ]
+        
+        for col, (name, value, desc) in zip(greek_cols, greeks_data):
+            with col:
+                st.metric(label=name, value=value)
+                st.caption(desc)
+
+        st.markdown("<h2 class='sub-header'>📊 Payoff Visualization</h2>", unsafe_allow_html=True)
+    
         # Create payoff diagram
         spot_prices = np.linspace(S * 0.5, S * 1.5, 200)
         
@@ -521,16 +314,19 @@ elif page == "🧮 Calculator":
             - Shows actual profit/loss including premium
             - Green area: Profit zone
             - Red area: Loss zone
-            """)
+                """)
+    else:
+        # Initial state when calculator is loaded
+        st.markdown("## Ready to Calculate")
+        st.markdown("""
+        Please configure all parameters in the sidebar and click 
+        **'Calculate Option Price'** to see the results here.
+        
+        You will see the:
+        - Theoretical Option Price
+        - Option Greeks
+        - Payoff Visualisation
+        """)
 
-# Footer
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 📚 About")
-st.sidebar.info("""
-**Black-Scholes Calculator v1.0**
 
-A professional tool for calculating European option prices using the Black-Scholes model.
-
-**Educational Purpose:**
-This calculator is designed for educational and analytical purposes only.
-""")
+    
