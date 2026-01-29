@@ -748,6 +748,8 @@ class BondCalculator:
                 P = \sum_{i=1}^{m \cdot t} C \cdot e^{-r \cdot t_i} + F \cdot e^{-r \cdot t}
                 ''')
         
+        st.write("---")
+        
         st.markdown("""    
             ### **Features:**
             1. **Zero Coupon Bonds**: Calculate prices for bonds with no periodic interest payments
@@ -759,7 +761,9 @@ class BondCalculator:
             7. **Convexity**: Account for non-linear price-yield relationship
             8. **Price Sensitivity**: Estimate price changes for yield shifts
             """)
-            
+        
+        st.write("---")    
+        
         st.subheader("Bond Pricing Concepts")
         
         concepts_col1, concepts_col2, concepts_col3 = st.columns(3)
