@@ -291,7 +291,7 @@ elif page == "Calculator":
         ax1.legend(loc='best')
         ax1.grid(True, alpha=0.3)
         
-        # Plot 2: Profit/Loss Diagram (Accounting for Premium)
+       # Plot 2: Profit/Loss Diagram (Accounting for Premium)
         ax2.plot(spot_prices, profit_loss, color='purple', linewidth=3, label='Net Profit/Loss', alpha=0.8)
         ax2.fill_between(spot_prices, profit_loss, where=profit_loss>=0, alpha=0.2, color='green', label='Profit Zone')
         ax2.fill_between(spot_prices, profit_loss, where=profit_loss<0, alpha=0.2, color='red', label='Loss Zone')
@@ -306,15 +306,15 @@ elif page == "Calculator":
         ax2.axhline(y=-price, color='gray', linestyle=':', alpha=0.5, linewidth=1.5, 
                    label=f'Max Loss: -${price:.2f}')
         
-        # Add maximum profit annotation for calls
+        # Add maximum profit line and include in legend
         if option_type == "Call":
-            ax2.axhline(y=spot_prices[-1] - K - price, color='darkgreen', linestyle=':', alpha=0.3, linewidth=1)
-            ax2.text(spot_prices[-1]*0.95, spot_prices[-1] - K - price + 0.1, 
-                    f'Max Profit: ∞', fontsize=10, ha='right', color='darkgreen')
+            # For calls, max profit is theoretically unlimited, so show as asymptotic
+            ax2.axhline(y=spot_prices[-1] - K - price, color='darkgreen', linestyle=':', alpha=0.3, linewidth=1,
+                       label='Max Profit: Unlimited')
         else:  # Put option
-            ax2.axhline(y=K - spot_prices[0] - price, color='darkgreen', linestyle=':', alpha=0.3, linewidth=1)
-            ax2.text(spot_prices[0]*1.05, K - spot_prices[0] - price + 0.1, 
-                    f'Max Profit: ${K - spot_prices[0] - price:.2f}', fontsize=10, ha='left', color='darkgreen')
+            max_profit_value = K - spot_prices[0] - price
+            ax2.axhline(y=max_profit_value, color='darkgreen', linestyle=':', alpha=0.3, linewidth=1,
+                       label=f'Max Profit: ${max_profit_value:.2f}')
         
         ax2.set_xlabel('Stock Price at Expiration ($)', fontsize=12)
         ax2.set_ylabel('Net Profit/Loss ($)', fontsize=12)
@@ -336,7 +336,7 @@ elif page == "Calculator":
             - **Breakeven Price**: ${breakeven_price:.2f}
             - **Option Premium**: ${price:.2f}
             
-            *The payoff shows the option's value at expiration without considering the premium paid.*
+            *The payoff shows the option's value at expiration without \nconsidering the premium paid.*
             """)
         
         with col_exp2:
