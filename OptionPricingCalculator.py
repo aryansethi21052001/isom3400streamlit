@@ -117,7 +117,7 @@ if page == "Home":
     
     # Add formulas with st.latex()
     st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("## **Intrinsic Value Formulas:**")
+    st.markdown("### **Intrinsic Value Formulas:**")
     
     col1, col2 = st.columns(2)
     with col1:
