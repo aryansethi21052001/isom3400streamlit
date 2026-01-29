@@ -205,15 +205,15 @@ elif page == "Calculator":
         
         # Display result
         st.markdown(f"""
-        <div style='text-align: center; background: white; padding: 25px; border-radius: 10px; border: 2px solid #e0e0e0; margin: 20px 0;'>
-            <div style='font-size: 1rem; color: #666; margin-bottom: 10px;'>
-                {option_type} Option Price
+        <div style='text-align: center; background: linear-gradient(135deg, #1E88E5, #0D47A1); padding: 30px; border-radius: 12px; margin: 20px 0;'>
+            <div style='color: white; font-size: 1.1rem; margin-bottom: 10px;'>
+                {option_type} OPTION
             </div>
-            <div style='font-size: 3.5rem; font-weight: 700; color: #1E88E5; margin: 15px 0;'>
-                ${price:.4f}
+            <div style='color: white; font-size: 4rem; font-weight: bold; margin: 20px 0;'>
+                ${price:.2f}
             </div>
-            <div style='font-size: 0.9rem; color: #888;'>
-                Black-Scholes Model
+            <div style='color: rgba(255,255,255,0.9); font-size: 0.9rem;'>
+                Theoretical Price
             </div>
         </div>
         """, unsafe_allow_html=True)
