@@ -15,23 +15,45 @@ st.markdown("""
     /* Main header styling */
     .main-header {
         font-size: 2.5rem;
-        color: var(--primary-color, #1E3A8A);
         text-align: center;
         margin-bottom: 1rem;
+    }
+    
+    /* Light mode colors */
+    .main-header {
+        color: #1E3A8A;
     }
     
     /* Sub-header styling - visible in both modes */
     .sub-header {
         font-size: 1.5rem;
-        color: var(--text-color, #374151);
         margin-top: 1.5rem;
         margin-bottom: 1rem;
         font-weight: 600;
     }
     
-    /* Dark mode override for sub-headers */
+    /* Light mode colors for sub-headers */
+    .sub-header {
+        color: #374151;
+    }
+    
+    /* Dark mode colors */
+    @media (prefers-color-scheme: dark) {
+        .main-header {
+            color: #60A5FA;
+        }
+        .sub-header {
+            color: #F3F4F6 !important;
+        }
+    }
+    
+    /* Force dark mode styling */
+    [data-theme="dark"] .main-header {
+        color: #60A5FA !important;
+    }
+    
     [data-theme="dark"] .sub-header {
-        color: #fafafa !important;
+        color: #F3F4F6 !important;
     }
     
     /* Result box styling */
@@ -39,18 +61,28 @@ st.markdown("""
         padding: 1rem;
         border-radius: 0.5rem;
         margin: 1rem 0;
-        border: 1px solid var(--border-color, #e0e0e0);
-        background-color: var(--background-color-secondary, #f8f9fa);
+        border: 1px solid #e0e0e0;
+        background-color: #f8f9fa;
     }
     
     /* Dark mode override for result box */
+    @media (prefers-color-scheme: dark) {
+        .result-box {
+            background-color: #1a1a1a !important;
+            border-color: #444 !important;
+        }
+        .result-box h4 {
+            color: #fafafa !important;
+        }
+    }
+    
     [data-theme="dark"] .result-box {
         background-color: #1a1a1a !important;
         border-color: #444 !important;
     }
     
     .result-box h4 {
-        color: var(--text-color, #262730);
+        color: #262730;
         margin-top: 0;
         margin-bottom: 0.5rem;
     }
@@ -265,6 +297,12 @@ class BondCalculator:
         if st.sidebar.button("Reset", use_container_width=True):
             st.session_state.calculation_done = False
     
+    def format_currency(self, value):
+        """Format currency with negative sign before dollar sign"""
+        if value < 0:
+            return f"-${abs(value):,.2f}"
+        return f"${value:,.2f}"
+    
     def display_results(self):
         """Display calculation results"""
         params = st.session_state.calculation_params
@@ -280,6 +318,7 @@ class BondCalculator:
         col1, col2 = st.columns([2, 1])
         
         with col1:
+            # Use HTML with class for proper dark mode styling
             st.markdown('<div class="sub-header">📋 Bond Information</div>', unsafe_allow_html=True)
             
             info_data = {
@@ -302,6 +341,7 @@ class BondCalculator:
             st.dataframe(info_df, use_container_width=True, hide_index=True)
         
         with col2:
+            # Use HTML with class for proper dark mode styling
             st.markdown('<div class="sub-header">💰 Price Results</div>', unsafe_allow_html=True)
             
             cols = st.columns(2)
@@ -318,14 +358,18 @@ class BondCalculator:
                     delta=None
                 )
             
+            # Format price difference with negative sign before dollar
+            formatted_price_diff = self.format_currency(price_diff)
+            diff_sign_pct = "+" if price_diff_pct >= 0 else ""
+            
             diff_color = "positive-diff" if price_diff >= 0 else "negative-diff"
-            diff_sign = "+" if price_diff >= 0 else ""
+            
             st.markdown(
                 f'<div class="result-box">'
                 f'<h4>Price Difference</h4>'
                 f'<p class="price-difference {diff_color}">'
-                f'Continuous - Discrete: {diff_sign}${price_diff:,.2f} '
-                f'({diff_sign}{price_diff_pct:.2f}%)'
+                f'Continuous - Discrete: {formatted_price_diff} '
+                f'({diff_sign_pct}{price_diff_pct:.2f}%)'
                 f'</p>'
                 f'</div>',
                 unsafe_allow_html=True
@@ -457,12 +501,7 @@ class BondCalculator:
         
         st.markdown("##### Detailed Price Change Calculation")
         
-        # Format negative values with $ sign before the negative sign
-        def format_currency(value):
-            if value < 0:
-                return f"-${abs(value):,.2f}"
-            return f"${value:,.2f}"
-        
+        # Create a custom DataFrame display with LaTeX formulas
         calc_data = {
             "Component": [
                 "Current Bond Price",
@@ -479,25 +518,33 @@ class BondCalculator:
                 f"{modified_duration:.2f}",
                 f"{convexity:.2f}",
                 f"{yield_change*100:+.2f}%",
-                format_currency(price_change_duration),
-                format_currency(price_change_convexity),
-                format_currency(total_price_change),
+                self.format_currency(price_change_duration),
+                self.format_currency(price_change_convexity),
+                self.format_currency(total_price_change),
                 f"${new_price_estimate:,.2f}"
-            ],
-            "Formula": [
-                "$$P$$",
-                "$$\\frac{D_{mac}}{1 + \\frac{y}{m}}$$",
-                "$$\\frac{\\sum_{t=1}^{T} t(t+\\frac{1}{m}) PV(CF_t)}{P(1+\\frac{y}{m})^2}$$",
-                "$$\\Delta y$$",
-                "$$-D_{mod} \\times \\Delta y \\times P$$",
-                "$$0.5 \\times C \\times (\\Delta y)^2 \\times P$$",
-                "$$\\Delta P_{duration} + \\Delta P_{convexity}$$",
-                "$$P + \\Delta P_{total}$$"
             ]
         }
         
+        # Create DataFrame
         calc_df = pd.DataFrame(calc_data)
+        
+        # Display the DataFrame
         st.dataframe(calc_df, use_container_width=True, hide_index=True)
+        
+        # Display LaTeX formulas separately
+        st.markdown("##### **Formulas Used**")
+        formulas = st.columns(1)
+        
+        with formulas[0]:
+            st.markdown("""
+            **Formulas:**
+            - **Modified Duration**: $D_{mod} = \\frac{D_{mac}}{1 + \\frac{y}{m}}$
+            - **Convexity**: $C = \\frac{\\sum_{t=1}^{T} t(t+\\frac{1}{m}) PV(CF_t)}{P(1+\\frac{y}{m})^2}$
+            - **Duration Effect**: $\\Delta P_{duration} = -D_{mod} \\times \\Delta y \\times P$
+            - **Convexity Effect**: $\\Delta P_{convexity} = 0.5 \\times C \\times (\\Delta y)^2 \\times P$
+            - **Total Price Change**: $\\Delta P_{total} = \\Delta P_{duration} + \\Delta P_{convexity}$
+            - **New Price**: $P_{new} = P + \\Delta P_{total}$
+            """)
         
         st.markdown("### Key Insights")
         
