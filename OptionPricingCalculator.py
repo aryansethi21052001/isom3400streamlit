@@ -164,7 +164,7 @@ with tab2:
     
     st.markdown("**Instructions:** Fill in all parameters in the sidebar and click 'Calculate Option Price' to compute the theoretical option value.")
     
-    with st.form:
+    with st.form("Option_Pricing_Calculator"):
         st.markdown("### Input Parameters")
         
         # Option Type
