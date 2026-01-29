@@ -387,7 +387,8 @@ class BondCalculator:
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("Payment Schedule (Coupon Bonds Only)")
+            st.subheader("Payment Schedule")
+            st.write("(Coupon Bonds Only)")
             if params['bond_type'] == "Coupon Bond":
                 num_payments = int(params['maturity'] * params['payments_per_year'])
                 coupon_payment = (params['coupon_rate'] * params['principal']) / params['payments_per_year']
