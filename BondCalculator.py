@@ -563,7 +563,7 @@ class BondCalculator:
             st.markdown(f"- {insight}")
     
     def display_explanation(self, params):
-    """Display explanation of the calculations with all formulas in LaTeX"""
+        """Display explanation of the calculations with all formulas in LaTeX"""
         st.header("How Bond Prices Are Calculated")
         
         col1, col2 = st.columns(2)
