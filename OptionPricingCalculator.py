@@ -116,20 +116,16 @@ if page == "Home":
         ("ν (Vega)", r"\frac{\partial V}{\partial \sigma}", "Sensitivity to volatility changes"),
         ("ρ (Rho)", r"\frac{\partial V}{\partial r}", "Sensitivity to interest rate changes")
     ]
-
-    st.markdown("""
-    <style>
-    div[data-testid="column"] {
-        text-align: center;
-    }
-    </style>
-    """, unsafe_allow_html=True)
     
     for col, (name, formula, desc) in zip(greek_cols, greeks):
-        with col:
-            st.markdown(f"**{name}**")
-            st.latex(formula)
-            st.caption(desc)
+    with col:
+        st.markdown(f"<div style='text-align: center; font-weight: bold;'>{name}</div>", unsafe_allow_html=True)
+        
+        st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+        st.latex(formula)
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        st.markdown(f"<div style='text-align: center; font-size: 0.9rem; color: #666;'>{desc}</div>", unsafe_allow_html=True)
 
 # Calculator Page
 elif page == "Calculator":
