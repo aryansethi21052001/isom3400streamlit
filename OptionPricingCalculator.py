@@ -100,55 +100,40 @@ if page == "Home":
             """)
 
     st.markdown("<h2 class='sub-header'>Understanding Option Moneyness</h2>", unsafe_allow_html=True)
-
+    
     st.markdown("""
     **Moneyness** indicates whether an option would be profitable if exercised immediately:
     """)
+
+    moneyness_table = """
+    | Status | Call Condition | Put Condition | Description |
+    |--------|----------------|---------------|-------------|
+    | **In-The-Money (ITM)** | $S > K$ | $S < K$ | Option has intrinsic value |
+    | **At-The-Money (ATM)** | $S = K$ | $S = K$ | Stock price equals strike price |
+    | **Out-of-The-Money (OTM)** | $S < K$ | $S > K$ | Option has no intrinsic value |
+    """
     
-    # Centered table using HTML
-    st.markdown("""
-    <div style="display: flex; justify-content: center;">
-    <table>
-        <tr>
-            <th>Status</th>
-            <th>Call Condition</th>
-            <th>Put Condition</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td><strong>In-The-Money (ITM)</strong></td>
-            <td>S > K</td>
-            <td>S < K</td>
-            <td>Option has intrinsic value</td>
-        </tr>
-        <tr>
-            <td><strong>At-The-Money (ATM)</strong></td>
-            <td>S = K</td>
-            <td>S = K</td>
-            <td>Stock price equals strike price</td>
-        </tr>
-        <tr>
-            <td><strong>Out-of-The-Money (OTM)</strong></td>
-            <td>S < K</td>
-            <td>S > K</td>
-            <td>Option has no intrinsic value</td>
-        </tr>
-    </table>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(moneyness_table)
     
+    # Add formulas with st.latex()
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("**Intrinsic Value Formulas:**")
     
-    st.latex(r"\text{Call Option: } C_{\text{IV}} = \max(0, S - K)")
-    st.latex(r"\text{Put Option: } P_{\text{IV}} = \max(0, K - S)")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("**Call Option:**")
+        st.latex(r"\text{Intrinsic Value} = \max(0, S - K)")
+        
+    with col2:
+        st.markdown("**Put Option:**")
+        st.latex(r"\text{Intrinsic Value} = \max(0, K - S)")
     
     st.markdown("""
     **Where:**
-    - **S** = Current Stock Price
-    - **K** = Strike Price
-    - **C_{\text{IV}}** = Call Intrinsic Value
-    - **P_{\text{IV}}** = Put Intrinsic Value
+    - **$S$** = Current Stock Price
+    - **$K$** = Strike Price
+    - **Intrinsic Value** = Immediate profit if exercised now
+    - **Time Value** = Premium for potential future price movement (Option Price = Intrinsic Value + Time Value)
     """)
 
     st.markdown("<h2 class='sub-header'>Option Greeks</h2>", unsafe_allow_html=True)
