@@ -249,73 +249,115 @@ elif page == "Calculator":
                 st.metric(label=name, value=value)
                 st.caption(desc)
 
-        st.markdown("<h2 class='sub-header'>Payoff Visualization</h2>", unsafe_allow_html=True)
-    
+        st.markdown("<h2 class='sub-header'>Payoff Visualisation</h2>", unsafe_allow_html=True)
+
         # Create payoff diagram
         spot_prices = np.linspace(S * 0.5, S * 1.5, 200)
         
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
         
-        # Payoff at expiration
+        # Payoff at expiration (intrinsic value only)
         if option_type == "Call":
             payoffs = np.maximum(spot_prices - K, 0)
             label = "Call Option Payoff"
             color = "green"
-            profit_loss = payoffs - price  # Subtract premium paid
+            # For long call: profit = payoff - premium paid
+            profit_loss = payoffs - price
+            # Breakeven point: Spot price where payoff = premium
+            breakeven_price = K + price
         else:
             payoffs = np.maximum(K - spot_prices, 0)
             label = "Put Option Payoff"
             color = "red"
-            profit_loss = payoffs - price  # Subtract premium paid
+            # For long put: profit = payoff - premium paid
+            profit_loss = payoffs - price
+            # Breakeven point: Spot price where payoff = premium
+            breakeven_price = K - price
         
-        # Plot 1: Payoff Diagram
+        # Plot 1: Payoff Diagram (Intrinsic Value)
         ax1.plot(spot_prices, payoffs, color=color, linewidth=3, label='Payoff at Expiration', alpha=0.8)
         ax1.fill_between(spot_prices, payoffs, alpha=0.2, color=color)
         ax1.axvline(x=S, color='blue', linestyle='--', alpha=0.7, linewidth=2, label=f'Current Price (${S:.2f})')
         ax1.axvline(x=K, color='orange', linestyle='--', alpha=0.7, linewidth=2, label=f'Strike Price (${K:.2f})')
         ax1.axhline(y=0, color='black', linestyle='-', alpha=0.3, linewidth=1)
+        
+        # Add breakeven line to payoff diagram
+        ax1.axvline(x=breakeven_price, color='purple', linestyle=':', alpha=0.7, linewidth=1.5, 
+                   label=f'Breakeven (${breakeven_price:.2f})')
+        
         ax1.set_xlabel('Stock Price at Expiration ($)', fontsize=12)
         ax1.set_ylabel('Option Payoff ($)', fontsize=12)
-        ax1.set_title(f'{option_type} Option Payoff Diagram', fontsize=14, fontweight='bold')
+        ax1.set_title(f'Long {option_type} Option: Payoff Diagram', fontsize=14, fontweight='bold')
         ax1.legend(loc='best')
         ax1.grid(True, alpha=0.3)
         
-        # Plot 2: Profit/Loss Diagram
-        ax2.plot(spot_prices, profit_loss, color='purple', linewidth=3, label='Profit/Loss', alpha=0.8)
-        ax2.fill_between(spot_prices, profit_loss, where=profit_loss>=0, alpha=0.2, color='green')
-        ax2.fill_between(spot_prices, profit_loss, where=profit_loss<0, alpha=0.2, color='red')
+        # Plot 2: Profit/Loss Diagram (Accounting for Premium)
+        ax2.plot(spot_prices, profit_loss, color='purple', linewidth=3, label='Net Profit/Loss', alpha=0.8)
+        ax2.fill_between(spot_prices, profit_loss, where=profit_loss>=0, alpha=0.2, color='green', label='Profit Zone')
+        ax2.fill_between(spot_prices, profit_loss, where=profit_loss<0, alpha=0.2, color='red', label='Loss Zone')
+        
+        # Key reference lines for profit/loss
         ax2.axvline(x=S, color='blue', linestyle='--', alpha=0.7, linewidth=2, label=f'Current Price (${S:.2f})')
         ax2.axvline(x=K, color='orange', linestyle='--', alpha=0.7, linewidth=2, label=f'Strike Price (${K:.2f})')
+        ax2.axvline(x=breakeven_price, color='purple', linestyle=':', alpha=0.7, linewidth=1.5, 
+                   label=f'Breakeven (${breakeven_price:.2f})')
+        
         ax2.axhline(y=0, color='black', linestyle='-', alpha=0.3, linewidth=1)
-        ax2.axhline(y=-price, color='gray', linestyle=':', alpha=0.5, linewidth=1, label=f'Premium Paid (${price:.2f})')
+        ax2.axhline(y=-price, color='gray', linestyle=':', alpha=0.5, linewidth=1.5, 
+                   label=f'Max Loss: -${price:.2f}')
+        
+        # Add maximum profit annotation for calls
+        if option_type == "Call":
+            ax2.axhline(y=spot_prices[-1] - K - price, color='darkgreen', linestyle=':', alpha=0.3, linewidth=1)
+            ax2.text(spot_prices[-1]*0.95, spot_prices[-1] - K - price + 0.1, 
+                    f'Max Profit: ∞', fontsize=10, ha='right', color='darkgreen')
+        else:  # Put option
+            ax2.axhline(y=K - spot_prices[0] - price, color='darkgreen', linestyle=':', alpha=0.3, linewidth=1)
+            ax2.text(spot_prices[0]*1.05, K - spot_prices[0] - price + 0.1, 
+                    f'Max Profit: ${K - spot_prices[0] - price:.2f}', fontsize=10, ha='left', color='darkgreen')
+        
         ax2.set_xlabel('Stock Price at Expiration ($)', fontsize=12)
-        ax2.set_ylabel('Profit/Loss ($)', fontsize=12)
-        ax2.set_title(f'{option_type} Option Profit/Loss Diagram', fontsize=14, fontweight='bold')
+        ax2.set_ylabel('Net Profit/Loss ($)', fontsize=12)
+        ax2.set_title(f'Long {option_type} Option: Profit/Loss Diagram', fontsize=14, fontweight='bold')
         ax2.legend(loc='best')
         ax2.grid(True, alpha=0.3)
         
         plt.tight_layout()
         st.pyplot(fig)
         
-        # Add explanation
+        # Add detailed explanation with key metrics
         col_exp1, col_exp2 = st.columns(2)
         with col_exp1:
-            st.markdown("""
-            **Payoff Diagram Explanation:**
-            - Shows the option's value at expiration
-            - Horizontal axis: Stock price at expiration
-            - Vertical axis: Option payoff value
-            - Breakeven: Stock price where payoff = 0
+            st.markdown(f"""
+            **Payoff Diagram (Intrinsic Value):**
+            
+            - **Current Price**: ${S:.2f}
+            - **Strike Price**: ${K:.2f}
+            - **Breakeven Price**: ${breakeven_price:.2f}
+            - **Option Premium**: ${price:.2f}
+            
+            *The payoff shows the option's value at expiration without considering the premium paid.*
             """)
         
         with col_exp2:
-            st.markdown("""
-            **Profit/Loss Diagram Explanation:**
-            - Accounts for the option premium paid/received
-            - Shows actual profit/loss including premium
-            - Green area: Profit zone
-            - Red area: Loss zone
-                """)
+            max_loss = -price
+            if option_type == "Call":
+                max_profit = "Unlimited"
+                breakeven_explanation = f"Stock must rise above ${breakeven_price:.2f} to profit"
+            else:
+                max_profit = f"${K - 0 - price:.2f} (if stock goes to $0)"
+                breakeven_explanation = f"Stock must fall below ${breakeven_price:.2f} to profit"
+            
+            st.markdown(f"""
+            **Profit/Loss Analysis:**
+            
+            - **Maximum Loss**: ${max_loss:.2f} (premium paid)
+            - **Maximum Profit**: {max_profit}
+            - **Breakeven**: {breakeven_explanation}
+            - **Moneyness**: {"ITM" if (option_type == "Call" and S > K) or (option_type == "Put" and S < K) else "OTM" if (option_type == "Call" and S < K) or (option_type == "Put" and S > K) else "ATM"}
+            
+            *Net profit/loss accounts for the ${price:.2f} premium paid.*
+            """)
     
 
 
