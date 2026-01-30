@@ -130,11 +130,11 @@ with tab1:
     """)
 
     st.subheader("Option Greeks")
-    
+        
     st.write('The "Greeks" measure the sensitivity of the option price to various factors:')
-    
+        
     greek_cols = st.columns(5)
-    
+        
     greeks = [
         ("Δ (Delta)", r"\frac{\partial V}{\partial S}", "Price sensitivity to underlying asset"),
         ("Γ (Gamma)", r"\frac{\partial^2 V}{\partial S^2}", "Delta's sensitivity to price changes"),
@@ -145,13 +145,17 @@ with tab1:
     
     for col, (name, formula, desc) in zip(greek_cols, greeks):
         with col:
-            st.markdown(f"<div style='text-align: center; font-weight: bold;'>{name}</div>", unsafe_allow_html=True)
+            # Using st.metric or st.write for the name
+            st.write(f"**{name}**")
             
-            st.markdown("<div style='text-align: center;'>", unsafe_allow_html=True)
+            # Formula - centered by default
             st.latex(formula)
-            st.markdown("</div>", unsafe_allow_html=True)
             
-            st.markdown(f"<div style='text-align: center; font-size: 0.9rem; color: #666;'>{desc}</div>", unsafe_allow_html=True)
+            # Description - you can use st.caption or st.write with smaller text
+            st.caption(desc)
+            
+            # Or if you want to ensure it's centered without HTML:
+            # st.write(desc)
 
 # Calculator Page
 with tab2:
