@@ -242,8 +242,8 @@ with tab2:
                 value=f"${price:.2f}",
                 delta=None,
                 delta_color="normal",
-                help="Theoretical Price based on the Black-Scholes Model"
             )
+            st.caption("Theoretical Price based on the Black-Scholes Model")
         
         st.write("---")
         
