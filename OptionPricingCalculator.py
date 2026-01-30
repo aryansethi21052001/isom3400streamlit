@@ -26,7 +26,7 @@ tab1, tab2 = st.tabs(["Home", "Calculator"])
 
 # Home Page (unchanged)
 with tab1:
-    st.markdown("<h2 class='sub-header'>Introduction</h2>", unsafe_allow_html=True)
+    st.subheader("Introduction")
     st.write("""
     Welcome to the **Black-Scholes Option Pricing Calculator**! This professional tool allows you to:
     
@@ -39,15 +39,15 @@ with tab1:
     to buy or sell an underlying asset at a specified price (strike price) on or before a certain date (expiration).
     """)
     
-    st.markdown("<h2 class='sub-header'>About the Black-Scholes Model</h2>", unsafe_allow_html=True)
+    st.subheader("About the Black-Scholes Model)
     
-    st.markdown("""
+    st.write("""
     The **Black-Scholes model**, developed by Fischer Black and Myron Scholes in 1973, is a groundbreaking 
     mathematical model for pricing European-style options. It revolutionized the field of quantitative finance 
     and earned Scholes and Robert Merton the 1997 Nobel Prize in Economics.
     """)
     
-    st.markdown("""
+    st.write("""
     The model is based on these key assumptions:
     
     1. **European Exercise**: Options can only be exercised at expiration.
@@ -62,12 +62,11 @@ with tab1:
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("<h3 class='section-header'>Call Option Formula</h3>", unsafe_allow_html=True)
+        st.subheader("Call Option Formula")
         st.latex(r"C = S_0 N(d_1) - K e^{-rT} N(d_2)")
-        st.markdown("</div>", unsafe_allow_html=True)
         
-        with st.expander("📐 Variables Explained", expanded=False):
-            st.markdown("""
+        with st.expander("📐 Variables Explained", expanded=True):
+            st.write("""
             Where:
             - $C$ = Call option price
             - $S_0$ = Current stock price
@@ -80,12 +79,11 @@ with tab1:
             """)
     
     with col2:
-        st.markdown("<h3 class='section-header'>Put Option Formula</h3>", unsafe_allow_html=True)
+        st.subheader("Put Option Formula")
         st.latex(r"P = K e^{-rT} N(-d_2) - S_0 N(-d_1)")
-        st.markdown("</div>", unsafe_allow_html=True)
         
-        with st.expander("📐 Variables Explained", expanded=False):
-            st.markdown("""
+        with st.expander("📐 Variables Explained", expanded=True):
+            st.write("""
             Where:
             - $P$ = Put option price
             - $S_0$ = Current stock price
@@ -97,11 +95,9 @@ with tab1:
             - $d_2 = d_1 - \sigma\sqrt{T}$
             """)
 
-    st.markdown("<h2 class='sub-header'>Understanding Option Moneyness</h2>", unsafe_allow_html=True)
+    st.subheader("Understanding Option Moneyness")
     
-    st.markdown("""
-    **Moneyness** indicates whether an option would be profitable if exercised immediately:
-    """)
+    st.write("**Moneyness** indicates whether an option would be profitable if exercised immediately:")
 
     moneyness_table = """
     | Status | Call Condition | Put Condition | Description |
@@ -114,16 +110,15 @@ with tab1:
     st.markdown(moneyness_table, text_alignment="center")
     
     # Add formulas with st.latex()
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("### **Intrinsic Value Formulas:**")
+    st.subheader("**Intrinsic Value Formulas:**")
     
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown("**Call Option:**")
+        st.write("**Call Option:**")
         st.latex(r"C_{\text{IV}} = \max(0, S - K)")
         
     with col2:
-        st.markdown("**Put Option:**")
+        st.write("**Put Option:**")
         st.latex(r"P_{\text{IV}} = \max(0, K - S)")
     
     st.markdown("""
