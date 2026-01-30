@@ -510,7 +510,7 @@ with tab2:
                 st.write(f"""
                 **For Short Put:**
                 
-                - **Maximum Loss**: ${K - price:.2f} (if stock goes to $0)
+                - **Maximum Loss**: \\${K - price:.2f} (if stock goes to $0)
                 - **Profit When**: Stock > ${breakeven_short:.2f}
                 - **Strategy**: Neutral to bullish - Expect stock to stay flat or rise
                 - **Risk**: Must buy shares at strike price if exercised
