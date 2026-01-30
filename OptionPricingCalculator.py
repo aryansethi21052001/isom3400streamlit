@@ -121,7 +121,7 @@ with tab1:
         st.write("**Put Option:**")
         st.latex(r"P_{\text{IV}} = \max(0, K - S)")
     
-    st.markdown("""
+    st.write("""
     **Where:**
     - **$S$** = Current Stock Price
     - **$K$** = Strike Price
@@ -129,9 +129,9 @@ with tab1:
     - **$P_{\t{IV}}$** = Put Intrinsic Value
     """)
 
-    st.markdown("<h2 class='sub-header'>Option Greeks</h2>", unsafe_allow_html=True)
+    st.subheader("Option Greeks")
     
-    st.markdown('The "Greeks" measure the sensitivity of the option price to various factors:', unsafe_allow_html=True)
+    st.write('The "Greeks" measure the sensitivity of the option price to various factors:')
     
     greek_cols = st.columns(5)
     
@@ -156,10 +156,10 @@ with tab1:
 # Calculator Page
 with tab2:
     
-    st.markdown("**Instructions:** Fill in all parameters in the sidebar and click 'Calculate Option Price' to compute the theoretical option value.")
+    st.write("**Instructions:** Fill in all parameters in the sidebar and click 'Calculate Option Price' to compute the theoretical option value.")
     
     with st.form("Option_Pricing_Calculator"):
-        st.markdown("### Input Parameters")
+        st.subheader("Input Parameters")
         
         # Option Type
         option_type = st.selectbox(
