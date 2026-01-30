@@ -26,7 +26,7 @@ tab1, tab2 = st.tabs(["Home", "Calculator"])
 
 # Home Page (unchanged)
 with tab1:
-    st.subheader("Introduction")
+    st.markdown("<h2 class='sub-header'>Introduction</h2>", unsafe_allow_html=True)
     st.write("""
     Welcome to the **Black-Scholes Option Pricing Calculator**! This professional tool allows you to:
     
@@ -39,15 +39,15 @@ with tab1:
     to buy or sell an underlying asset at a specified price (strike price) on or before a certain date (expiration).
     """)
     
-    st.subheader("About the Black-Scholes Model")
+    st.markdown("<h2 class='sub-header'>About the Black-Scholes Model</h2>", unsafe_allow_html=True)
     
-    st.write("""
+    st.markdown("""
     The **Black-Scholes model**, developed by Fischer Black and Myron Scholes in 1973, is a groundbreaking 
     mathematical model for pricing European-style options. It revolutionized the field of quantitative finance 
     and earned Scholes and Robert Merton the 1997 Nobel Prize in Economics.
     """)
     
-    st.write("""
+    st.markdown("""
     The model is based on these key assumptions:
     
     1. **European Exercise**: Options can only be exercised at expiration.
@@ -134,7 +134,7 @@ with tab1:
     - **$P_{\t{IV}}$** = Put Intrinsic Value
     """)
 
-    st.subheader("Option Greeks")
+    st.markdown("<h2 class='sub-header'>Option Greeks</h2>", unsafe_allow_html=True)
     
     st.markdown('The "Greeks" measure the sensitivity of the option price to various factors:', unsafe_allow_html=True)
     
@@ -161,7 +161,7 @@ with tab1:
 # Calculator Page
 with tab2:
     
-    st.write("**Instructions:** Fill in all parameters in the sidebar and click 'Calculate Option Price' to compute the theoretical option value.")
+    st.markdown("**Instructions:** Fill in all parameters in the sidebar and click 'Calculate Option Price' to compute the theoretical option value.")
     
     with st.form("Option_Pricing_Calculator"):
         st.markdown("### Input Parameters")
@@ -287,14 +287,6 @@ with tab2:
 
         st.markdown("<h2 class='sub-header'>Payoff Visualisation</h2>", unsafe_allow_html=True)
         
-        # Add position selection
-        position_type = st.radio(
-            "**Select Position to Visualize:**",
-            ["Long Position", "Short Position", "Both Positions"],
-            horizontal=True,
-            help="Long = Buying the option, Short = Selling/writing the option"
-        )
-        
         # Create payoff diagram
         spot_prices = np.linspace(S * 0.5, S * 1.5, 200)
         
@@ -302,239 +294,243 @@ with tab2:
         if option_type == "Call":
             intrinsic_value = np.maximum(spot_prices - K, 0)
             option_color = "green"
-            option_label = "Call Option"
             # Breakeven points
             breakeven_long = K + price
-            breakeven_short = K + price  # Same breakeven but opposite profit/loss
+            breakeven_short = K + price
         else:
             intrinsic_value = np.maximum(K - spot_prices, 0)
             option_color = "red"
-            option_label = "Put Option"
             # Breakeven points
             breakeven_long = K - price
-            breakeven_short = K - price  # Same breakeven but opposite profit/loss
+            breakeven_short = K - price
         
         # Calculate profit/loss for long and short positions
-        # Long position: profit = payoff - premium paid
-        profit_loss_long = intrinsic_value - price
-        # Short position: profit = premium received - payoff (if exercised)
-        profit_loss_short = price - intrinsic_value
+        profit_loss_long = intrinsic_value - price  # Long: payoff - premium
+        profit_loss_short = price - intrinsic_value  # Short: premium - payoff
         
-        # Determine how many plots to show
-        if position_type == "Both Positions":
-            fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 12))
-            axes = [(ax1, ax2), (ax3, ax4)]
-            positions = [("Long", profit_loss_long, "Buyer"), ("Short", profit_loss_short, "Seller")]
+        # Show LONG POSITION first
+        st.markdown("### **Long Position (Buyer)**")
+        
+        # Create figure for long position
+        fig_long, (ax1_long, ax2_long) = plt.subplots(1, 2, figsize=(15, 6))
+        
+        # Plot 1: Long Payoff Diagram
+        ax1_long.plot(spot_prices, intrinsic_value, color=option_color, linewidth=3, 
+                     label=f'Long {option_type} Payoff', alpha=0.8)
+        ax1_long.fill_between(spot_prices, intrinsic_value, alpha=0.2, color=option_color)
+        ax1_long.axvline(x=S, color='black', linestyle='--', alpha=0.7, linewidth=2, 
+                        label=f'Current Price (${S:.2f})')
+        ax1_long.axvline(x=K, color='gray', linestyle='--', alpha=0.7, linewidth=2, 
+                        label=f'Strike Price (${K:.2f})')
+        ax1_long.axvline(x=breakeven_long, color='purple', linestyle=':', alpha=0.7, 
+                        linewidth=1.5, label=f'Breakeven (${breakeven_long:.2f})')
+        ax1_long.axhline(y=0, color='black', linestyle='-', alpha=0.3, linewidth=1)
+        
+        ax1_long.set_xlabel('Stock Price at Expiration ($)', fontsize=12)
+        ax1_long.set_ylabel('Option Payoff ($)', fontsize=12)
+        ax1_long.set_title(f'Long {option_type} Option: Payoff Diagram', fontsize=14, fontweight='bold')
+        ax1_long.legend(loc='best')
+        ax1_long.grid(True, alpha=0.3)
+        
+        # Plot 2: Long Profit/Loss Diagram
+        ax2_long.plot(spot_prices, profit_loss_long, color='purple', linewidth=3, 
+                     label='Net Profit/Loss', alpha=0.8)
+        
+        # Fill profit and loss zones for long position
+        profit_zone_long = profit_loss_long >= 0
+        loss_zone_long = profit_loss_long < 0
+        
+        ax2_long.fill_between(spot_prices, profit_loss_long, where=profit_zone_long, 
+                             alpha=0.2, color='green', label='Profit Zone')
+        ax2_long.fill_between(spot_prices, profit_loss_long, where=loss_zone_long, 
+                             alpha=0.2, color='red', label='Loss Zone')
+        
+        # Key reference lines
+        ax2_long.axvline(x=S, color='black', linestyle='--', alpha=0.7, linewidth=2, 
+                        label=f'Current Price (${S:.2f})')
+        ax2_long.axvline(x=K, color='gray', linestyle='--', alpha=0.7, linewidth=2, 
+                        label=f'Strike Price (${K:.2f})')
+        ax2_long.axvline(x=breakeven_long, color='purple', linestyle=':', alpha=0.7, 
+                        linewidth=1.5, label=f'Breakeven (${breakeven_long:.2f})')
+        
+        ax2_long.axhline(y=0, color='black', linestyle='-', alpha=0.3, linewidth=1)
+        ax2_long.axhline(y=-price, color='red', linestyle=':', alpha=0.5, linewidth=1.5, 
+                        label=f'Max Loss: -${price:.2f}')
+        
+        # Maximum profit for long position
+        if option_type == "Call":
+            ax2_long.axhline(y=spot_prices[-1] - K - price, color='darkgreen', 
+                           linestyle=':', alpha=0.3, linewidth=1,
+                           label='Max Profit: Unlimited')
         else:
-            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
-            
-            if position_type == "Long Position":
-                positions = [("Long", profit_loss_long, "Buyer")]
-                axes = [(ax1, ax2)]
-            else:  # Short Position
-                positions = [("Short", profit_loss_short, "Seller")]
-                axes = [(ax1, ax2)]
+            max_profit_long = K - price
+            ax2_long.axhline(y=max_profit_long, color='darkgreen', linestyle=':', 
+                           alpha=0.3, linewidth=1,
+                           label=f'Max Profit: ${max_profit_long:.2f}')
         
-        # Plot for each position
-        for (pos_name, profit_loss, role), (ax_payoff, ax_profit) in zip(positions, axes):
-            # Colors for long vs short
-            if pos_name == "Long":
-                pos_color = option_color
-                pos_prefix = "Long"
-            else:
-                pos_color = "blue" if option_type == "Call" else "orange"
-                pos_prefix = "Short"
-            
-            # Plot 1: Payoff Diagram (Intrinsic Value)
-            if pos_name == "Long":
-                ax_payoff.plot(spot_prices, intrinsic_value, color=pos_color, linewidth=3, 
-                              label=f'{pos_prefix} {option_label} Payoff', alpha=0.8)
-            else:
-                ax_payoff.plot(spot_prices, -intrinsic_value, color=pos_color, linewidth=3, 
-                              label=f'{pos_prefix} {option_label} Payoff', alpha=0.8)
-            
-            ax_payoff.fill_between(spot_prices, intrinsic_value if pos_name == "Long" else -intrinsic_value, 
-                                  alpha=0.2, color=pos_color)
-            
-            # Key reference lines
-            ax_payoff.axvline(x=S, color='black', linestyle='--', alpha=0.7, linewidth=2, 
-                            label=f'Current Price (${S:.2f})')
-            ax_payoff.axvline(x=K, color='gray', linestyle='--', alpha=0.7, linewidth=2, 
-                            label=f'Strike Price (${K:.2f})')
-            ax_payoff.axhline(y=0, color='black', linestyle='-', alpha=0.3, linewidth=1)
-            
-            ax_payoff.set_xlabel('Stock Price at Expiration ($)', fontsize=12)
-            ax_payoff.set_ylabel('Option Payoff ($)', fontsize=12)
-            ax_payoff.set_title(f'{pos_prefix} {option_type} Option: Payoff Diagram\n({role} Perspective)', 
-                              fontsize=14, fontweight='bold')
-            ax_payoff.legend(loc='best')
-            ax_payoff.grid(True, alpha=0.3)
-            
-            # Plot 2: Profit/Loss Diagram (Accounting for Premium)
-            ax_profit.plot(spot_prices, profit_loss, color='purple', linewidth=3, 
-                          label='Net Profit/Loss', alpha=0.8)
-            
-            # Fill profit and loss zones
-            profit_zone = profit_loss >= 0
-            loss_zone = profit_loss < 0
-            
-            ax_profit.fill_between(spot_prices, profit_loss, where=profit_zone, 
-                                  alpha=0.2, color='green', label='Profit Zone')
-            ax_profit.fill_between(spot_prices, profit_loss, where=loss_zone, 
-                                  alpha=0.2, color='red', label='Loss Zone')
-            
-            # Key reference lines for profit/loss
-            ax_profit.axvline(x=S, color='black', linestyle='--', alpha=0.7, linewidth=2, 
-                            label=f'Current Price (${S:.2f})')
-            ax_profit.axvline(x=K, color='gray', linestyle='--', alpha=0.7, linewidth=2, 
-                            label=f'Strike Price (${K:.2f})')
-            
-            # Breakeven line
-            breakeven = breakeven_long if pos_name == "Long" else breakeven_short
-            ax_profit.axvline(x=breakeven, color='purple', linestyle=':', alpha=0.7, 
-                            linewidth=1.5, label=f'Breakeven (${breakeven:.2f})')
-            
-            ax_profit.axhline(y=0, color='black', linestyle='-', alpha=0.3, linewidth=1)
-            
-            # Maximum loss and profit lines
-            if pos_name == "Long":
-                max_loss = -price
-                ax_profit.axhline(y=max_loss, color='red', linestyle=':', alpha=0.5, 
-                                linewidth=1.5, label=f'Max Loss: ${max_loss:.2f}')
-                
-                if option_type == "Call":
-                    # For long calls, max profit is unlimited
-                    ax_profit.axhline(y=spot_prices[-1] - K - price, color='darkgreen', 
-                                    linestyle=':', alpha=0.3, linewidth=1,
-                                    label='Max Profit: Unlimited')
-                else:
-                    # For long puts, max profit is K - price (if stock goes to 0)
-                    max_profit_value = K - price
-                    ax_profit.axhline(y=max_profit_value, color='darkgreen', linestyle=':', 
-                                    alpha=0.3, linewidth=1,
-                                    label=f'Max Profit: ${max_profit_value:.2f}')
-            else:
-                # Short position
-                max_profit = price
-                ax_profit.axhline(y=max_profit, color='darkgreen', linestyle=':', alpha=0.5, 
-                                linewidth=1.5, label=f'Max Profit: ${max_profit:.2f}')
-                
-                if option_type == "Call":
-                    # For short calls, max loss is unlimited
-                    ax_profit.axhline(y=-(spot_prices[-1] - K) + price, color='red', 
-                                    linestyle=':', alpha=0.3, linewidth=1,
-                                    label='Max Loss: Unlimited')
-                else:
-                    # For short puts, max loss is K - price (if stock goes to 0)
-                    max_loss_value = -(K) + price
-                    ax_profit.axhline(y=max_loss_value, color='red', linestyle=':', 
-                                    alpha=0.3, linewidth=1,
-                                    label=f'Max Loss: ${max_loss_value:.2f}')
-            
-            ax_profit.set_xlabel('Stock Price at Expiration ($)', fontsize=12)
-            ax_profit.set_ylabel('Net Profit/Loss ($)', fontsize=12)
-            ax_profit.set_title(f'{pos_prefix} {option_type} Option: Profit/Loss Diagram\n({role} Perspective)', 
-                              fontsize=14, fontweight='bold')
-            ax_profit.legend(loc='best')
-            ax_profit.grid(True, alpha=0.3)
+        ax2_long.set_xlabel('Stock Price at Expiration ($)', fontsize=12)
+        ax2_long.set_ylabel('Net Profit/Loss ($)', fontsize=12)
+        ax2_long.set_title(f'Long {option_type} Option: Profit/Loss Diagram', fontsize=14, fontweight='bold')
+        ax2_long.legend(loc='best')
+        ax2_long.grid(True, alpha=0.3)
         
         plt.tight_layout()
-        st.pyplot(fig)
+        st.pyplot(fig_long)
         
-        # Add detailed explanation based on selected position(s)
-        st.markdown("### **Position Analysis**")
-        
-        if position_type == "Both Positions":
-            col1, col2 = st.columns(2)
+        # Long position analysis
+        col_long1, col_long2 = st.columns(2)
+        with col_long1:
+            st.markdown(f"""
+            **Long Position Summary:**
             
-            with col1:
-                st.markdown("#### **Long Position (Buyer)**")
-                if option_type == "Call":
-                    st.markdown(f"""
-                    **For Long Call:**
-                    - **Cost**: Pay ${price:.2f} premium
-                    - **Breakeven**: Stock > ${breakeven_long:.2f}
-                    - **Max Loss**: -${price:.2f} (premium paid)
-                    - **Max Profit**: Unlimited
-                    - **When to use**: Bullish outlook, expect stock to rise significantly
-                    """)
-                else:
-                    st.markdown(f"""
-                    **For Long Put:**
-                    - **Cost**: Pay ${price:.2f} premium
-                    - **Breakeven**: Stock < ${breakeven_long:.2f}
-                    - **Max Loss**: -${price:.2f} (premium paid)
-                    - **Max Profit**: ${K - price:.2f} (if stock goes to $0)
-                    - **When to use**: Bearish outlook, expect stock to fall
-                    """)
-            
-            with col2:
-                st.markdown("#### **Short Position (Seller/Writer)**")
-                if option_type == "Call":
-                    st.markdown(f"""
-                    **For Short Call:**
-                    - **Income**: Receive ${price:.2f} premium
-                    - **Breakeven**: Stock < ${breakeven_short:.2f}
-                    - **Max Profit**: ${price:.2f} (premium received)
-                    - **Max Loss**: Unlimited
-                    - **When to use**: Neutral to bearish, expect stock to stay flat or fall
-                    - **Risk**: Must deliver shares if exercised (naked call)
-                    """)
-                else:
-                    st.markdown(f"""
-                    **For Short Put:**
-                    - **Income**: Receive ${price:.2f} premium
-                    - **Breakeven**: Stock > ${breakeven_short:.2f}
-                    - **Max Profit**: ${price:.2f} (premium received)
-                    - **Max Loss**: ${K - price:.2f} (if stock goes to $0)
-                    - **When to use**: Neutral to bullish, expect stock to stay flat or rise
-                    - **Risk**: Must buy shares if exercised
-                    """)
+            - **Position**: Buyer of {option_type.lower()} option
+            - **Premium Paid**: ${price:.2f}
+            - **Breakeven**: ${breakeven_long:.2f}
+            - **Maximum Loss**: -${price:.2f} (limited to premium)
+            """)
         
+        with col_long2:
+            if option_type == "Call":
+                st.markdown(f"""
+                **For Long Call:**
+                - **Maximum Profit**: Unlimited
+                - **Profit When**: Stock > ${breakeven_long:.2f}
+                - **Strategy**: Bullish - Expect stock to rise
+                """)
+            else:
+                st.markdown(f"""
+                **For Long Put:**
+                - **Maximum Profit**: ${K - price:.2f} (if stock goes to $0)
+                - **Profit When**: Stock < ${breakeven_long:.2f}
+                - **Strategy**: Bearish - Expect stock to fall
+                """)
+        
+        # Add separator between long and short positions
+        st.markdown("---")
+        
+        # Show SHORT POSITION below
+        st.markdown("### **Short Position (Seller/Writer)**")
+        
+        # Create figure for short position
+        fig_short, (ax1_short, ax2_short) = plt.subplots(1, 2, figsize=(15, 6))
+        
+        # Plot 1: Short Payoff Diagram (mirror image of long)
+        short_payoff_color = "blue" if option_type == "Call" else "orange"
+        ax1_short.plot(spot_prices, -intrinsic_value, color=short_payoff_color, linewidth=3, 
+                      label=f'Short {option_type} Payoff', alpha=0.8)
+        ax1_short.fill_between(spot_prices, -intrinsic_value, alpha=0.2, color=short_payoff_color)
+        ax1_short.axvline(x=S, color='black', linestyle='--', alpha=0.7, linewidth=2, 
+                         label=f'Current Price (${S:.2f})')
+        ax1_short.axvline(x=K, color='gray', linestyle='--', alpha=0.7, linewidth=2, 
+                         label=f'Strike Price (${K:.2f})')
+        ax1_short.axvline(x=breakeven_short, color='purple', linestyle=':', alpha=0.7, 
+                         linewidth=1.5, label=f'Breakeven (${breakeven_short:.2f})')
+        ax1_short.axhline(y=0, color='black', linestyle='-', alpha=0.3, linewidth=1)
+        
+        ax1_short.set_xlabel('Stock Price at Expiration ($)', fontsize=12)
+        ax1_short.set_ylabel('Option Payoff ($)', fontsize=12)
+        ax1_short.set_title(f'Short {option_type} Option: Payoff Diagram', fontsize=14, fontweight='bold')
+        ax1_short.legend(loc='best')
+        ax1_short.grid(True, alpha=0.3)
+        
+        # Plot 2: Short Profit/Loss Diagram
+        ax2_short.plot(spot_prices, profit_loss_short, color='purple', linewidth=3, 
+                      label='Net Profit/Loss', alpha=0.8)
+        
+        # Fill profit and loss zones for short position
+        profit_zone_short = profit_loss_short >= 0
+        loss_zone_short = profit_loss_short < 0
+        
+        ax2_short.fill_between(spot_prices, profit_loss_short, where=profit_zone_short, 
+                              alpha=0.2, color='green', label='Profit Zone')
+        ax2_short.fill_between(spot_prices, profit_loss_short, where=loss_zone_short, 
+                              alpha=0.2, color='red', label='Loss Zone')
+        
+        # Key reference lines
+        ax2_short.axvline(x=S, color='black', linestyle='--', alpha=0.7, linewidth=2, 
+                         label=f'Current Price (${S:.2f})')
+        ax2_short.axvline(x=K, color='gray', linestyle='--', alpha=0.7, linewidth=2, 
+                         label=f'Strike Price (${K:.2f})')
+        ax2_short.axvline(x=breakeven_short, color='purple', linestyle=':', alpha=0.7, 
+                         linewidth=1.5, label=f'Breakeven (${breakeven_short:.2f})')
+        
+        ax2_short.axhline(y=0, color='black', linestyle='-', alpha=0.3, linewidth=1)
+        ax2_short.axhline(y=price, color='darkgreen', linestyle=':', alpha=0.5, linewidth=1.5, 
+                         label=f'Max Profit: ${price:.2f}')
+        
+        # Maximum loss for short position
+        if option_type == "Call":
+            max_loss_short = -(spot_prices[-1] - K) + price
+            ax2_short.axhline(y=max_loss_short, color='red', linestyle=':', alpha=0.3, 
+                            linewidth=1, label='Max Loss: Unlimited')
         else:
-            # Single position analysis
-            if position_type == "Long Position":
-                st.markdown("#### **Long Position Analysis (Buyer)**")
-                if option_type == "Call":
-                    st.markdown(f"""
-                    - **Premium Paid**: ${price:.2f}
-                    - **Breakeven Price**: ${breakeven_long:.2f}
-                    - **Maximum Loss**: -${price:.2f} (limited to premium paid)
-                    - **Maximum Profit**: Unlimited (stock can rise indefinitely)
-                    - **Profit Condition**: Stock price > ${breakeven_long:.2f}
-                    - **Strategy**: Bullish - You profit if the stock rises significantly
-                    """)
-                else:
-                    st.markdown(f"""
-                    - **Premium Paid**: ${price:.2f}
-                    - **Breakeven Price**: ${breakeven_long:.2f}
-                    - **Maximum Loss**: -${price:.2f} (limited to premium paid)
-                    - **Maximum Profit**: ${K - price:.2f} (if stock goes to $0)
-                    - **Profit Condition**: Stock price < ${breakeven_long:.2f}
-                    - **Strategy**: Bearish - You profit if the stock falls
-                    """)
-            else:  # Short Position
-                st.markdown("#### **Short Position Analysis (Seller/Writer)**")
-                if option_type == "Call":
-                    st.markdown(f"""
-                    - **Premium Received**: ${price:.2f}
-                    - **Breakeven Price**: ${breakeven_short:.2f}
-                    - **Maximum Profit**: ${price:.2f} (limited to premium received)
-                    - **Maximum Loss**: Unlimited (stock can rise indefinitely)
-                    - **Profit Condition**: Stock price < ${breakeven_short:.2f}
-                    - **Strategy**: Neutral to bearish - You profit if stock stays flat or falls
-                    - **Risk**: Naked call - Must deliver shares if exercised (infinite risk)
-                    """)
-                else:
-                    st.markdown(f"""
-                    - **Premium Received**: ${price:.2f}
-                    - **Breakeven Price**: ${breakeven_short:.2f}
-                    - **Maximum Profit**: ${price:.2f} (limited to premium received)
-                    - **Maximum Loss**: ${K - price:.2f} (if stock goes to $0)
-                    - **Profit Condition**: Stock price > ${breakeven_short:.2f}
-                    - **Strategy**: Neutral to bullish - You profit if stock stays flat or rises
-                    - **Risk**: Must buy shares at strike price if exercised
-                    """)
+            max_loss_short = -K + price
+            ax2_short.axhline(y=max_loss_short, color='red', linestyle=':', alpha=0.3, 
+                            linewidth=1, label=f'Max Loss: ${max_loss_short:.2f}')
+        
+        ax2_short.set_xlabel('Stock Price at Expiration ($)', fontsize=12)
+        ax2_short.set_ylabel('Net Profit/Loss ($)', fontsize=12)
+        ax2_short.set_title(f'Short {option_type} Option: Profit/Loss Diagram', fontsize=14, fontweight='bold')
+        ax2_short.legend(loc='best')
+        ax2_short.grid(True, alpha=0.3)
+        
+        plt.tight_layout()
+        st.pyplot(fig_short)
+        
+        # Short position analysis
+        col_short1, col_short2 = st.columns(2)
+        with col_short1:
+            st.markdown(f"""
+            **Short Position Summary:**
+            
+            - **Position**: Seller/writer of {option_type.lower()} option
+            - **Premium Received**: ${price:.2f}
+            - **Breakeven**: ${breakeven_short:.2f}
+            - **Maximum Profit**: ${price:.2f} (limited to premium)
+            """)
+        
+        with col_short2:
+            if option_type == "Call":
+                st.markdown(f"""
+                **For Short Call:**
+                - **Maximum Loss**: Unlimited
+                - **Profit When**: Stock < ${breakeven_short:.2f}
+                - **Strategy**: Neutral to bearish - Expect stock to stay flat or fall
+                - **Risk**: Naked call - Must deliver shares if exercised
+                """)
+            else:
+                st.markdown(f"""
+                **For Short Put:**
+                - **Maximum Loss**: ${K - price:.2f} (if stock goes to $0)
+                - **Profit When**: Stock > ${breakeven_short:.2f}
+                - **Strategy**: Neutral to bullish - Expect stock to stay flat or rise
+                - **Risk**: Must buy shares at strike price if exercised
+                """)
+        
+        # Comparison section
+        st.markdown("---")
+        st.markdown("### **Long vs Short Position Comparison**")
+        
+        comp_col1, comp_col2 = st.columns(2)
+        with comp_col1:
+            st.markdown("""
+            **Long Position (Buyer):**
+            - Pays premium upfront
+            - Has the right to exercise
+            - Limited risk (premium paid)
+            - Unlimited or large profit potential
+            - Typically used for directional bets
+            """)
+        
+        with comp_col2:
+            st.markdown("""
+            **Short Position (Seller):**
+            - Receives premium upfront
+            - Has the obligation if exercised
+            - Limited profit (premium received)
+            - Unlimited or large risk potential
+            - Typically used for income generation
+            """)
         
         # Moneyness information
         st.markdown("### **Current Option Status**")
@@ -552,4 +548,5 @@ with tab2:
         - **Intrinsic Value**: ${intrinsic_val:.2f}
         - **Time Value**: ${time_val:.2f}
         - **Total Premium**: ${price:.2f}
+        - **Note**: The premium consists of intrinsic value (if any) plus time value
         """)
