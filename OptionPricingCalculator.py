@@ -39,7 +39,7 @@ with tab1:
     to buy or sell an underlying asset at a specified price (strike price) on or before a certain date (expiration).
     """)
     
-    st.subheader("About the Black-Scholes Model)
+    st.subheader("About the Black-Scholes Model")
     
     st.write("""
     The **Black-Scholes model**, developed by Fischer Black and Myron Scholes in 1973, is a groundbreaking 
