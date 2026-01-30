@@ -403,7 +403,7 @@ with tab2:
                 st.write("- **Strategy**: Bullish - Expect stock to rise")
                 
             else:
-                max_profit_long = K - price
+                max_profit_long = (K - price) * 100
                 st.write("**For Long Put:**")
                 st.write("- **Profit When**: Stock < ${:.2f}".format(breakeven_long))
                 st.write("- **Loss When**: Stock ≥ ${:.2f}".format(breakeven_long))
@@ -503,7 +503,7 @@ with tab2:
                 st.write("- **Strategy**: Neutral to bearish - Expect stock to stay flat or fall")
                 st.write("- **Risk**: Naked call - Must deliver shares if exercised")
             else:
-                max_loss_short = K - price
+                max_loss_short = (K - price) * 100
                 st.write("**For Short Put:**")
                 st.write("- **Profit When**: Stock > ${:.2f}".format(breakeven_short))
                 st.write("- **Loss When**: Stock ≤ ${:.2f}".format(breakeven_short))
