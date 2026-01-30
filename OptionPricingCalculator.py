@@ -145,17 +145,15 @@ with tab1:
     
     for col, (name, formula, desc) in zip(greek_cols, greeks):
         with col:
-            # Using st.metric or st.write for the name
+            # Name
             st.write(f"**{name}**")
             
-            # Formula - centered by default
+            # Formula
             st.latex(formula)
             
-            # Description - you can use st.caption or st.write with smaller text
+            # Description
             st.caption(desc)
-            
-            # Or if you want to ensure it's centered without HTML:
-            # st.write(desc)
+            st.write(desc)
 
 # Calculator Page
 with tab2:
