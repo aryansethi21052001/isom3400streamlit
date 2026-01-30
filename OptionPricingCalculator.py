@@ -144,12 +144,11 @@ with tab1:
     
     for col, (name, formula, desc) in zip(greek_cols, greeks):
         with col:
-            # Create visual centering with empty spaces
-            st.write("")  # Top spacer
+            st.write("")
             st.write(f"**{name}**")
             st.latex(formula)
-            st.caption(desc)
-            st.write("")  # Bottom spacer
+            st.caption(desc, text_alignment="center")
+            st.write("")
 
 
 # Calculator Page
