@@ -398,6 +398,7 @@ with tab2:
             if option_type == "Call":
                 st.write(f"""
                 **For Long Call:**
+                
                 - **Maximum Profit**: Unlimited
                 - **Profit When**: Stock > ${breakeven_long:.2f}
                 - **Strategy**: Bullish - Expect stock to rise
@@ -407,6 +408,7 @@ with tab2:
             else:
                 st.write(f"""
                 **For Long Put:**
+                
                 - **Maximum Profit**: ${K - price:.2f} (if stock goes to $0)
                 - **Profit When**: Stock < ${breakeven_long:.2f}
                 - **Strategy**: Bearish - Expect stock to fall
@@ -485,10 +487,10 @@ with tab2:
         plt.tight_layout()
         st.pyplot(fig_short)
         
-        # Short position analysis with moneyness
+        # Short position analysis
         col_short1, col_short2 = st.columns(2)
         with col_short1:
-            st.write(f"""
+            st.markdown(f"""
             **Short Position Summary:**
             
             - **Position**: Seller/writer of {option_type.lower()} option
@@ -502,6 +504,7 @@ with tab2:
             if option_type == "Call":
                 st.write(f"""
                 **For Short Call:**
+                
                 - **Maximum Loss**: Unlimited
                 - **Profit When**: Stock < ${breakeven_short:.2f}
                 - **Strategy**: Neutral to bearish - Expect stock to stay flat or fall
@@ -512,6 +515,7 @@ with tab2:
             else:
                 st.write(f"""
                 **For Short Put:**
+                
                 - **Maximum Loss**: ${K - price:.2f} (if stock goes to $0)
                 - **Profit When**: Stock > ${breakeven_short:.2f}
                 - **Strategy**: Neutral to bullish - Expect stock to stay flat or rise
