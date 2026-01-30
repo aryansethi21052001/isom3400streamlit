@@ -144,16 +144,12 @@ with tab1:
     
     for col, (name, formula, desc) in zip(greek_cols, greeks):
         with col:
-            # Create centered layout using columns
-            left_pad, center_col, right_pad = st.columns([1, 2, 1])
-            
-            with center_col:
-                # Name will be centered in its column
-                st.write(f"**{name}**")
-            
-            # Formula and description go in the main column
+            # Create visual centering with empty spaces
+            st.write("")  # Top spacer
+            st.write(f"**{name}**")
             st.latex(formula)
-            st.caption(desc, text_alignment="center")
+            st.caption(desc)
+            st.write("")  # Bottom spacer
 
 
 # Calculator Page
