@@ -222,26 +222,28 @@ with tab2:
     
     # Main content area
     if calculate_button:
-        st.header("Calculation Results")
+        calc_col1, calc_col2 = st.columns(2)
         
-        # Calculate option price
-        if option_type == "Call":
-            price, d1, d2 = black_scholes_call(S, K, T, r, sigma)
-            option_formula = r"C = S_0 N(d_1) - K e^{-rT} N(d_2)"
-        else:
-            price, d1, d2 = black_scholes_put(S, K, T, r, sigma)
-            option_formula = r"P = K e^{-rT} N(-d_2) - S_0 N(-d_1)"
-        
-        # Display result
-        st.metric(
-            label=f"{option_type} Option Price", 
-            value=f"${price:.2f}",
-            delta=None,
-            delta_color="normal",
-            help="Theoretical Price based on the Black-Scholes Model"
-        )
-
-        st.caption("Theoretical Price based on the Black-Scholes Model", text_alignment="center")
+        with calc_col1:
+            st.header("Calculation Results")
+            
+        with calc_col2:
+            # Calculate option price
+            if option_type == "Call":
+                price, d1, d2 = black_scholes_call(S, K, T, r, sigma)
+                option_formula = r"C = S_0 N(d_1) - K e^{-rT} N(d_2)"
+            else:
+                price, d1, d2 = black_scholes_put(S, K, T, r, sigma)
+                option_formula = r"P = K e^{-rT} N(-d_2) - S_0 N(-d_1)"
+            
+            # Display result
+            st.metric(
+                label=f"{option_type} Option Price", 
+                value=f"${price:.2f}",
+                delta=None,
+                delta_color="normal",
+                help="Theoretical Price based on the Black-Scholes Model"
+            )
         
         st.write("---")
         
