@@ -396,19 +396,23 @@ with tab2:
         
         with col_long2:
             if option_type == "Call":
-                st.write("**For Long Call:**")
-                st.write(f"- **Maximum Profit**: Unlimited")
-                st.write(f"- **Profit When**: Stock > ${breakeven_long:.2f}")
-                st.write(f"- **Strategy**: Bullish - Expect stock to rise")
-                st.write(f"- **Intrinsic Value**: ${intrinsic_val:.2f}")
-                st.write(f"- **Time Value**: ${time_val:.2f}")
+                st.write(f"""
+                **For Long Call:**
+                - **Maximum Profit**: Unlimited
+                - **Profit When**: Stock > ${breakeven_long:.2f}
+                - **Strategy**: Bullish - Expect stock to rise
+                - **Intrinsic Value**: ${intrinsic_val:.2f}
+                - **Time Value**: ${time_val:.2f}
+                """)
             else:
-                st.write("**For Long Put:**")
-                st.write(f"- **Maximum Profit**: ${K - price:.2f} (if stock goes to $0)")
-                st.write(f"- **Profit When**: Stock < ${breakeven_long:.2f}")
-                st.write(f"- **Strategy**: Bearish - Expect stock to fall")
-                st.write(f"- **Intrinsic Value**: ${intrinsic_val:.2f}")
-                st.write(f"- **Time Value**: ${time_val:.2f}")
+                st.write(f"""
+                **For Long Put:**
+                - **Maximum Profit**: \\${K - price:.2f} (if stock goes to $0)
+                - **Profit When**: Stock < ${breakeven_long:.2f}
+                - **Strategy**: Bearish - Expect stock to fall
+                - **Intrinsic Value**: ${intrinsic_val:.2f}
+                - **Time Value**: ${time_val:.2f}
+                """)
     
         st.write("---")
         
@@ -484,7 +488,7 @@ with tab2:
         # Short position analysis
         col_short1, col_short2 = st.columns(2)
         with col_short1:
-            st.markdown(f"""
+            st.write(f"""
             **Short Position Summary:**
             
             - **Position**: Seller/writer of {option_type.lower()} option
