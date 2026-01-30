@@ -390,20 +390,14 @@ with tab2:
             st.write(f"- **Moneyness**: {moneyness}")
             st.write(f"- **Premium Paid**: ${price:.2f}")
             st.write(f"- **Breakeven**: ${breakeven_long:.2f}")
-            
-            if option_type == "Call":
-                st.write("- **Maximum Loss**: -${:.2f} (premium paid)".format(price))
-                st.write("- **Maximum Profit**: Unlimited (stock can rise indefinitely)")
-            else:
-                max_profit_long = K - price
-                st.write("- **Maximum Loss**: -${:.2f} (premium paid)".format(price))
-                st.write("- **Maximum Profit**: ${:.2f} (if stock goes to $0)".format(max_profit_long))
         
         with col_long2:
             if option_type == "Call":
                 st.write("**For Long Call:**")
                 st.write("- **Profit When**: Stock > ${:.2f}".format(breakeven_long))
                 st.write("- **Loss When**: Stock ≤ ${:.2f}".format(breakeven_long))
+                st.write("- **Maximum Loss**: -\\${:.2f} (premium paid)".format(price))
+                st.write("- **Maximum Profit**: Unlimited (stock can rise indefinitely)")
                 st.write("- **Strategy**: Bullish - Expect stock to rise")
                 st.write("- **Intrinsic Value**: ${:.2f}".format(intrinsic_val))
                 st.write("- **Time Value**: ${:.2f}".format(time_val))
@@ -412,6 +406,8 @@ with tab2:
                 st.write("**For Long Put:**")
                 st.write("- **Profit When**: Stock < ${:.2f}".format(breakeven_long))
                 st.write("- **Loss When**: Stock ≥ ${:.2f}".format(breakeven_long))
+                st.write("- **Maximum Loss**: -${:.2f} (premium paid)".format(price))
+                st.write("- **Maximum Profit**: \\${:.2f} (if stock goes to $0)".format(max_profit_long))
                 st.write("- **Strategy**: Bearish - Expect stock to fall")
                 st.write("- **Intrinsic Value**: ${:.2f}".format(intrinsic_val))
                 st.write("- **Time Value**: ${:.2f}".format(time_val))
@@ -495,20 +491,14 @@ with tab2:
             st.write(f"- **Moneyness**: {moneyness}")
             st.write(f"- **Premium Received**: ${price:.2f}")
             st.write(f"- **Breakeven**: ${breakeven_short:.2f}")
-            
-            if option_type == "Call":
-                st.write("- **Maximum Profit**: ${:.2f} (premium received)".format(price))
-                st.write("- **Maximum Loss**: Unlimited (stock can rise indefinitely)")
-            else:
-                max_loss_short = K - price
-                st.write("- **Maximum Profit**: ${:.2f} (premium received)".format(price))
-                st.write("- **Maximum Loss**: -${:.2f} (if stock goes to $0)".format(max_loss_short))
         
         with col_short2:
             if option_type == "Call":
                 st.write("**For Short Call:**")
                 st.write("- **Profit When**: Stock < ${:.2f}".format(breakeven_short))
                 st.write("- **Loss When**: Stock ≥ ${:.2f}".format(breakeven_short))
+                st.write("- **Maximum Profit**: \\${:.2f} (premium received)".format(price))
+                st.write("- **Maximum Loss**: Unlimited (stock can rise indefinitely)")
                 st.write("- **Strategy**: Neutral to bearish - Expect stock to stay flat or fall")
                 st.write("- **Risk**: Naked call - Must deliver shares if exercised")
                 st.write("- **Intrinsic Value**: ${:.2f}".format(intrinsic_val))
@@ -518,6 +508,8 @@ with tab2:
                 st.write("**For Short Put:**")
                 st.write("- **Profit When**: Stock > ${:.2f}".format(breakeven_short))
                 st.write("- **Loss When**: Stock ≤ ${:.2f}".format(breakeven_short))
+                st.write("- **Maximum Profit**: \\${:.2f} (premium received)".format(price))
+                st.write("- **Maximum Loss**: -${:.2f} (if stock goes to $0)".format(max_loss_short))
                 st.write("- **Strategy**: Neutral to bullish - Expect stock to stay flat or rise")
                 st.write("- **Risk**: Must buy shares at strike price if exercised")
                 st.write("- **Intrinsic Value**: ${:.2f}".format(intrinsic_val))
