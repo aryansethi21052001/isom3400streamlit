@@ -240,10 +240,8 @@ with tab2:
             st.metric(
                 label=f"{option_type} Option Price", 
                 value=f"${price:.2f}",
-                delta=None,
-                delta_color="normal",
             )
-            st.caption("Theoretical Price based on the Black-Scholes Model")
+            st.caption("*Theoretical Price based on the Black-Scholes Model*")
         
         st.write("---")
         
