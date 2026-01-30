@@ -222,7 +222,7 @@ with tab2:
     
     # Main content area
     if calculate_button:
-        st.subheader("Calculation Results")
+        st.header("Calculation Results")
         
         # Calculate option price
         if option_type == "Call":
@@ -248,7 +248,7 @@ with tab2:
         """, unsafe_allow_html=True)
         
         # Display Greeks
-        st.subheader("Option Greeks")
+        st.header("Option Greeks")
         
         # Calculate Greeks
         if option_type == "Call":
@@ -278,7 +278,7 @@ with tab2:
                 st.metric(label=name, value=value)
                 st.caption(desc)
 
-        st.subheader("Payoff Visualisation")
+        st.header("Payoff Visualisation")
         
         # Create payoff diagram
         spot_prices = np.linspace(S * 0.5, S * 1.5, 200)
