@@ -233,19 +233,20 @@ with tab2:
             option_formula = r"P = K e^{-rT} N(-d_2) - S_0 N(-d_1)"
         
         # Display result
-        st.markdown(f"""
-        <div style='text-align: center; background: linear-gradient(135deg, #1E88E5, #0D47A1); padding: 30px; border-radius: 12px; margin: 20px 0;'>
-            <div style='color: white; font-size: 1.1rem; margin-bottom: 10px;'>
-                {option_type} Option Price
-            </div>
-            <div style='color: white; font-size: 4rem; font-weight: bold; margin: 20px 0;'>
-                ${price:.2f}
-            </div>
-            <div style='color: rgba(255,255,255,0.9); font-size: 0.9rem;'>
-                Theoretical Price based on the Black-Scholes Model
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        col1, col2, col3 = st.columns([1, 3, 1])
+        
+        with col2:
+            # Create a container
+            price_container = st.container()
+            
+            with price_container:
+                # Title
+                st.write(f"##### {option_type} Option Price")
+                
+                # Price value with custom styling using markdown formatting
+                st.write(f"### ${price:.2f}")
+                
+                st.caption("Theoretical Price based on the Black-Scholes Model")
         
         st.write("---")
         
