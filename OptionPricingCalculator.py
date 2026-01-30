@@ -233,20 +233,15 @@ with tab2:
             option_formula = r"P = K e^{-rT} N(-d_2) - S_0 N(-d_1)"
         
         # Display result
-        col1, col2, col3 = st.columns([1, 3, 1])
-        
-        with col2:
-            # Create a container
-            price_container = st.container()
-            
-            with price_container:
-                # Title
-                st.write(f"##### {option_type} Option Price")
-                
-                # Price value with custom styling using markdown formatting
-                st.write(f"### ${price:.2f}")
-                
-                st.caption("Theoretical Price based on the Black-Scholes Model")
+        st.metric(
+            label=f"{option_type} Option Price", 
+            value=f"${price:.2f}",
+            delta=None,
+            delta_color="normal",
+            help="Theoretical Price based on the Black-Scholes Model"
+        )
+
+        st.caption("Theoretical Price based on the Black-Scholes Model", text_alignment="center")
         
         st.write("---")
         
