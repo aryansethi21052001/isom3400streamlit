@@ -130,11 +130,10 @@ with tab1:
     """)
 
     st.subheader("Option Greeks")
-        
     st.write('The "Greeks" measure the sensitivity of the option price to various factors:')
-        
+    
     greek_cols = st.columns(5)
-        
+    
     greeks = [
         ("Δ (Delta)", r"\frac{\partial V}{\partial S}", "Price sensitivity to underlying asset"),
         ("Γ (Gamma)", r"\frac{\partial^2 V}{\partial S^2}", "Delta's sensitivity to price changes"),
@@ -145,15 +144,17 @@ with tab1:
     
     for col, (name, formula, desc) in zip(greek_cols, greeks):
         with col:
-            # Name
-            st.write(f"**{name}**")
+            # Create centered layout using columns
+            left_pad, center_col, right_pad = st.columns([1, 2, 1])
             
-            # Formula
+            with center_col:
+                # Name will be centered in its column
+                st.write(f"**{name}**")
+            
+            # Formula and description go in the main column
             st.latex(formula)
-            
-            # Description
-            st.caption(desc)
-            st.write(desc)
+            st.caption(desc, text_alignment="center")
+
 
 # Calculator Page
 with tab2:
