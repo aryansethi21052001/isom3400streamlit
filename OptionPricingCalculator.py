@@ -383,36 +383,38 @@ with tab2:
         st.pyplot(fig_long)
         
         col_long1, col_long2 = st.columns(2)
+        
         with col_long1:
-            st.write(f"""
-            **Long Position Summary:**
+            st.write("**Long Position Summary:**")
+            st.write(f"- **Position**: Buyer of {option_type.lower()} option")
+            st.write(f"- **Moneyness**: {moneyness}")
+            st.write(f"- **Premium Paid**: ${price:.2f}")
+            st.write(f"- **Breakeven**: ${breakeven_long:.2f}")
             
-            - **Position**: Buyer of {option_type.lower()} option
-            - **Moneyness**: {moneyness}
-            - **Premium Paid**: ${price:.2f}
-            - **Breakeven**: ${breakeven_long:.2f}
-            - **Maximum Loss**: -${price:.2f} (limited to premium)
-            """)
+            if option_type == "Call":
+                st.write("- **Maximum Loss**: -${:.2f} (premium paid)".format(price))
+                st.write("- **Maximum Profit**: Unlimited (stock can rise indefinitely)")
+            else:
+                max_profit_long = K - price
+                st.write("- **Maximum Loss**: -${:.2f} (premium paid)".format(price))
+                st.write("- **Maximum Profit**: ${:.2f} (if stock goes to $0)".format(max_profit_long))
         
         with col_long2:
             if option_type == "Call":
-                st.write(f"""
-                **For Long Call:**
-                - **Maximum Profit**: Unlimited
-                - **Profit When**: Stock > ${breakeven_long:.2f}
-                - **Strategy**: Bullish - Expect stock to rise
-                - **Intrinsic Value**: ${intrinsic_val:.2f}
-                - **Time Value**: ${time_val:.2f}
-                """)
+                st.write("**For Long Call:**")
+                st.write("- **Profit When**: Stock > ${:.2f}".format(breakeven_long))
+                st.write("- **Loss When**: Stock ≤ ${:.2f}".format(breakeven_long))
+                st.write("- **Strategy**: Bullish - Expect stock to rise")
+                st.write("- **Intrinsic Value**: ${:.2f}".format(intrinsic_val))
+                st.write("- **Time Value**: ${:.2f}".format(time_val))
             else:
-                st.write(f"""
-                **For Long Put:**
-                - **Maximum Profit**: \\${K - price:.2f} (if stock goes to $0)
-                - **Profit When**: Stock < ${breakeven_long:.2f}
-                - **Strategy**: Bearish - Expect stock to fall
-                - **Intrinsic Value**: ${intrinsic_val:.2f}
-                - **Time Value**: ${time_val:.2f}
-                """)
+                max_profit_long = K - price
+                st.write("**For Long Put:**")
+                st.write("- **Profit When**: Stock < ${:.2f}".format(breakeven_long))
+                st.write("- **Loss When**: Stock ≥ ${:.2f}".format(breakeven_long))
+                st.write("- **Strategy**: Bearish - Expect stock to fall")
+                st.write("- **Intrinsic Value**: ${:.2f}".format(intrinsic_val))
+                st.write("- **Time Value**: ${:.2f}".format(time_val))
     
         st.write("---")
         
@@ -488,36 +490,35 @@ with tab2:
         # Short position analysis
         col_short1, col_short2 = st.columns(2)
         with col_short1:
-            st.write(f"""
-            **Short Position Summary:**
+            st.write("**Short Position Summary:**")
+            st.write(f"- **Position**: Seller/writer of {option_type.lower()} option")
+            st.write(f"- **Moneyness**: {moneyness}")
+            st.write(f"- **Premium Received**: ${price:.2f}")
+            st.write(f"- **Breakeven**: ${breakeven_short:.2f}")
             
-            - **Position**: Seller/writer of {option_type.lower()} option
-            - **Moneyness**: {moneyness}
-            - **Premium Received**: ${price:.2f}
-            - **Breakeven**: ${breakeven_short:.2f}
-            - **Maximum Profit**: ${price:.2f} (limited to premium)
-            """)
+            if option_type == "Call":
+                st.write("- **Maximum Profit**: ${:.2f} (premium received)".format(price))
+                st.write("- **Maximum Loss**: Unlimited (stock can rise indefinitely)")
+            else:
+                max_loss_short = K - price
+                st.write("- **Maximum Profit**: ${:.2f} (premium received)".format(price))
+                st.write("- **Maximum Loss**: -${:.2f} (if stock goes to $0)".format(max_loss_short))
         
         with col_short2:
             if option_type == "Call":
-                st.write(f"""
-                **For Short Call:**
-                
-                - **Maximum Loss**: Unlimited
-                - **Profit When**: Stock < ${breakeven_short:.2f}
-                - **Strategy**: Neutral to bearish - Expect stock to stay flat or fall
-                - **Risk**: Naked call - Must deliver shares if exercised
-                - **Intrinsic Value**: ${intrinsic_val:.2f}
-                - **Time Value**: ${time_val:.2f}
-                """)
+                st.write("**For Short Call:**")
+                st.write("- **Profit When**: Stock < ${:.2f}".format(breakeven_short))
+                st.write("- **Loss When**: Stock ≥ ${:.2f}".format(breakeven_short))
+                st.write("- **Strategy**: Neutral to bearish - Expect stock to stay flat or fall")
+                st.write("- **Risk**: Naked call - Must deliver shares if exercised")
+                st.write("- **Intrinsic Value**: ${:.2f}".format(intrinsic_val))
+                st.write("- **Time Value**: ${:.2f}".format(time_val))
             else:
-                st.write(f"""
-                **For Short Put:**
-                
-                - **Maximum Loss**: \\${K - price:.2f} (if stock goes to $0)
-                - **Profit When**: Stock > ${breakeven_short:.2f}
-                - **Strategy**: Neutral to bullish - Expect stock to stay flat or rise
-                - **Risk**: Must buy shares at strike price if exercised
-                - **Intrinsic Value**: ${intrinsic_val:.2f}
-                - **Time Value**: ${time_val:.2f}
-                """)
+                max_loss_short = K - price
+                st.write("**For Short Put:**")
+                st.write("- **Profit When**: Stock > ${:.2f}".format(breakeven_short))
+                st.write("- **Loss When**: Stock ≤ ${:.2f}".format(breakeven_short))
+                st.write("- **Strategy**: Neutral to bullish - Expect stock to stay flat or rise")
+                st.write("- **Risk**: Must buy shares at strike price if exercised")
+                st.write("- **Intrinsic Value**: ${:.2f}".format(intrinsic_val))
+                st.write("- **Time Value**: ${:.2f}".format(time_val))
