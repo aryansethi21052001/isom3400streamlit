@@ -18,13 +18,13 @@ def black_scholes_put(S, K, T, r, sigma):
     put_price = K * np.exp(-r * T) * norm.cdf(-d2) - S * norm.cdf(-d1)
     return put_price, d1, d2
 
-# Page configuration
+# Page Title
 st.title("Black-Scholes Option Pricing Calculator", text_alignment="center")
 
 # Navigation
 tab1, tab2 = st.tabs(["Home", "Calculator"])
 
-# Home Page (unchanged)
+# Home Page
 with tab1:
     st.subheader("Introduction")
     st.write("""
@@ -222,7 +222,7 @@ with tab2:
     
     # Main content area
     if calculate_button:
-        st.markdown("<h2 class='section-header'>Calculation Results</h2>", unsafe_allow_html=True)
+        st.subheader("Calculation Results")
         
         # Calculate option price
         if option_type == "Call":
@@ -248,7 +248,7 @@ with tab2:
         """, unsafe_allow_html=True)
         
         # Display Greeks
-        st.markdown("<h3 class='section-header'>Option Greeks</h3>", unsafe_allow_html=True)
+        st.subheader("Option Greeks")
         
         # Calculate Greeks
         if option_type == "Call":
@@ -278,7 +278,7 @@ with tab2:
                 st.metric(label=name, value=value)
                 st.caption(desc)
 
-        st.markdown("<h2 class='sub-header'>Payoff Visualisation</h2>", unsafe_allow_html=True)
+        st.subheader("Payoff Visualisation")
         
         # Create payoff diagram
         spot_prices = np.linspace(S * 0.5, S * 1.5, 200)
@@ -309,8 +309,8 @@ with tab2:
         profit_loss_long = intrinsic_value - price  # Long: payoff - premium
         profit_loss_short = price - intrinsic_value  # Short: premium - payoff
         
-        # Show LONG POSITION first
-        st.markdown("### **Long Position (Buyer)**")
+        # Long Position Analysis
+        st.subheader("**Long Position (Buyer)**")
         
         # Create figure for long position
         fig_long, (ax1_long, ax2_long) = plt.subplots(1, 2, figsize=(15, 6))
@@ -378,10 +378,9 @@ with tab2:
         plt.tight_layout()
         st.pyplot(fig_long)
         
-        # Long position analysis with moneyness
         col_long1, col_long2 = st.columns(2)
         with col_long1:
-            st.markdown(f"""
+            st.write(f"""
             **Long Position Summary:**
             
             - **Position**: Buyer of {option_type.lower()} option
@@ -393,7 +392,7 @@ with tab2:
         
         with col_long2:
             if option_type == "Call":
-                st.markdown(f"""
+                st.write(f"""
                 **For Long Call:**
                 - **Maximum Profit**: Unlimited
                 - **Profit When**: Stock > ${breakeven_long:.2f}
@@ -402,7 +401,7 @@ with tab2:
                 - **Time Value**: ${time_val:.2f}
                 """)
             else:
-                st.markdown(f"""
+                st.write(f"""
                 **For Long Put:**
                 - **Maximum Profit**: ${K - price:.2f} (if stock goes to $0)
                 - **Profit When**: Stock < ${breakeven_long:.2f}
@@ -412,10 +411,10 @@ with tab2:
                 """)
         
         # Add separator between long and short positions
-        st.markdown("---")
+        st.write("---")
         
-        # Show SHORT POSITION below
-        st.markdown("### **Short Position (Seller/Writer)**")
+        # Short Position Analysis
+        st.subheader("**Short Position (Seller/Writer)**")
         
         # Create figure for short position
         fig_short, (ax1_short, ax2_short) = plt.subplots(1, 2, figsize=(15, 6))
@@ -486,7 +485,7 @@ with tab2:
         # Short position analysis with moneyness
         col_short1, col_short2 = st.columns(2)
         with col_short1:
-            st.markdown(f"""
+            st.write(f"""
             **Short Position Summary:**
             
             - **Position**: Seller/writer of {option_type.lower()} option
@@ -498,7 +497,7 @@ with tab2:
         
         with col_short2:
             if option_type == "Call":
-                st.markdown(f"""
+                st.write(f"""
                 **For Short Call:**
                 - **Maximum Loss**: Unlimited
                 - **Profit When**: Stock < ${breakeven_short:.2f}
@@ -508,7 +507,7 @@ with tab2:
                 - **Time Value**: ${time_val:.2f}
                 """)
             else:
-                st.markdown(f"""
+                st.write(f"""
                 **For Short Put:**
                 - **Maximum Loss**: ${K - price:.2f} (if stock goes to $0)
                 - **Profit When**: Stock > ${breakeven_short:.2f}
