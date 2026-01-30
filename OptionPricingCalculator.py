@@ -107,7 +107,7 @@ with tab1:
     | *Out-of-The-Money (OTM)* | $S < K$ | $S > K$ | Option has no intrinsic value |
     """
     
-    st.write(moneyness_table, text_alignment="center")
+    st.markdown(moneyness_table, text_alignment="center")
     
     # Add formulas with st.latex()
     st.subheader("**Intrinsic Value Formulas:**")
