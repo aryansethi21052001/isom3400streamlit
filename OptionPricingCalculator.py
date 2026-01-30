@@ -247,6 +247,8 @@ with tab2:
         </div>
         """, unsafe_allow_html=True)
         
+        st.write("---")
+        
         # Display Greeks
         st.header("Option Greeks")
         
@@ -277,7 +279,9 @@ with tab2:
             with col:
                 st.metric(label=name, value=value)
                 st.caption(desc)
-
+        
+        st.write("---")
+        
         st.header("Payoff Visualisation")
         
         # Create payoff diagram
@@ -409,8 +413,7 @@ with tab2:
                 - **Intrinsic Value**: ${intrinsic_val:.2f}
                 - **Time Value**: ${time_val:.2f}
                 """)
-        
-        # Add separator between long and short positions
+    
         st.write("---")
         
         # Short Position Analysis
