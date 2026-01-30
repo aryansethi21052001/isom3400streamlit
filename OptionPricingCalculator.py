@@ -297,12 +297,20 @@ with tab2:
             # Breakeven points
             breakeven_long = K + price
             breakeven_short = K + price
+            # Moneyness
+            moneyness = "In-The-Money (ITM)" if S > K else "Out-of-The-Money (OTM)" if S < K else "At-The-Money (ATM)"
+            intrinsic_val = max(S - K, 0)
         else:
             intrinsic_value = np.maximum(K - spot_prices, 0)
             option_color = "red"
             # Breakeven points
             breakeven_long = K - price
             breakeven_short = K - price
+            # Moneyness
+            moneyness = "In-The-Money (ITM)" if S < K else "Out-of-The-Money (OTM)" if S > K else "At-The-Money (ATM)"
+            intrinsic_val = max(K - S, 0)
+        
+        time_val = price - intrinsic_val
         
         # Calculate profit/loss for long and short positions
         profit_loss_long = intrinsic_value - price  # Long: payoff - premium
@@ -377,13 +385,14 @@ with tab2:
         plt.tight_layout()
         st.pyplot(fig_long)
         
-        # Long position analysis
+        # Long position analysis with moneyness
         col_long1, col_long2 = st.columns(2)
         with col_long1:
             st.markdown(f"""
             **Long Position Summary:**
             
             - **Position**: Buyer of {option_type.lower()} option
+            - **Moneyness**: {moneyness}
             - **Premium Paid**: ${price:.2f}
             - **Breakeven**: ${breakeven_long:.2f}
             - **Maximum Loss**: -${price:.2f} (limited to premium)
@@ -396,6 +405,8 @@ with tab2:
                 - **Maximum Profit**: Unlimited
                 - **Profit When**: Stock > ${breakeven_long:.2f}
                 - **Strategy**: Bullish - Expect stock to rise
+                - **Intrinsic Value**: ${intrinsic_val:.2f}
+                - **Time Value**: ${time_val:.2f}
                 """)
             else:
                 st.markdown(f"""
@@ -403,6 +414,8 @@ with tab2:
                 - **Maximum Profit**: ${K - price:.2f} (if stock goes to $0)
                 - **Profit When**: Stock < ${breakeven_long:.2f}
                 - **Strategy**: Bearish - Expect stock to fall
+                - **Intrinsic Value**: ${intrinsic_val:.2f}
+                - **Time Value**: ${time_val:.2f}
                 """)
         
         # Add separator between long and short positions
@@ -477,13 +490,14 @@ with tab2:
         plt.tight_layout()
         st.pyplot(fig_short)
         
-        # Short position analysis
+        # Short position analysis with moneyness
         col_short1, col_short2 = st.columns(2)
         with col_short1:
             st.markdown(f"""
             **Short Position Summary:**
             
             - **Position**: Seller/writer of {option_type.lower()} option
+            - **Moneyness**: {moneyness}
             - **Premium Received**: ${price:.2f}
             - **Breakeven**: ${breakeven_short:.2f}
             - **Maximum Profit**: ${price:.2f} (limited to premium)
@@ -497,6 +511,8 @@ with tab2:
                 - **Profit When**: Stock < ${breakeven_short:.2f}
                 - **Strategy**: Neutral to bearish - Expect stock to stay flat or fall
                 - **Risk**: Naked call - Must deliver shares if exercised
+                - **Intrinsic Value**: ${intrinsic_val:.2f}
+                - **Time Value**: ${time_val:.2f}
                 """)
             else:
                 st.markdown(f"""
@@ -505,48 +521,6 @@ with tab2:
                 - **Profit When**: Stock > ${breakeven_short:.2f}
                 - **Strategy**: Neutral to bullish - Expect stock to stay flat or rise
                 - **Risk**: Must buy shares at strike price if exercised
+                - **Intrinsic Value**: ${intrinsic_val:.2f}
+                - **Time Value**: ${time_val:.2f}
                 """)
-        
-        # Comparison section
-        st.markdown("---")
-        st.markdown("### **Long vs Short Position Comparison**")
-        
-        comp_col1, comp_col2 = st.columns(2)
-        with comp_col1:
-            st.markdown("""
-            **Long Position (Buyer):**
-            - Pays premium upfront
-            - Has the right to exercise
-            - Limited risk (premium paid)
-            - Unlimited or large profit potential
-            - Typically used for directional bets
-            """)
-        
-        with comp_col2:
-            st.markdown("""
-            **Short Position (Seller):**
-            - Receives premium upfront
-            - Has the obligation if exercised
-            - Limited profit (premium received)
-            - Unlimited or large risk potential
-            - Typically used for income generation
-            """)
-        
-        # Moneyness information
-        st.markdown("### **Current Option Status**")
-        if option_type == "Call":
-            moneyness = "In-The-Money (ITM)" if S > K else "Out-of-The-Money (OTM)" if S < K else "At-The-Money (ATM)"
-            intrinsic_val = max(S - K, 0)
-            time_val = price - intrinsic_val
-        else:
-            moneyness = "In-The-Money (ITM)" if S < K else "Out-of-The-Money (OTM)" if S > K else "At-The-Money (ATM)"
-            intrinsic_val = max(K - S, 0)
-            time_val = price - intrinsic_val
-        
-        st.markdown(f"""
-        - **Moneyness**: {moneyness}
-        - **Intrinsic Value**: ${intrinsic_val:.2f}
-        - **Time Value**: ${time_val:.2f}
-        - **Total Premium**: ${price:.2f}
-        - **Note**: The premium consists of intrinsic value (if any) plus time value
-        """)
