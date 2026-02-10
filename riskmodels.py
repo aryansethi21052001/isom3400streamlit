@@ -31,40 +31,42 @@ def fetch_stock_data(symbol, start_date, end_date):
 
 @st.cache_data
 def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confidence_level, use_log_returns=True):
-    """Calculate parametric VaR & ES for n-day horizon"""
+    """
+    Calculate VaR and Expected Shortfall using parametric method.
     
-    alpha = 1 - (confidence_level / 100)  # Tail probability (e.g., 0.05 for 95%)
-    z_score = stats.norm.ppf(alpha)  # Negative value for left tail (e.g., -1.645 for 95%)
+    Parameters:
+        investment: Initial investment amount
+        mean_return: Annualized mean return (decimal)
+        std_dev: Annualized standard deviation (decimal)
+        n_days: Time horizon in days
+        confidence_level: Confidence level (e.g., 0.95)
+        use_log_returns: True for log returns, False for simple returns
+    """
     
-    # Scale parameters for n-day horizon
-    mean_n_days = mean_return * n_days
-    std_n_days = std_dev * np.sqrt(n_days)
+    # Scale to horizon
+    horizon_mean = mean_return * n_days
+    horizon_std = std_dev * np.sqrt(n_days)
+    
+    # Z-score for confidence level
+    z = norm.ppf(1 - confidence_level)
     
     if use_log_returns:
-       # VaR: the alpha-quantile of returns
-        var_return = mean_n_days + z_score * std_n_days
+        # Log returns (log-normal distribution)
+        var = investment * (1 - np.exp(horizon_mean + z * horizon_std))
         
-        # Expected Shortfall: E[Return | Return < VaR_return]
-        # For normal distribution: E[X | X < q] = μ - σ * φ(z) / Φ(z)
-        # where z = (q - μ) / σ
-        phi_z = stats.norm.pdf(z_score)
-        es_return = mean_n_days - std_n_days * (phi_z / (alpha * z_score))
-        
-        # Convert to losses (positive values)
-        # Loss = Investment * (1 - exp(return)) for log returns
-        var = investment * (1 - np.exp(var_return))
-        es = investment * (1 - np.exp(es_return))
+        # ES for log-normal distribution
+        es = investment * (1 - np.exp(horizon_mean + 0.5 * horizon_std**2) * 
+                          norm.cdf(norm.ppf(confidence_level) - horizon_std) / (1 - confidence_level))
     else:
-        # VaR: the alpha-quantile of returns
-        var_return = mean_n_days + z_score * std_n_days
+        # Simple returns (normal distribution)
+        # VaR: investment * (-μ - z*σ) for positive loss
+        # Since z is negative, -z*σ is positive
+        var = -investment * (horizon_mean + z * horizon_std)
         
-        # Expected Shortfall for simple returns
-        phi_z = stats.norm.pdf(z_score)
-        es_return = mean_n_days - std_n_days * (phi_z / (alpha * z_score))
-        
-        # Convert to losses (negative returns become positive losses)
-        var = -investment * var_return
-        es = -investment * es_return
+        # ES for normal distribution
+        # ES = investment * (-μ + σ * φ(-z)/(1-α))
+        # Since z = norm.ppf(1-α), -z = norm.ppf(α) which is positive
+        es = investment * (-horizon_mean + horizon_std * norm.pdf(-z) / (1 - confidence_level))
     
     return var, es, z_score
 
