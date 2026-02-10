@@ -910,4 +910,21 @@ with tab2:  # Calculator page
                     label="Download Complete Results as CSV",
                     data=csv,
                     file_name=f"var_es_{stock_symbol}_{forecast_days}d_{confidence_level}pc_{datetime.now().strftime('%Y%m%d')}.csv",
-                    mime="text/csv",
+                    mime="text/csv",                    use_container_width=True
+                )
+        
+        except Exception as e:
+            st.error(f"An error occurred: {str(e)}")
+            st.info("""
+            **Troubleshooting steps:**
+            1. Check your internet connection
+            2. Verify the stock symbol exists (try AAPL, MSFT, GOOGL)
+            3. Try a much longer date range (e.g., 2 years)
+            4. Check if the stock trades during your selected period
+            5. Try without custom parameters first
+            """)
+    
+    else:
+        # Display placeholder when no calculation has been performed
+        st.markdown("---")
+        st.info("Enter your parameters above and click 'Calculate VaR & ES' to begin analysis.")
