@@ -31,21 +31,32 @@ def fetch_stock_data(symbol, start_date, end_date):
 
 @st.cache_data
 def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confidence_level, use_log_returns=True):
-    """Calculate parametric VaR & ES for n-day horizon"""
+    """Calculate parametric VaR & ES for n-day horizon
+    
+    CORRECTED FORMULAS:
+    VaR represents the loss (positive value) at the confidence level
+    ES represents the expected loss beyond VaR (positive value)
+    """
     alpha = 1 - (confidence_level / 100)
-    z_score = stats.norm.ppf(alpha)
+    z_score = stats.norm.ppf(alpha) 
     
     if use_log_returns:
-        # For log returns: VaR = P * (1 - exp(μ*n + Zα*σ*√n))
+        # For log returns, the loss at the alpha percentile is:
+        # Loss = P * (1 - exp(μ*n + Zα*σ*√n))
+        # Since Zα is negative, this gives us the loss amount
         var = investment * (1 - np.exp(mean_return * n_days + z_score * std_dev * np.sqrt(n_days)))
-        # ES = P * (1 - exp(μ*n + σ*√n * φ(Zα)/(1-α)))
-        es = investment * (1 - np.exp(mean_return * n_days + std_dev * np.sqrt(n_days) * 
+        
+        # ES (Expected Shortfall) - average loss in the tail
+        # ES = P * (1 - exp(μ*n - σ*√n * φ(Zα)/α))
+        es = investment * (1 - np.exp(mean_return * n_days - std_dev * np.sqrt(n_days) * 
                                      stats.norm.pdf(z_score) / alpha))
     else:
-        # For simple returns: VaR = P * (μ*n - Zα*σ*√n)
-        var = investment * (mean_return * n_days - z_score * std_dev * np.sqrt(n_days))
-        # ES = P * (μ*n - σ*√n * φ(Zα)/(1-α))
-        es = investment * (mean_return * n_days - std_dev * np.sqrt(n_days) * 
+        # For simple returns: VaR = -P * (μ*n + Zα*σ*√n)
+        # Since Zα is negative, this formula gives us the loss
+        var = -investment * (mean_return * n_days + z_score * std_dev * np.sqrt(n_days))
+        
+        # ES = -P * (μ*n + σ*√n * φ(Zα)/α)
+        es = -investment * (mean_return * n_days + std_dev * np.sqrt(n_days) * 
                           stats.norm.pdf(z_score) / alpha)
     
     return var, es, z_score
@@ -53,6 +64,7 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
 @st.cache_data
 def calculate_monte_carlo_var_es(investment, mean_return, std_dev, n_days, confidence_level, n_simulations, use_log_returns=True):
     """Calculate VaR and ES using Monte Carlo simulation"""
+    
     np.random.seed(42)
     
     if use_log_returns:
@@ -68,21 +80,26 @@ def calculate_monte_carlo_var_es(investment, mean_return, std_dev, n_days, confi
         final_values = investment * cumulative_simple_returns
         portfolio_returns = final_values - investment
     
-    # Sort returns from worst to best (most negative to most positive)
-    sorted_returns = np.sort(portfolio_returns)
+    # Calculate losses (negative returns become positive losses)
+    portfolio_losses = -portfolio_returns  # Convert returns to losses
     
-    # Calculate index for VaR (α percentile)
+    # Sort losses from smallest to largest
+    sorted_losses = np.sort(portfolio_losses)
+    
+    # Calculate index for VaR (α percentile of losses, or (1-α) percentile of returns)
     alpha = 1 - (confidence_level / 100)
-    var_idx = int(np.floor(alpha * n_simulations))
+    var_idx = int(np.ceil((1 - alpha) * n_simulations)) - 1
     
     # Ensure index is within bounds
     var_idx = max(0, min(var_idx, n_simulations - 1))
     
-    var_mc = sorted_returns[var_idx]
+    # VaR is the loss at the (1-α) percentile
+    var_mc = sorted_losses[var_idx]
     
-    # Calculate ES as average of returns worse than VaR
-    if var_idx > 0:
-        es_mc = sorted_returns[:var_idx].mean()
+    # Calculate ES as average of losses greater than VaR
+    tail_losses = sorted_losses[var_idx:]
+    if len(tail_losses) > 0:
+        es_mc = tail_losses.mean()
     else:
         es_mc = var_mc  # Fallback if no tail observations
     
@@ -117,17 +134,23 @@ with tab1:
         **Value at Risk (VaR)** is a statistical measure that quantifies the level of financial risk 
         within a firm, portfolio, or position over a specific time frame. It estimates the maximum 
         potential loss with a given confidence level.
+        
+        **Example:** A 1-day 95% VaR of $1 million means there is a 95% confidence that losses 
+        will not exceed $1 million in one day (or 5% chance of exceeding it).
         """)
         
-        st.markdown("#### Formula:")
-        st.latex(r"VaR = P \times (\mu \times n - Z_{\alpha} \times \sigma \times \sqrt{n})")
+        st.markdown("#### Formula (Log Returns):")
+        st.latex(r"VaR = P \times (1 - e^{\mu n + Z_{\alpha} \sigma \sqrt{n}})")
+        
+        st.markdown("#### Formula (Simple Returns):")
+        st.latex(r"VaR = -P \times (\mu n + Z_{\alpha} \sigma \sqrt{n})")
         
         st.markdown("**Where:**")
         st.markdown(r"""
         - $P$ = Initial investment
         - $\mu$ = Mean daily return
         - $n$ = Time horizon in days
-        - $Z_{\alpha}$ = Z-score for confidence level $\alpha$
+        - $Z_{\alpha}$ = Z-score for confidence level (negative value, e.g., -1.645 for 95%)
         - $\sigma$ = Daily standard deviation
         """)
     
@@ -137,20 +160,26 @@ with tab1:
         **Expected Shortfall (ES)**, also known as Conditional VaR (CVaR), measures the average loss 
         that occurs in the worst-case scenarios beyond the VaR level. It provides a more 
         comprehensive view of tail risk.
+        
+        **Example:** If 95% VaR is $1M, the ES might be $1.5M, meaning the average loss 
+        in the worst 5% of cases is $1.5M.
         """)
         
-        st.markdown("#### Formula:")
-        st.latex(r"ES = P \times (\mu \times n - \sigma \times \sqrt{n} \times \frac{\phi(Z_{\alpha})}{1-\alpha})")
+        st.markdown("#### Formula (Log Returns):")
+        st.latex(r"ES = P \times (1 - e^{\mu n - \sigma \sqrt{n} \frac{\phi(Z_{\alpha})}{\alpha}})")
+        
+        st.markdown("#### Formula (Simple Returns):")
+        st.latex(r"ES = -P \times (\mu n + \sigma \sqrt{n} \frac{\phi(Z_{\alpha})}{\alpha})")
         
         st.markdown("**Where:**")
         st.markdown(r"""
         - $P$ = Initial investment
         - $\mu$ = Mean daily return
         - $n$ = Time horizon in days
-        - $Z_{\alpha}$ = Z-score for confidence level $\alpha$
+        - $Z_{\alpha}$ = Z-score for confidence level
         - $\sigma$ = Daily standard deviation
         - $\phi(Z_{\alpha})$ = Normal density at the VaR quantile
-        - $\alpha$ = Confidence level (e.g., 0.05 for 95%)
+        - $\alpha$ = Tail probability (e.g., 0.05 for 95% confidence)
         """)
     
     st.markdown("---")
@@ -166,6 +195,9 @@ with tab1:
     2. **Volatility increases** at $\sqrt{n}$ rate
     3. **Mean return increases** at linear rate
     4. **Distribution widens** with longer horizons
+    
+    **Important Note:** VaR and ES are reported as **positive loss amounts**. A VaR of $10,000 
+    means you could lose up to $10,000 with the given confidence level.
     """)
 
 with tab2:
@@ -409,9 +441,9 @@ with tab2:
                 
                 stats_col1, stats_col2, stats_col3, stats_col4 = st.columns(4)
                 with stats_col1:
-                    st.metric("Daily Mean", f"{mean_return*100:.2f}%")
+                    st.metric("Daily Mean", f"{mean_return*100:.4f}%")
                 with stats_col2:
-                    st.metric("Daily Std Dev", f"{std_dev*100:.2f}%")
+                    st.metric("Daily Std Dev", f"{std_dev*100:.4f}%")
                 with stats_col3:
                     annualized_vol = std_dev * np.sqrt(252)
                     st.metric("Annual Volatility", f"{annualized_vol*100:.2f}%")
@@ -428,12 +460,14 @@ with tab2:
                 
                 scale_col1, scale_col2 = st.columns(2)
                 with scale_col1:
-                    st.metric(f"{forecast_days}-Day Mean Return", f"{scaled_mean*100:.2f}%")
+                    st.metric(f"{forecast_days}-Day Mean Return", f"{scaled_mean*100:.4f}%")
                 with scale_col2:
-                    st.metric(f"{forecast_days}-Day Volatility", f"{scaled_vol*100:.2f}%")
+                    st.metric(f"{forecast_days}-Day Volatility", f"{scaled_vol*100:.4f}%")
                 
                 # Calculate VaR & ES
-                var_parametric, es_parametric, z_score = calculate_parametric_var_es(investment, mean_return, std_dev, forecast_days, confidence_level, use_log_returns)
+                var_parametric, es_parametric, z_score = calculate_parametric_var_es(
+                    investment, mean_return, std_dev, forecast_days, confidence_level, use_log_returns
+                )
                 
                 var_monte_carlo, es_monte_carlo, portfolio_returns, daily_returns = calculate_monte_carlo_var_es(
                     investment, mean_return, std_dev, forecast_days, confidence_level, n_simulations, use_log_returns
@@ -446,14 +480,14 @@ with tab2:
                 results_col1, results_col2 = st.columns(2)
                 with results_col1:
                     st.markdown("##### Parametric Method")
-                    st.metric(f"Value at Risk ({confidence_level}%)", f"-${abs(var_parametric):,.2f}")
-                    st.metric("Expected Shortfall", f"-${abs(es_parametric):,.2f}")
+                    st.metric(f"Value at Risk ({confidence_level}%)", f"${abs(var_parametric):,.2f}")
+                    st.metric("Expected Shortfall", f"${abs(es_parametric):,.2f}")
                     st.caption(f"Z-score: {z_score:.4f}")
                 
                 with results_col2:
                     st.markdown("##### Monte Carlo Simulation")
-                    st.metric(f"Value at Risk ({confidence_level}%)", f"-${abs(var_monte_carlo):,.2f}")
-                    st.metric("Expected Shortfall", f"-${abs(es_monte_carlo):,.2f}")
+                    st.metric(f"Value at Risk ({confidence_level}%)", f"${abs(var_monte_carlo):,.2f}")
+                    st.metric("Expected Shortfall", f"${abs(es_monte_carlo):,.2f}")
                     st.caption(f"Based on {n_simulations:,} simulations")
                 
                 # Percentage of investment
@@ -491,8 +525,8 @@ with tab2:
                     legend_items = [
                         ('Simulated Returns', 'rgba(31, 119, 180, 0.7)'),
                         ('Tail Risk Region', 'rgba(214, 39, 40, 0.3)'),
-                        (f'VaR ({confidence_level}%): -${abs(var_monte_carlo):,.2f}', '#d62728'),
-                        (f'Expected Shortfall: -${abs(es_monte_carlo):,.2f}', '#ff7f0e')
+                        (f'VaR ({confidence_level}%): ${abs(var_monte_carlo):,.2f}', '#d62728'),
+                        (f'Expected Shortfall: ${abs(es_monte_carlo):,.2f}', '#ff7f0e')
                     ]
                     
                     for name, color in legend_items:
@@ -516,9 +550,9 @@ with tab2:
                         showlegend=False
                     ))
                     
-                    # Add vertical lines
-                    fig1.add_vline(x=var_monte_carlo, line_dash="dash", line_color="#d62728", line_width=2.5, showlegend=False)
-                    fig1.add_vline(x=es_monte_carlo, line_dash="dot", line_color="#ff7f0e", line_width=2.5, showlegend=False)
+                    # Add vertical lines - VaR and ES are shown as NEGATIVE returns (losses)
+                    fig1.add_vline(x=-var_monte_carlo, line_dash="dash", line_color="#d62728", line_width=2.5, showlegend=False)
+                    fig1.add_vline(x=-es_monte_carlo, line_dash="dot", line_color="#ff7f0e", line_width=2.5, showlegend=False)
                     
                     # Update layout
                     fig1.update_layout(
@@ -543,7 +577,7 @@ with tab2:
                     st.plotly_chart(fig1, use_container_width=True)
                     
                     # Distribution statistics
-                    tail_mask = portfolio_returns <= var_monte_carlo
+                    tail_mask = portfolio_returns <= -var_monte_carlo
                     tail_returns = portfolio_returns[tail_mask]
                     
                     st.caption("Distribution Statistics")
@@ -583,7 +617,7 @@ with tab2:
                     # Add reference lines
                     mean_path = investment * np.cumprod(1 + daily_returns.mean(axis=0))
                     median_path = investment * np.cumprod(1 + np.median(daily_returns, axis=0))
-                    var_portfolio_value = investment + var_monte_carlo
+                    var_portfolio_value = investment - var_monte_carlo  # Subtract loss from investment
                     
                     fig2.add_trace(go.Scatter(
                         x=list(range(forecast_days)), y=mean_path,
@@ -739,8 +773,13 @@ with tab2:
                     st.markdown(f"""
                     ### Parametric Method
                     **For a {forecast_days}-day holding period:**
-                    - **{confidence_level}% confidence** that losses won't exceed **${abs(var_parametric):,.2f}**
-                    - **Expected average loss** in worst {100-confidence_level}% scenarios: **${abs(es_parametric):,.2f}**
+                    - With **{confidence_level}% confidence**, losses won't exceed **${abs(var_parametric):,.2f}**
+                    - In the worst **{100-confidence_level}%** of cases, **expected average loss** is **${abs(es_parametric):,.2f}**
+                    
+                    **Interpretation:**
+                    - There is a **{100-confidence_level}%** chance of losing more than **${abs(var_parametric):,.2f}**
+                    - VaR represents the threshold at the **{confidence_level}th percentile**
+                    - ES shows what happens beyond VaR (tail risk)
                     
                     **Assumptions:**
                     - Returns follow normal distribution
@@ -749,16 +788,21 @@ with tab2:
                     """)
                 
                 with interp_col2:
-                    worst_case_loss = portfolio_returns.min()
-                    probability_below_var = np.mean(portfolio_returns <= var_monte_carlo) * 100
+                    worst_case_loss = -portfolio_returns.min()  # Convert to positive loss
+                    probability_below_var = np.mean(portfolio_returns <= -var_monte_carlo) * 100
                     median_return = np.median(portfolio_returns)
                     
                     st.markdown(f"""
                     ### Monte Carlo Simulation
                     **Based on {n_simulations:,} simulated {forecast_days}-day paths:**
-                    - **{probability_below_var:.1f}%** of scenarios exceeded VaR (target: {100-confidence_level}%)
+                    - **{probability_below_var:.1f}%** of scenarios had losses exceeding VaR (target: {100-confidence_level}%)
                     - **Maximum simulated loss**: **${abs(worst_case_loss):,.2f}**
                     - **Median {forecast_days}-day return**: **${median_return:,.2f}**
+                    
+                    **Interpretation:**
+                    - VaR of **${abs(var_monte_carlo):,.2f}** means you could lose this much with **{100-confidence_level}%** probability
+                    - ES of **${abs(es_monte_carlo):,.2f}** is the average loss when VaR is exceeded
+                    - These are **potential losses**, not portfolio values
                     
                     **Advantages:**
                     - Captures compounding effects
@@ -782,11 +826,11 @@ with tab2:
                     ],
                     'Value': [
                         stock_symbol, f'{investment:,.2f}', forecast_days, f'{confidence_level}',
-                        f'{mean_return*100:.2f}', f'{std_dev*100:.2f}', f'{scaled_mean*100:.2f}',
-                        f'{scaled_vol*100:.2f}', f'-{abs(var_parametric):,.2f}', f'{abs(var_parametric)/investment*100:.2f}',
-                        f'-{abs(es_parametric):,.2f}', f'{abs(es_parametric)/investment*100:.2f}', f'-{abs(var_monte_carlo):,.2f}',
-                        f'{abs(var_monte_carlo)/investment*100:.2f}', f'-{abs(es_monte_carlo):,.2f}', f'{abs(es_monte_carlo)/investment*100:.2f}',
-                        f'{z_score:.4f}', f'{n_simulations:,}', f'-{abs(portfolio_returns.min()):,.2f}',
+                        f'{mean_return*100:.4f}', f'{std_dev*100:.4f}', f'{scaled_mean*100:.4f}',
+                        f'{scaled_vol*100:.4f}', f'{abs(var_parametric):,.2f}', f'{abs(var_parametric)/investment*100:.2f}',
+                        f'{abs(es_parametric):,.2f}', f'{abs(es_parametric)/investment*100:.2f}', f'{abs(var_monte_carlo):,.2f}',
+                        f'{abs(var_monte_carlo)/investment*100:.2f}', f'{abs(es_monte_carlo):,.2f}', f'{abs(es_monte_carlo)/investment*100:.2f}',
+                        f'{z_score:.4f}', f'{n_simulations:,}', f'{abs(worst_case_loss):,.2f}',
                         f'{np.median(portfolio_returns):,.2f}', f'{portfolio_returns.mean():,.2f}'
                     ]
                 })
@@ -802,6 +846,8 @@ with tab2:
         
         except Exception as e:
             st.error(f"An error occurred: {str(e)}")
+            import traceback
+            st.code(traceback.format_exc())
             st.info("""
             **Troubleshooting steps:**
             1. Check your internet connection
