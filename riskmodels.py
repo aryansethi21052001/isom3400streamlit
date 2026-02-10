@@ -27,7 +27,7 @@ def fetch_stock_data(symbol, start_date, end_date):
         end=end_date.strftime('%Y-%m-%d'),
         auto_adjust=False
     )
-    return ticker, stock_data
+    return stock_data
 
 @st.cache_data
 def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confidence_level):
