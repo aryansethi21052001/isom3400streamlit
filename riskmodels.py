@@ -13,7 +13,7 @@ warnings.filterwarnings('ignore')
 st.set_page_config(page_title="VaR & ES Calculator", layout="wide")
 
 # Title
-st.title("Value at Risk (VaR) & Expected Shortfall (ES) Calculator")
+st.title("Value at Risk (VaR) & Expected Shortfall (ES) Calculator", text_alignment="center")
 st.markdown("---")
 
 tab1, tab2 = st.tabs(["Introduction", "Calculator"])
