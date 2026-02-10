@@ -166,10 +166,10 @@ with tab1:
         """)
         
         st.markdown("#### Formula (Log Returns):")
-        st.latex(r"ES = P \times (1 - e^{\mu n - \sigma \sqrt{n} \frac{\phi(Z_{\alpha})}{\alpha}})")
+        st.latex(r"ES = P \times (1 - e^{\mu n - \sigma \sqrt{n} \frac{\phi(Z_{\alpha})}{\1-alpha}})")
         
         st.markdown("#### Formula (Simple Returns):")
-        st.latex(r"ES = -P \times (\mu n + \sigma \sqrt{n} \frac{\phi(Z_{\alpha})}{\alpha})")
+        st.latex(r"ES = -P \times (\mu n + \sigma \sqrt{n} \frac{\phi(Z_{\alpha})}{\1-alpha})")
         
         st.markdown("**Where:**")
         st.markdown(r"""
