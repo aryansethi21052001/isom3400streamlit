@@ -892,4 +892,18 @@ with tab2:  # Calculator page
         st.markdown("---")
         st.info("Enter your parameters above and click 'Calculate VaR & ES' to begin analysis.")
         
-        st.markdown("""
+            st.markdown("""
+        ### How to Use This Calculator
+        
+        1. **Enter Investment Details**: Set your initial investment and select a stock
+        2. **Choose Date Range**: Select historical data period for analysis
+        3. **Set Risk Parameters**: Define time horizon and confidence level
+        4. **Optional Advanced Settings**: Customize statistical parameters if needed
+        5. **Click Calculate**: Generate VaR and ES calculations
+        
+        The calculator will:
+        - Fetch historical stock price data
+        - Calculate daily return statistics
+        - Compute Value at Risk and Expected Shortfall using both parametric and Monte Carlo methods
+        - Generate interactive visualizations of risk metrics
+        """)
