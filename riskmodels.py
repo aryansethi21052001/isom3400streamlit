@@ -264,7 +264,7 @@ with tab2:
                     st.success(f"✓ Retrieved {len(stock_data)} trading days of data for {stock_symbol}")
                     
                     # MODIFICATION 2: Add stock data table
-                    with st.expander("📊 View Retrieved Stock Data"):
+                    with st.expander("View Retrieved Stock Data"):
                         st.markdown(f"### Historical Price Data for {stock_symbol}")
                         
                         display_data = stock_data.copy()
@@ -312,7 +312,7 @@ with tab2:
                             
                             csv = display_data[selected_columns].to_csv()
                             st.download_button(
-                                label="📥 Download Stock Data as CSV",
+                                label="Download Stock Data as CSV",
                                 data=csv,
                                 file_name=f"{stock_symbol}_historical_data_{start_date}_{end_date}.csv",
                                 mime="text/csv"
@@ -553,8 +553,8 @@ with tab2:
                         title=dict(text=f"Monte Carlo Simulation ({n_simulations:,} Paths) for {forecast_days} Days", font=dict(size=16), x=0.5, xanchor='center'),
                         xaxis_title=dict(text="Days", font=dict(size=12)),
                         yaxis_title=dict(text="Portfolio Value ($)", font=dict(size=12)),
-                        xaxis=dict(fixedrange=True, showgrid=True, gridwidth=1, gridcolor='rgba(128, 128, 128, 0.2)'),
-                        yaxis=dict(fixedrange=True, showgrid=True, gridwidth=1, gridcolor='rgba(128, 128, 128, 0.2)'),
+                        xaxis=dict(showgrid=True, gridwidth=1, gridcolor='rgba(128, 128, 128, 0.2)'),
+                        yaxis=dict(showgrid=True, gridwidth=1, gridcolor='rgba(128, 128, 128, 0.2)'),
                         template="plotly_white", height=600, hovermode="closest",
                         legend=dict(
                             yanchor="top", y=0.99, xanchor="left", x=1.02,
