@@ -422,26 +422,31 @@ with tab2:  # Calculator page
                         hovertemplate='<b>Return</b>: $%{x:,.0f}<br><b>Frequency</b>: %{y}<extra></extra>'
                     ))
                     
+                    # Calculate the appropriate y-position based on histogram height at VaR position
+                    # Find the histogram bin that contains the VaR value
+                    var_bin_idx = np.digitize(var_monte_carlo, bin_edges) - 1
+                    if var_bin_idx >= 0 and var_bin_idx < len(hist):
+                        var_y_pos = hist[var_bin_idx] if var_bin_idx < len(hist) else 0
+                    else:
+                        var_y_pos = max(hist) * 0.8  # Fallback position
+                    
+                    # Find the histogram bin that contains the ES value
+                    es_bin_idx = np.digitize(es_monte_carlo, bin_edges) - 1
+                    if es_bin_idx >= 0 and es_bin_idx < len(hist):
+                        es_y_pos = hist[es_bin_idx] if es_bin_idx < len(hist) else 0
+                    else:
+                        es_y_pos = max(hist) * 0.7  # Fallback position
+                    
+                    # Ensure positions don't overlap
+                    if abs(var_bin_idx - es_bin_idx) < 2:  # If they're in same or adjacent bins
+                        es_y_pos = var_y_pos * 0.8  # Place ES lower
+                    
                     # Add VaR line
                     fig1.add_vline(
                         x=var_monte_carlo,
                         line_dash="dash",
                         line_color="#d62728",
-                        line_width=2.5,
-                        annotation=dict(
-                            text=f"<b>VaR ({confidence_level}%)</b><br>-${abs(var_monte_carlo):,.0f}",
-                            font=dict(size=11, color="#d62728"),
-                            bgcolor="rgba(255, 255, 255, 0.9)",
-                            borderwidth=1,
-                            bordercolor="#d62728",
-                            yanchor="bottom",
-                            y=0.95,
-                            xanchor="left",
-                            x=0,
-                            xref="x",
-                            yref="paper",
-                            showarrow=False
-                        )
+                        line_width=2.5
                     )
                     
                     # Add ES line
@@ -449,21 +454,41 @@ with tab2:  # Calculator page
                         x=es_monte_carlo,
                         line_dash="dot",
                         line_color="#ff7f0e",
-                        line_width=2.5,
-                        annotation=dict(
-                            text=f"<b>Expected Shortfall</b><br>-${abs(es_monte_carlo):,.2f}",
-                            font=dict(size=11, color="#ff7f0e"),
-                            bgcolor="rgba(255, 255, 255, 0.9)",
-                            borderwidth=1,
-                            bordercolor="#ff7f0e",
-                            yanchor="bottom",
-                            y=0.85,
-                            xanchor="left",
-                            x=0,
-                            xref="x",
-                            yref="paper",
-                            showarrow=False
-                        )
+                        line_width=2.5
+                    )
+                    
+                    # Add VaR annotation - position it above the histogram bar
+                    fig1.add_annotation(
+                        x=var_monte_carlo,
+                        y=var_y_pos,
+                        xref="x",
+                        yref="y",
+                        text=f"<b>VaR ({confidence_level}%)</b><br>-${abs(var_monte_carlo):,.0f}",
+                        font=dict(size=11, color="#d62728"),
+                        bgcolor="rgba(255, 255, 255, 0.9)",
+                        borderwidth=1,
+                        bordercolor="#d62728",
+                        yanchor="bottom",
+                        xanchor="center",
+                        showarrow=False,
+                        yshift=10  # Position slightly above the histogram bar
+                    )
+                    
+                    # Add ES annotation - position it above the histogram bar
+                    fig1.add_annotation(
+                        x=es_monte_carlo,
+                        y=es_y_pos,
+                        xref="x",
+                        yref="y",
+                        text=f"<b>Expected Shortfall</b><br>-${abs(es_monte_carlo):,.0f}",
+                        font=dict(size=11, color="#ff7f0e"),
+                        bgcolor="rgba(255, 255, 255, 0.9)",
+                        borderwidth=1,
+                        bordercolor="#ff7f0e",
+                        yanchor="bottom",
+                        xanchor="center",
+                        showarrow=False,
+                        yshift=10  # Position slightly above the histogram bar
                     )
                     
                     # Shade the tail region
