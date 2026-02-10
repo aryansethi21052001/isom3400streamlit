@@ -680,10 +680,8 @@ with tab2:  # Calculator page
                 
                 with viz_tab3:
                     # Analyze how VaR scales with different time horizons
-                    horizons_to_analyze = [1, 5, 10, 20, forecast_days]
-                    if forecast_days not in horizons_to_analyze:
-                        horizons_to_analyze.append(forecast_days)
-                        horizons_to_analyze.sort()
+                    horizons_to_analyze = [1, 5, 10, 20, 50, 100, 250, 365, forecast_days]
+                    horizons_to_analyze.sort()
                     
                     parametric_vars = []
                     parametric_es_list = []
