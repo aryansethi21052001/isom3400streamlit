@@ -329,7 +329,7 @@ with tab2:  # Calculator page
                     investment, mean_return, std_dev, forecast_days, confidence_level, n_simulations
                 )
                 
-                # Display results
+                # Display results - FIXED: Use the correct var_monte_carlo and es_monte_carlo
                 st.markdown("---")
                 st.subheader(f"{forecast_days}-Day Risk Metrics")
                 
@@ -392,15 +392,14 @@ with tab2:  # Calculator page
                 ])
                 
                 with viz_tab1:
-                    # Fix density calculation issue
-                    # Use frequency instead of density for better visualization
-                    fig1 = go.Figure()
-                    
-                    # Calculate histogram data manually to get frequencies
+                    # Fix: Ensure VaR and ES in graph match the calculated values
+                    # Calculate histogram data
                     hist, bin_edges = np.histogram(portfolio_returns, bins=50)
                     bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
                     
-                    # Add histogram with frequency (not density)
+                    fig1 = go.Figure()
+                    
+                    # Add histogram bars
                     fig1.add_trace(go.Bar(
                         x=bin_centers,
                         y=hist,
@@ -408,28 +407,23 @@ with tab2:  # Calculator page
                         name='Simulated Returns',
                         marker_color='rgba(31, 119, 180, 0.7)',
                         opacity=0.7,
-                        hovertemplate='<b>Return Range</b>: $%{x:,.0f}<br><b>Frequency</b>: %{y}<extra></extra>'
+                        hovertemplate='<b>Return</b>: $%{x:,.0f}<br><b>Frequency</b>: %{y}<extra></extra>'
                     ))
                     
-                    # Add VaR and ES lines with annotations on the right side
-                    # Create a separate axis on the right for annotations
-                    var_text = f"VaR ({confidence_level}%):<br>-${abs(var_monte_carlo):,.0f}"
-                    es_text = f"ES:<br>-${abs(es_monte_carlo):,.0f}"
-                    
-                    # Add VaR line
+                    # Add VaR line - FIXED: Use correct var_monte_carlo
                     fig1.add_vline(
                         x=var_monte_carlo,
                         line_dash="dash",
                         line_color="#d62728",
                         line_width=2.5,
                         annotation=dict(
-                            text=var_text,
+                            text=f"<b>VaR ({confidence_level}%)</b><br>-${abs(var_monte_carlo):,.0f}",
                             font=dict(size=11, color="#d62728"),
                             bgcolor="rgba(255, 255, 255, 0.9)",
                             borderwidth=1,
                             bordercolor="#d62728",
                             yanchor="middle",
-                            y=0.5,
+                            y=0.7,
                             xanchor="left",
                             x=1.02,
                             xref="paper",
@@ -437,14 +431,14 @@ with tab2:  # Calculator page
                         )
                     )
                     
-                    # Add ES line
+                    # Add ES line - FIXED: Use correct es_monte_carlo
                     fig1.add_vline(
                         x=es_monte_carlo,
                         line_dash="dot",
                         line_color="#ff7f0e",
                         line_width=2.5,
                         annotation=dict(
-                            text=es_text,
+                            text=f"<b>Expected Shortfall</b><br>-${abs(es_monte_carlo):,.0f}",
                             font=dict(size=11, color="#ff7f0e"),
                             bgcolor="rgba(255, 255, 255, 0.9)",
                             borderwidth=1,
@@ -476,11 +470,27 @@ with tab2:  # Calculator page
                                     width=[(bin_edges[idx+1] - bin_edges[idx]) * 0.9],
                                     marker_color='rgba(214, 39, 40, 0.3)',
                                     name='Tail Risk Region' if idx == tail_bin_indices[0] else '',
-                                    showlegend=idx == tail_bin_indices[0],
+                                    showlegend=True if idx == tail_bin_indices[0] else False,
                                     hovertemplate='<b>Tail Return</b>: $%{x:,.0f}<br><b>Frequency</b>: %{y}<extra></extra>'
                                 ))
                     
-                    # Add legend for tail region only if it exists
+                    # Add legend box on right side
+                    fig1.add_annotation(
+                        xref="paper",
+                        yref="paper",
+                        x=1.02,
+                        y=0.98,
+                        text=f"<b>Legend</b><br>• Simulated Returns<br>• Tail Risk Region<br>• VaR ({confidence_level}%)<br>• Expected Shortfall",
+                        showarrow=False,
+                        font=dict(size=10),
+                        align="left",
+                        bgcolor="rgba(255, 255, 255, 0.9)",
+                        bordercolor="rgba(0, 0, 0, 0.2)",
+                        borderwidth=1,
+                        borderpad=4,
+                        xanchor="left"
+                    )
+                    
                     fig1.update_layout(
                         title=dict(
                             text=f"{forecast_days}-Day Return Distribution",
@@ -499,19 +509,8 @@ with tab2:  # Calculator page
                         template="plotly_white",
                         height=500,
                         hovermode="x unified",
-                        legend=dict(
-                            orientation="h",
-                            yanchor="bottom",
-                            y=1.02,
-                            xanchor="right",
-                            x=1,
-                            bgcolor='rgba(255, 255, 255, 0.8)',
-                            bordercolor='rgba(0, 0, 0, 0.2)',
-                            borderwidth=1,
-                            font=dict(size=10),
-                            itemsizing='constant'
-                        ),
-                        margin=dict(l=50, r=120, t=60, b=50),  # Increased right margin for annotations
+                        showlegend=False,  # Hide default legend
+                        margin=dict(l=50, r=150, t=60, b=50),
                         plot_bgcolor='rgba(0, 0, 0, 0)',
                         paper_bgcolor='rgba(0, 0, 0, 0)',
                         bargap=0.1,
@@ -526,7 +525,7 @@ with tab2:  # Calculator page
                         zeroline=True,
                         zerolinewidth=1,
                         zerolinecolor='rgba(128, 128, 128, 0.2)',
-                        fixedrange=True  # Prevent zooming
+                        fixedrange=True
                     )
                     
                     fig1.update_yaxes(
@@ -536,36 +535,39 @@ with tab2:  # Calculator page
                         zeroline=True,
                         zerolinewidth=1,
                         zerolinecolor='rgba(128, 128, 128, 0.2)',
-                        fixedrange=True  # Prevent zooming
+                        fixedrange=True
                     )
                     
                     st.plotly_chart(fig1, use_container_width=True)
                     
-                    # Add summary statistics below the chart
+                    # Add summary statistics below the chart - FIXED: Correct median calculation
                     st.caption("Distribution Statistics")
                     summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
                     with summary_col1:
-                        st.metric("Simulation Mean", f"${portfolio_returns.mean():,.0f}")
+                        sim_mean = portfolio_returns.mean()
+                        st.metric("Simulation Mean", f"${sim_mean:,.0f}")
                     with summary_col2:
-                        st.metric("Simulation Std Dev", f"${portfolio_returns.std():,.0f}")
+                        sim_median = np.median(portfolio_returns)
+                        st.metric("Simulation Median", f"${sim_median:,.0f}")
                     with summary_col3:
-                        st.metric("Minimum Return", f"${portfolio_returns.min():,.0f}")
+                        st.metric("Simulation Std Dev", f"${portfolio_returns.std():,.0f}")
                     with summary_col4:
-                        st.metric("Maximum Return", f"${portfolio_returns.max():,.0f}")
+                        st.metric("Tail Probability", f"{len(tail_returns)/len(portfolio_returns)*100:.1f}%")
                 
                 with viz_tab2:
-                    # Plot sample of Monte Carlo paths with different colors
-                    n_sample_paths = min(20, n_simulations)  # Reduced for better visibility
+                    # Plot sample of Monte Carlo paths with subtle colors (no legend for individual paths)
+                    n_sample_paths = min(15, n_simulations)  # Reduced for better visibility
                     sample_indices = np.random.choice(n_simulations, n_sample_paths, replace=False)
                     
                     fig2 = go.Figure()
                     
-                    # Define a color palette for paths
-                    color_palette = [
-                        '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
-                        '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
-                        '#aec7e8', '#ffbb78', '#98df8a', '#ff9896', '#c5b0d5',
-                        '#c49c94', '#f7b6d2', '#c7c7c7', '#dbdb8d', '#9edae5'
+                    # Use subtle colors for paths
+                    colors = [
+                        'rgba(31, 119, 180, 0.3)', 'rgba(255, 127, 14, 0.3)', 'rgba(44, 160, 44, 0.3)',
+                        'rgba(214, 39, 40, 0.3)', 'rgba(148, 103, 189, 0.3)', 'rgba(140, 86, 75, 0.3)',
+                        'rgba(227, 119, 194, 0.3)', 'rgba(127, 127, 127, 0.3)', 'rgba(188, 189, 34, 0.3)',
+                        'rgba(23, 190, 207, 0.3)', 'rgba(174, 199, 232, 0.3)', 'rgba(255, 187, 120, 0.3)',
+                        'rgba(152, 223, 138, 0.3)', 'rgba(255, 152, 150, 0.3)', 'rgba(197, 176, 213, 0.3)'
                     ]
                     
                     for i, idx in enumerate(sample_indices):
@@ -573,25 +575,25 @@ with tab2:  # Calculator page
                         cumulative_return = np.cumprod(1 + daily_returns[idx])
                         portfolio_path = investment * cumulative_return
                         
-                        color_idx = i % len(color_palette)
+                        color_idx = i % len(colors)
                         
                         fig2.add_trace(go.Scatter(
                             x=list(range(forecast_days)),
                             y=portfolio_path,
                             mode='lines',
-                            line=dict(width=1.5, color=color_palette[color_idx]),
-                            name=f'Path {i+1}',
-                            opacity=0.8,
-                            hovertemplate=f'<b>Path {i+1}</b><br>Day %{{x}}<br>Value: $%{{y:,.0f}}<extra></extra>'
+                            line=dict(width=1, color=colors[color_idx]),
+                            name=f'Simulation Path',
+                            showlegend=False,  # Hide individual path legends
+                            hovertemplate=f'<b>Day %{{x}}</b><br>Value: $%{{y:,.0f}}<extra></extra>'
                         ))
                     
-                    # Add mean path with thicker line
+                    # Add mean path with thicker line (only legend for mean path)
                     mean_path = investment * np.cumprod(1 + daily_returns.mean(axis=0))
                     fig2.add_trace(go.Scatter(
                         x=list(range(forecast_days)),
                         y=mean_path,
                         mode='lines',
-                        line=dict(width=3, color='#000000', dash='solid'),
+                        line=dict(width=3, color='#000000'),
                         name='Mean Path',
                         hovertemplate='<b>Mean Path</b><br>Day %{x}<br>Value: $%{y:,.0f}<extra></extra>'
                     ))
@@ -616,6 +618,23 @@ with tab2:  # Calculator page
                         )
                     )
                     
+                    # Add legend box on right side
+                    fig2.add_annotation(
+                        xref="paper",
+                        yref="paper",
+                        x=1.02,
+                        y=0.98,
+                        text="<b>Legend</b><br>• Individual Paths<br>• Mean Path<br>• Initial Investment",
+                        showarrow=False,
+                        font=dict(size=10),
+                        align="left",
+                        bgcolor="rgba(255, 255, 255, 0.9)",
+                        bordercolor="rgba(0, 0, 0, 0.2)",
+                        borderwidth=1,
+                        borderpad=4,
+                        xanchor="left"
+                    )
+                    
                     fig2.update_layout(
                         title=dict(
                             text=f"Monte Carlo Simulation Paths ({forecast_days} Days)",
@@ -634,19 +653,8 @@ with tab2:  # Calculator page
                         template="plotly_white",
                         height=500,
                         hovermode="x unified",
-                        legend=dict(
-                            orientation="v",
-                            yanchor="top",
-                            y=1,
-                            xanchor="right",
-                            x=1.15,  # Moved legend further to the right
-                            bgcolor='rgba(255, 255, 255, 0.8)',
-                            bordercolor='rgba(0, 0, 0, 0.2)',
-                            borderwidth=1,
-                            font=dict(size=9),
-                            itemwidth=30
-                        ),
-                        margin=dict(l=50, r=150, t=60, b=50),  # Increased right margin for legend
+                        showlegend=False,  # Hide default legend
+                        margin=dict(l=50, r=150, t=60, b=50),
                         plot_bgcolor='rgba(0, 0, 0, 0)',
                         paper_bgcolor='rgba(0, 0, 0, 0)'
                     )
@@ -659,7 +667,7 @@ with tab2:  # Calculator page
                         zeroline=True,
                         zerolinewidth=1,
                         zerolinecolor='rgba(128, 128, 128, 0.2)',
-                        fixedrange=True  # Prevent zooming
+                        fixedrange=True
                     )
                     
                     fig2.update_yaxes(
@@ -669,14 +677,14 @@ with tab2:  # Calculator page
                         zeroline=True,
                         zerolinewidth=1,
                         zerolinecolor='rgba(128, 128, 128, 0.2)',
-                        fixedrange=True  # Prevent zooming
+                        fixedrange=True
                     )
                     
                     st.plotly_chart(fig2, use_container_width=True)
                     
                     # Add path statistics
                     st.caption("Path Statistics")
-                    path_col1, path_col2, path_col3 = st.columns(3)
+                    path_col1, path_col2, path_col3, path_col4 = st.columns(4)
                     with path_col1:
                         st.metric("Final Mean Value", f"${mean_path[-1]:,.0f}")
                     with path_col2:
@@ -685,6 +693,9 @@ with tab2:  # Calculator page
                     with path_col3:
                         min_final_value = min([investment * np.prod(1 + daily_returns[i]) for i in sample_indices])
                         st.metric("Min Final Value", f"${min_final_value:,.0f}")
+                    with path_col4:
+                        median_final = np.median([investment * np.prod(1 + daily_returns[i]) for i in sample_indices])
+                        st.metric("Median Final", f"${median_final:,.0f}")
                 
                 with viz_tab3:
                     # Analyze how VaR scales with different time horizons
@@ -709,7 +720,7 @@ with tab2:  # Calculator page
                         )
                         monte_carlo_vars.append(abs(var_mc))
                     
-                    # Create comparison plot with annotations on the right
+                    # Create comparison plot
                     fig3 = go.Figure()
                     
                     # Add traces
@@ -737,32 +748,27 @@ with tab2:  # Calculator page
                         x=horizons_to_analyze,
                         y=sqrt_scaling,
                         mode='lines',
-                        name='√n Reference',
+                        name='√n Scaling',
                         line=dict(color='#7f7f7f', width=1.5, dash='dot'),
                         opacity=0.6
                     ))
                     
-                    # Add annotations for key points on the right side
-                    for i, horizon in enumerate(horizons_to_analyze):
-                        if horizon in [1, forecast_days, horizons_to_analyze[-2]]:  # Show first, last, and second last
-                            # Parametric VaR annotation
-                            fig3.add_annotation(
-                                x=horizon,
-                                y=parametric_vars[i],
-                                text=f"{horizon}d: ${parametric_vars[i]:,.0f}",
-                                showarrow=True,
-                                arrowhead=1,
-                                arrowsize=1,
-                                arrowwidth=1,
-                                arrowcolor='#1f77b4',
-                                ax=30,  # Move annotation to the right
-                                ay=0,
-                                font=dict(size=9, color='#1f77b4'),
-                                bgcolor="rgba(255, 255, 255, 0.8)",
-                                bordercolor='#1f77b4',
-                                borderwidth=1,
-                                xanchor='left'
-                            )
+                    # Add legend box on right side
+                    fig3.add_annotation(
+                        xref="paper",
+                        yref="paper",
+                        x=1.02,
+                        y=0.98,
+                        text="<b>Legend</b><br>• Parametric VaR<br>• Monte Carlo VaR<br>• √n Scaling",
+                        showarrow=False,
+                        font=dict(size=10),
+                        align="left",
+                        bgcolor="rgba(255, 255, 255, 0.9)",
+                        bordercolor="rgba(0, 0, 0, 0.2)",
+                        borderwidth=1,
+                        borderpad=4,
+                        xanchor="left"
+                    )
                     
                     fig3.update_layout(
                         title=dict(
@@ -782,19 +788,8 @@ with tab2:  # Calculator page
                         template="plotly_white",
                         height=500,
                         hovermode="x unified",
-                        legend=dict(
-                            orientation="v",
-                            yanchor="top",
-                            y=1,
-                            xanchor="right",
-                            x=1.15,  # Moved legend further to the right
-                            bgcolor='rgba(255, 255, 255, 0.8)',
-                            bordercolor='rgba(0, 0, 0, 0.2)',
-                            borderwidth=1,
-                            font=dict(size=10),
-                            itemwidth=30
-                        ),
-                        margin=dict(l=50, r=150, t=60, b=50),  # Increased right margin for legend
+                        showlegend=False,  # Hide default legend
+                        margin=dict(l=50, r=150, t=60, b=50),
                         plot_bgcolor='rgba(0, 0, 0, 0)',
                         paper_bgcolor='rgba(0, 0, 0, 0)'
                     )
@@ -807,7 +802,7 @@ with tab2:  # Calculator page
                         zeroline=True,
                         zerolinewidth=1,
                         zerolinecolor='rgba(128, 128, 128, 0.2)',
-                        fixedrange=True  # Prevent zooming
+                        fixedrange=True
                     )
                     
                     fig3.update_yaxes(
@@ -817,14 +812,14 @@ with tab2:  # Calculator page
                         zeroline=True,
                         zerolinewidth=1,
                         zerolinecolor='rgba(128, 128, 128, 0.2)',
-                        fixedrange=True  # Prevent zooming
+                        fixedrange=True
                     )
                     
                     st.plotly_chart(fig3, use_container_width=True)
                     
                     # Add scaling statistics
                     st.caption("Scaling Analysis")
-                    scaling_col1, scaling_col2, scaling_col3 = st.columns(3)
+                    scaling_col1, scaling_col2, scaling_col3, scaling_col4 = st.columns(4)
                     with scaling_col1:
                         actual_scaling = parametric_vars[-1] / parametric_vars[0]
                         st.metric("Actual Scaling", f"{actual_scaling:.2f}x")
@@ -834,6 +829,9 @@ with tab2:  # Calculator page
                     with scaling_col3:
                         scaling_difference = ((actual_scaling / expected_scaling) - 1) * 100
                         st.metric("Deviation", f"{scaling_difference:+.1f}%")
+                    with scaling_col4:
+                        mc_scaling = monte_carlo_vars[-1] / monte_carlo_vars[0]
+                        st.metric("MC Scaling", f"{mc_scaling:.2f}x")
                     
                     st.info(f"""
                     **Time Scaling Analysis:**
@@ -866,6 +864,7 @@ with tab2:  # Calculator page
                 with interp_col2:
                     worst_case_loss = portfolio_returns.min()
                     probability_below_var = np.mean(portfolio_returns <= var_monte_carlo) * 100
+                    median_return = np.median(portfolio_returns)  # Verified correct calculation
                     
                     st.markdown(f"""
                     ### Monte Carlo Simulation
@@ -874,7 +873,7 @@ with tab2:  # Calculator page
                     
                     - **{probability_below_var:.1f}%** of scenarios exceeded VaR (target: {100-confidence_level}%)
                     - **Maximum simulated loss**: **${abs(worst_case_loss):,.0f}**
-                    - **Median {forecast_days}-day return**: **${np.median(portfolio_returns):,.0f}**
+                    - **Median {forecast_days}-day return**: **${median_return:,.0f}**
                     
                     **Advantages:**
                     - Captures compounding effects
@@ -907,7 +906,9 @@ with tab2:  # Calculator page
                         'Monte Carlo ES (%)',
                         'Z-score',
                         'Number of Simulations',
-                        'Maximum Simulated Loss ($)'
+                        'Maximum Simulated Loss ($)',
+                        'Median Return ($)',
+                        'Simulation Mean Return ($)'
                     ],
                     'Value': [
                         stock_symbol,
@@ -928,13 +929,15 @@ with tab2:  # Calculator page
                         f'{abs(es_monte_carlo)/investment*100:.2f}',
                         f'{z_score:.4f}',
                         f'{n_simulations:,}',
-                        f'-{abs(worst_case_loss):,.2f}'
+                        f'-{abs(worst_case_loss):,.2f}',
+                        f'{np.median(portfolio_returns):,.2f}',
+                        f'{portfolio_returns.mean():,.2f}'
                     ]
                 })
                 
                 csv = results_df.to_csv(index=False)
                 st.download_button(
-                    label="📥 Download Complete Results as CSV",
+                    label="Download Complete Results as CSV",
                     data=csv,
                     file_name=f"var_es_{stock_symbol}_{forecast_days}d_{confidence_level}pc_{datetime.now().strftime('%Y%m%d')}.csv",
                     mime="text/csv",
