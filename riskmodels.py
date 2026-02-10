@@ -6,21 +6,21 @@ from scipy import stats
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import warnings
+import colorsys
 warnings.filterwarnings('ignore')
 
 # Page configuration
 st.set_page_config(page_title="VaR & ES Calculator", layout="wide")
 
-# Title and Introduction
-st.title("Value at Risk (VaR) and Expected Shortfall (ES) Calculator")
+# Title
+st.title("Value at Risk (VaR) & Expected Shortfall (ES) Calculator")
 st.markdown("---")
 
-# Use tabs for navigation instead of radio buttons
 tab1, tab2 = st.tabs(["Introduction & Theory", "Calculator"])
 
 @st.cache_data(ttl=3600)
 def fetch_stock_data(symbol, start_date, end_date):
-    """Fetch stock data with caching for better performance"""
+    """Fetch stock data"""
     ticker = yf.Ticker(symbol)
     stock_data = ticker.history(
         start=start_date.strftime('%Y-%m-%d'),
@@ -31,7 +31,7 @@ def fetch_stock_data(symbol, start_date, end_date):
 
 @st.cache_data
 def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confidence_level):
-    """Calculate parametric VaR and ES for n-day horizon"""
+    """Calculate parametric VaR & ES for n-day horizon"""
     alpha = 1 - (confidence_level / 100)
     z_score = stats.norm.ppf(alpha)
     
@@ -39,17 +39,22 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
     es = investment * (mean_return * n_days - std_dev * np.sqrt(n_days) * stats.norm.pdf(z_score) / alpha)
     
     return var, es, z_score
-
+    
 @st.cache_data
-def calculate_monte_carlo_var_es(investment, mean_return, std_dev, n_days, confidence_level, n_simulations):
-    """Calculate VaR and ES using Monte Carlo simulation for n-day horizon"""
+def calculate_monte_carlo_var_es(investment, mean_return, std_dev, n_days, confidence_level, n_simulations, use_log_returns=True):
+    """Calculate VaR and ES using Monte Carlo simulation"""
     np.random.seed(42)
     
-    daily_returns = np.random.normal(mean_return, std_dev, (n_simulations, n_days))
-    cumulative_returns = np.prod(1 + daily_returns, axis=1) - 1
-    portfolio_values = investment * (1 + cumulative_returns)
+    if use_log_returns:
+        log_returns = np.random.normal(mean_return, std_dev, (n_simulations, n_days))
+        cumulative_growth = np.exp(np.sum(log_returns, axis=1))
+    else:
+        # Use simple returns
+        daily_returns = np.random.normal(mean_return, std_dev, (n_simulations, n_days))
+        cumulative_growth = np.prod(1 + daily_returns, axis=1)
+        
+    portfolio_values = investment * cumulative_growth
     portfolio_returns = portfolio_values - investment
-    
     sorted_returns = np.sort(portfolio_returns)
     alpha = 1 - (confidence_level / 100)
     var_idx = int(alpha * n_simulations)
@@ -57,11 +62,14 @@ def calculate_monte_carlo_var_es(investment, mean_return, std_dev, n_days, confi
     var_mc = sorted_returns[var_idx]
     es_mc = sorted_returns[:var_idx].mean()
     
-    return var_mc, es_mc, portfolio_returns, daily_returns
+    if use_log_returns:
+        daily_returns_for_viz = np.exp(log_returns) - 1 
+        return var_mc, es_mc, portfolio_returns, daily_returns_for_viz
+    else:
+        return var_mc, es_mc, portfolio_returns, daily_returns
 
 def generate_distinct_colors(n):
     """Generate n visually distinct colors"""
-    import colorsys
     colors = []
     for i in range(n):
         hue = i / n
@@ -116,12 +124,12 @@ with tab1:
     
     st.markdown("---")
     st.header("Time Horizon Scaling")
-    st.markdown("### How Time Horizon Affects VaR and ES")
+    st.markdown("### How Time Horizon Affects VaR & ES")
     st.markdown("#### Volatility Scaling:")
     st.latex(r"\sigma_n = \sigma_{daily} \times \sqrt{n}")
     st.markdown("#### Mean Return Scaling:")
     st.latex(r"\mu_n = \mu_{daily} \times n")
-    st.markdown("#### Impact on VaR and ES:")
+    st.markdown("#### Impact on VaR & ES:")
     st.markdown("""
     1. **Longer horizons** → Higher absolute VaR/ES values
     2. **Volatility increases** at $\sqrt{n}$ rate
@@ -130,42 +138,6 @@ with tab1:
     """)
 
 with tab2:
-    st.header("VaR and ES Calculator")
-    
-    # Add custom parameters checkboxes outside the form to ensure they persist
-    use_custom_params = st.checkbox(
-        "Use Custom Statistical Parameters",
-        help="Override automatic calculation from historical data",
-        key="use_custom_params"
-    )
-    
-    # Initialize custom parameters
-    custom_mean_return = None
-    custom_std_dev = None
-    
-    # Show custom parameter inputs only if checkbox is checked
-    if use_custom_params:
-        col_custom1, col_custom2 = st.columns(2)
-        with col_custom1:
-            custom_mean_return = st.number_input(
-                "Daily Mean Return (%)",
-                value=0.05,
-                step=0.01,
-                format="%.2f",
-                help="Expected average daily return",
-                key="custom_mean_return"
-            ) / 100
-        
-        with col_custom2:
-            custom_std_dev = st.number_input(
-                "Daily Standard Deviation (%)",
-                value=1.5,
-                step=0.1,
-                format="%.2f",
-                help="Daily volatility (standard deviation of returns)",
-                key="custom_std_dev"
-            ) / 100
-    
     with st.form("input_form"):
         st.subheader("Input Parameters")
         
@@ -180,6 +152,12 @@ with tab2:
                 step=1000.0,
                 help="The initial portfolio value"
             )
+    
+            use_custom_params = st.checkbox(
+                "Use Custom Statistical Parameters",
+                help="Override automatic calculation from historical data",
+                key="use_custom_params"
+            )
             
             # Only show stock symbol input if NOT using custom parameters
             if not use_custom_params:
@@ -188,20 +166,43 @@ with tab2:
                     "AAPL",
                     help="Enter a valid stock ticker symbol"
                 ).upper()
+            else:
+                stock_symbol = "CUSTOM_PARAMS"  # Default value
             
             st.markdown("#### Date Range")
-
             start_date = st.date_input(
                 "Start Date",
-                value=datetime.now() - timedelta(days=365),
-                help="Start date for historical data"
-            )
+                value=datetime.now() - timedelta(days=365)
+            ) 
             
             end_date = st.date_input(
                 "End Date",
-                value=datetime.now(),
-                help="End date for historical data"
+                value=datetime.now()
             )
+            
+            # Show custom parameter inputs only if checkbox is checked
+            if use_custom_params:
+                st.markdown("#### Custom Statistical Parameters")
+                custom_col1, custom_col2 = st.columns(2)
+                with custom_col1:
+                    custom_mean_return = st.number_input(
+                        "Daily Mean Return (%)",
+                        value=0.05,
+                        step=0.01,
+                        format="%.2f",
+                        help="Expected average daily return",
+                        key="custom_mean_return"
+                    ) / 100
+                
+                with custom_col2:
+                    custom_std_dev = st.number_input(
+                        "Daily Standard Deviation (%)",
+                        value=1.5,
+                        step=0.1,
+                        format="%.2f",
+                        help="Daily volatility (standard deviation of returns)",
+                        key="custom_std_dev"
+                    ) / 100
         
         with col2:
             st.markdown("#### Risk Parameters")
@@ -230,7 +231,13 @@ with tab2:
                 step=1000,
                 help="More simulations = more accurate but slower computation"
             )
-        
+
+            use_log_returns = st.checkbox(
+                "Use Log Returns (Recommended)",
+                value=True,
+                help="Use log returns for more accurate multi-period calculations"
+            )
+            
         calculate_button = st.form_submit_button("Calculate VaR & ES", use_container_width=True)
     
     if calculate_button:
@@ -242,7 +249,6 @@ with tab2:
                 stock_data = None
                 returns = None
                 
-                # Handle custom parameters
                 if use_custom_params and custom_mean_return is not None and custom_std_dev is not None:
                     # Use custom parameters
                     mean_return = custom_mean_return
@@ -263,7 +269,7 @@ with tab2:
                     
                     st.success(f"✓ Retrieved {len(stock_data)} trading days of data for {stock_symbol}")
                     
-                    # MODIFICATION 2: Add stock data table
+                    # Add stock data table
                     with st.expander("View Retrieved Stock Data"):
                         st.markdown(f"### Historical Price Data for {stock_symbol}")
                         
@@ -326,9 +332,15 @@ with tab2:
                         st.error("No valid price data after removing NaN values. Please try a different date range.")
                         st.stop()
                     
-                    returns = price_series_clean.pct_change().dropna()
-                    mean_return = float(returns.mean())
-                    std_dev = float(returns.std())
+                    if use_log_returns:
+                        returns = np.log(price_series_clean / price_series_clean.shift(1)).dropna()
+                        st.info("Using log returns for more accurate multi-period calculations")
+                    else:
+                        returns = price_series_clean.pct_change().dropna()
+                        st.info("Using simple returns")
+                
+                mean_return = float(returns.mean())
+                std_dev = float(returns.std())
                 
                 # Validate calculations
                 if mean_return is None or std_dev is None:
@@ -371,7 +383,7 @@ with tab2:
                 with scale_col2:
                     st.metric(f"{forecast_days}-Day Volatility", f"{scaled_vol*100:.2f}%")
                 
-                # Calculate VaR and ES
+                # Calculate VaR & ES
                 var_parametric, es_parametric, z_score = calculate_parametric_var_es(
                     investment, mean_return, std_dev, forecast_days, confidence_level
                 )
