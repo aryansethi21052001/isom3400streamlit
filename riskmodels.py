@@ -48,19 +48,19 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
         # For normal distribution: E[X | X < q] = μ - σ * φ(z) / Φ(z)
         # where z = (q - μ) / σ
         phi_z = stats.norm.pdf(z_score)
-        es_return = mean_n_days + z_score * std_n_days - std_n_days * (phi_z / alpha)
+        es_return = mean_n_days - std_n_days * (phi_z / alpha)
         
         # Convert to losses (positive values)
         # Loss = Investment * (1 - exp(return)) for log returns
         var = investment * (1 - np.exp(var_return))
-        ES = investment * (1 - np.exp(es_return))
+        es = investment * (1 - np.exp(es_return))
     else:
         # VaR: the alpha-quantile of returns
         var_return = mean_n_days + z_score * std_n_days
         
         # Expected Shortfall for simple returns
         phi_z = stats.norm.pdf(z_score)
-        es_return = mean_n_days + z_score * std_n_days - std_n_days * (phi_z / alpha)
+        es_return = mean_n_days - std_n_days * (phi_z / alpha)
         
         # Convert to losses (negative returns become positive losses)
         var = -investment * var_return
