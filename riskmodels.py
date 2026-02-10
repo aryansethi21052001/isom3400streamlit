@@ -30,43 +30,70 @@ def fetch_stock_data(symbol, start_date, end_date):
     return stock_data
 
 @st.cache_data
-def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confidence_level):
+def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confidence_level, use_log_returns=True):
     """Calculate parametric VaR & ES for n-day horizon"""
     alpha = 1 - (confidence_level / 100)
     z_score = stats.norm.ppf(alpha)
     
-    var = investment * (mean_return * n_days - z_score * std_dev * np.sqrt(n_days))
-    es = investment * (mean_return * n_days - std_dev * np.sqrt(n_days) * stats.norm.pdf(z_score) / alpha)
+    if use_log_returns:
+        # For log returns: VaR = P * (1 - exp(μ*n + Zα*σ*√n))
+        var = investment * (1 - np.exp(mean_return * n_days - z_score * std_dev * np.sqrt(n_days)))
+        # ES = P * (1 - exp(μ*n + σ*√n * φ(Zα)/(1-α)))
+        es = investment * (1 - np.exp(mean_return * n_days - std_dev * np.sqrt(n_days) * 
+                                     stats.norm.pdf(z_score) / alpha))
+    else:
+        # For simple returns: VaR = P * (μ*n - Zα*σ*√n)
+        var = investment * (mean_return * n_days - z_score * std_dev * np.sqrt(n_days))
+        # ES = P * (μ*n - σ*√n * φ(Zα)/(1-α))
+        es = investment * (mean_return * n_days - std_dev * np.sqrt(n_days) * 
+                          stats.norm.pdf(z_score) / alpha)
     
     return var, es, z_score
-    
+
 @st.cache_data
 def calculate_monte_carlo_var_es(investment, mean_return, std_dev, n_days, confidence_level, n_simulations, use_log_returns=True):
     """Calculate VaR and ES using Monte Carlo simulation"""
     np.random.seed(42)
     
     if use_log_returns:
-        log_returns = np.random.normal(mean_return, std_dev, (n_simulations, n_days))
-        cumulative_growth = np.exp(np.sum(log_returns, axis=1))
+        # Simulate daily log returns
+        daily_log_returns = np.random.normal(mean_return, std_dev, (n_simulations, n_days))
+        cumulative_log_returns = np.sum(daily_log_returns, axis=1)
+        final_values = investment * np.exp(cumulative_log_returns)
+        portfolio_returns = final_values - investment
     else:
-        # Use simple returns
-        daily_returns = np.random.normal(mean_return, std_dev, (n_simulations, n_days))
-        cumulative_growth = np.prod(1 + daily_returns, axis=1)
-        
-    portfolio_values = investment * cumulative_growth
-    portfolio_returns = portfolio_values - investment
+        # Simulate daily simple returns
+        daily_simple_returns = np.random.normal(mean_return, std_dev, (n_simulations, n_days))
+        cumulative_simple_returns = np.prod(1 + daily_simple_returns, axis=1)
+        final_values = investment * cumulative_simple_returns
+        portfolio_returns = final_values - investment
+    
+    # Sort returns from worst to best (most negative to most positive)
     sorted_returns = np.sort(portfolio_returns)
+    
+    # Calculate index for VaR (α percentile)
     alpha = 1 - (confidence_level / 100)
-    var_idx = int(alpha * n_simulations)
+    var_idx = int(np.floor(alpha * n_simulations))
+    
+    # Ensure index is within bounds
+    var_idx = max(0, min(var_idx, n_simulations - 1))
     
     var_mc = sorted_returns[var_idx]
-    es_mc = sorted_returns[:var_idx].mean()
     
-    if use_log_returns:
-        daily_returns_for_viz = np.exp(log_returns) - 1 
-        return var_mc, es_mc, portfolio_returns, daily_returns_for_viz
+    # Calculate ES as average of returns worse than VaR
+    if var_idx > 0:
+        es_mc = sorted_returns[:var_idx].mean()
     else:
-        return var_mc, es_mc, portfolio_returns, daily_returns
+        es_mc = var_mc  # Fallback if no tail observations
+    
+    # Prepare data for visualization
+    if use_log_returns:
+        # Convert log returns to simple returns for visualization
+        daily_returns_for_viz = np.exp(daily_log_returns) - 1
+    else:
+        daily_returns_for_viz = daily_simple_returns
+    
+    return var_mc, es_mc, portfolio_returns, daily_returns_for_viz
 
 def generate_distinct_colors(n):
     """Generate n visually distinct colors"""
@@ -406,12 +433,10 @@ with tab2:
                     st.metric(f"{forecast_days}-Day Volatility", f"{scaled_vol*100:.2f}%")
                 
                 # Calculate VaR & ES
-                var_parametric, es_parametric, z_score = calculate_parametric_var_es(
-                    investment, mean_return, std_dev, forecast_days, confidence_level
-                )
+                var_parametric, es_parametric, z_score = calculate_parametric_var_es(investment, mean_return, std_dev, forecast_days, confidence_level, use_log_returns)
                 
                 var_monte_carlo, es_monte_carlo, portfolio_returns, daily_returns = calculate_monte_carlo_var_es(
-                    investment, mean_return, std_dev, forecast_days, confidence_level, n_simulations
+                    investment, mean_return, std_dev, forecast_days, confidence_level, n_simulations, use_log_returns
                 )
                 
                 # Display results
@@ -541,6 +566,7 @@ with tab2:
                     fig2 = go.Figure()
                     
                     for i in range(n_simulations):
+                        
                         cumulative_return = np.cumprod(1 + daily_returns[i])
                         portfolio_path = investment * cumulative_return
                         
@@ -630,17 +656,21 @@ with tab2:
                     status_text2 = st.empty()
                     
                     for idx, horizon in enumerate(horizons_to_analyze):
-                        status_text2.text(f"Calculating for {horizon}-day horizon...")
-                        
-                        var_para, es_para, _ = calculate_parametric_var_es(investment, mean_return, std_dev, horizon, confidence_level)
-                        parametric_vars.append(abs(var_para))
-                        parametric_es_list.append(abs(es_para))
-                        
-                        var_mc, es_mc, _, _ = calculate_monte_carlo_var_es(investment, mean_return, std_dev, horizon, confidence_level, n_simulations)
-                        monte_carlo_vars.append(abs(var_mc))
-                        monte_carlo_es_list.append(abs(es_mc))
-                        
-                        progress_bar2.progress((idx + 1) / len(horizons_to_analyze))
+                            status_text2.text(f"Calculating for {horizon}-day horizon...")
+ 
+                            var_para, es_para, _ = calculate_parametric_var_es(
+                                investment, mean_return, std_dev, horizon, confidence_level, use_log_returns
+                            )
+                            parametric_vars.append(abs(var_para))
+                            parametric_es_list.append(abs(es_para))
+                            
+                            var_mc, es_mc, _, _ = calculate_monte_carlo_var_es(
+                                investment, mean_return, std_dev, horizon, confidence_level, n_simulations, use_log_returns
+                            )
+                            monte_carlo_vars.append(abs(var_mc))
+                            monte_carlo_es_list.append(abs(es_mc))
+                            
+                            progress_bar2.progress((idx + 1) / len(horizons_to_analyze))
                     
                     fig3 = go.Figure()
                     
