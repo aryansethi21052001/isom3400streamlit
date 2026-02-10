@@ -9,9 +9,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Page configuration
-st.set_page_config(
-    page_title="VaR & ES Calculator",
-)
+st.set_page_config(page_title="VaR & ES Calculator")
 
 # Title and Introduction
 st.title("Value at Risk (VaR) and Expected Shortfall (ES) Calculator")
@@ -129,15 +127,16 @@ with tab1:  # Introduction & Theory
 with tab2:  # Calculator page
     st.header("VaR and ES Calculator")
     
-    # Create input section in a container
-    with st.container():
+    # Create input form for cleaner layout
+    with st.form("input_form"):
         st.subheader("Input Parameters")
         
-        # Create columns for inputs
-        input_col1, input_col2, input_col3 = st.columns(3)
+        # Create columns for better organization
+        col1, col2 = st.columns(2)
         
-        with input_col1:
-            # Investment amount
+        with col1:
+            # Basic Parameters
+            st.markdown("#### Basic Parameters")
             investment = st.number_input(
                 "Initial Investment Amount ($)",
                 min_value=0.0,
@@ -146,15 +145,14 @@ with tab2:  # Calculator page
                 help="The initial portfolio value"
             )
             
-            # Stock selection
             stock_symbol = st.text_input(
                 "Stock Symbol (e.g., AAPL, MSFT, GOOGL)", 
                 "AAPL",
                 help="Enter a valid stock ticker symbol"
             ).upper()
-        
-        with input_col2:
-            # Date range
+            
+            # Date range in same column
+            st.markdown("#### Date Range")
             start_date = st.date_input(
                 "Start Date",
                 value=datetime.now() - timedelta(days=365),
@@ -167,8 +165,9 @@ with tab2:  # Calculator page
                 help="End date for historical data"
             )
         
-        with input_col3:
-            # Time horizon and confidence level
+        with col2:
+            # Risk Parameters
+            st.markdown("#### Risk Parameters")
             forecast_days = st.slider(
                 "Time Horizon (Days)",
                 min_value=1,
@@ -185,14 +184,23 @@ with tab2:  # Calculator page
                 step=1,
                 help="Confidence level for risk calculation (e.g., 95% means 5% worst cases)"
             )
+            
+            # Simulation parameters
+            st.markdown("#### Simulation Settings")
+            n_simulations = st.number_input(
+                "Number of Monte Carlo Simulations",
+                min_value=1,
+                value=5000,
+                step=1000,
+                help="More simulations = more accurate but slower computation"
+            )
         
         # Advanced parameters in expander
         with st.expander("Advanced Parameters"):
-            adv_col1, adv_col2, adv_col3 = st.columns(3)
+            adv_col1, adv_col2 = st.columns(2)
             
             with adv_col1:
                 st.markdown("#### Statistical Parameters")
-                
                 use_custom_params = st.checkbox(
                     "Use Custom Statistical Parameters",
                     help="Override automatic calculation from historical data"
@@ -207,11 +215,7 @@ with tab2:  # Calculator page
                         format="%.2f",
                         help="Expected average daily return"
                     ) / 100
-                else:
-                    mean_return = None
-            
-            with adv_col3:
-                if use_custom_params:
+                    
                     std_dev = st.number_input(
                         "Daily Standard Deviation (%)",
                         value=1.5,
@@ -220,24 +224,13 @@ with tab2:  # Calculator page
                         help="Daily volatility (standard deviation of returns)"
                     ) / 100
                 else:
+                    mean_return = None
                     std_dev = None
         
-        # Simulation parameters
-        sim_col1, sim_col2 = st.columns(2)
-        
-        with sim_col1:
-            n_simulations = st.number_input(
-                "Number of Monte Carlo Simulations",
-                min_value=1,
-                value=1000,
-                step=1000,
-                help="More simulations = more accurate but slower computation"
-            )
-        
-        with sim_col2:
-            calculate_button = st.button("Calculate VaR & ES", use_container_width=True)
+        # Submit button
+        calculate_button = st.form_submit_button("Calculate VaR & ES", use_container_width=True)
     
-    # Results section - appears below when button is clicked
+    # Results section - appears below when form is submitted
     if calculate_button:
         try:
             # Display loading
@@ -265,12 +258,11 @@ with tab2:  # Calculator page
                     st.success(f"✓ Retrieved data for {stock_symbol}")
                 
                 # Select price column (use Close if available)
-                if 'Close' in stock_data.columns:
-                    price_series = stock_data['Close']
+                if 'Adj Close' in stock_data.columns:
+                    price_series = stock_data['Adj Close']
                 else:
-                    # Fall back to the first numeric column
-                    numeric_cols = stock_data.select_dtypes(include=[np.number]).columns
-                    price_series = stock_data[numeric_cols[0]]
+                    # Fall back to using Close prices
+                    price_series = stock_data['Close']
                 
                 # Drop NaN values from price series
                 price_series_clean = price_series.dropna()
@@ -312,10 +304,11 @@ with tab2:  # Calculator page
                 with stats_col2:
                     st.metric("Daily Std Dev", f"{std_dev*100:.2f}%")
                 with stats_col3:
-                    annualized_vol = std_dev * np.sqrt(252)
-                    st.metric("Annual Volatility", f"{annualized_vol*100:.2f}%")
+                    annualized_mean = mean_return * 252
+                    st.metric("Annual Mean Return", f"{annualized_mean * 100:.2f}%")
                 with stats_col4:
-                    st.metric("Data Points", f"{len(returns)}")
+                    annualized_vol = std_dev * np.sqrt(252)
+                    st.metric("Annual Volatility", f"{annualized_vol * 100:.2f}%")
                 
                 # Time-scaled parameters (show only final values)
                 st.markdown(f"#### {forecast_days}-Day Scaled Parameters")
@@ -393,29 +386,6 @@ with tab2:  # Calculator page
                 st.markdown("---")
                 st.subheader("Visualizations")
                 
-                # Explanation of Probability Density
-                with st.expander("📊 What does 'Probability Density' mean in the return distribution graph?"):
-                    st.markdown("""
-                    **Probability Density** in the return distribution graph shows:
-                    
-                    ### Understanding Probability Density:
-                    1. **Y-axis (Density)**: Represents how likely returns are to occur in a given range
-                    2. **Higher density** = More likely returns in that range
-                    3. **Area under the curve** = Total probability (always equals 1)
-                    
-                    ### Interpretation:
-                    - **Tall, narrow peak** → Returns are concentrated around the mean
-                    - **Wide, flat distribution** → Returns are more spread out (higher volatility)
-                    - **Area under curve** between two points = Probability of returns in that range
-                    
-                    ### Example:
-                    If the density at $10,000 return is 0.0002, it means:
-                    - Returns around $10,000 have a certain likelihood
-                    - To get actual probability, you'd multiply density by the bin width
-                    
-                    **Key point**: Density values can be greater than 1 for very narrow distributions - what matters is the area under the curve, not the height.
-                    """)
-                
                 # Create tabs for different visualizations
                 viz_tab1, viz_tab2, viz_tab3 = st.tabs([
                     f"{forecast_days}-Day Return Distribution", 
@@ -424,6 +394,18 @@ with tab2:  # Calculator page
                 ])
                 
                 with viz_tab1:
+                    # Neutral color scheme for dark/light mode compatibility
+                    colors = {
+                        'primary': '#1f77b4',  # Muted blue
+                        'secondary': '#ff7f0e',  # Muted orange
+                        'accent1': '#2ca02c',   # Muted green
+                        'accent2': '#d62728',   # Muted red
+                        'accent3': '#9467bd',   # Muted purple
+                        'text': '#2c3e50',      # Dark gray for text
+                        'grid': 'rgba(128, 128, 128, 0.2)',  # Light gray grid
+                        'background': 'rgba(240, 240, 240, 0.1)'
+                    }
+                    
                     # Histogram of Monte Carlo returns with VaR/ES
                     fig1 = go.Figure()
                     
@@ -431,8 +413,8 @@ with tab2:  # Calculator page
                     fig1.add_trace(go.Histogram(
                         x=portfolio_returns,
                         nbinsx=50,
-                        name=f'Simulated Returns',
-                        marker_color='#3498db',
+                        name='Simulated Returns',
+                        marker_color=colors['primary'],
                         opacity=0.7,
                         histnorm='probability density',
                         hovertemplate='<b>Return</b>: $%{x:,.0f}<br><b>Density</b>: %{y:.4f}<extra></extra>'
@@ -451,22 +433,22 @@ with tab2:  # Calculator page
                         y=y_norm,
                         mode='lines',
                         name='Normal Distribution',
-                        line=dict(color='#2c3e50', width=2.5, dash='dash'),
+                        line=dict(color=colors['text'], width=2.5, dash='dash'),
                         hovertemplate='<b>Normal Distribution</b><br>Return: $%{x:,.0f}<br>Density: %{y:.4f}<extra></extra>'
                     ))
                     
-                    # Add vertical lines for VaR and ES with better positioning
+                    # Add vertical lines for VaR and ES
                     fig1.add_vline(
                         x=var_monte_carlo,
                         line_dash="dash",
-                        line_color="#e74c3c",
+                        line_color=colors['accent2'],
                         line_width=3,
                         annotation=dict(
                             text=f"<b>VaR ({confidence_level}%)</b><br>-${abs(var_monte_carlo):,.0f}",
-                            font=dict(size=11, color="#e74c3c"),
+                            font=dict(size=11, color=colors['accent2']),
                             bgcolor="rgba(255,255,255,0.9)",
                             borderwidth=2,
-                            bordercolor="#e74c3c",
+                            bordercolor=colors['accent2'],
                             yanchor="top",
                             y=0.98,
                             xanchor="right",
@@ -478,14 +460,14 @@ with tab2:  # Calculator page
                     fig1.add_vline(
                         x=es_monte_carlo,
                         line_dash="dot",
-                        line_color="#f39c12",
+                        line_color=colors['secondary'],
                         line_width=3,
                         annotation=dict(
                             text=f"<b>Expected Shortfall</b><br>-${abs(es_monte_carlo):,.0f}",
-                            font=dict(size=11, color="#f39c12"),
+                            font=dict(size=11, color=colors['secondary']),
                             bgcolor="rgba(255,255,255,0.9)",
                             borderwidth=2,
-                            bordercolor="#f39c12",
+                            bordercolor=colors['secondary'],
                             yanchor="top",
                             y=0.88,
                             xanchor="right",
@@ -498,14 +480,13 @@ with tab2:  # Calculator page
                     tail_returns = portfolio_returns[portfolio_returns <= var_monte_carlo]
                     if len(tail_returns) > 0:
                         x_tail = np.linspace(portfolio_returns.min(), var_monte_carlo, 100)
-                        # Get approximate density values for tail region
                         y_tail = np.zeros_like(x_tail)
                         
                         fig1.add_trace(go.Scatter(
                             x=x_tail,
                             y=y_tail,
                             fill='tozeroy',
-                            fillcolor='rgba(231, 76, 60, 0.25)',
+                            fillcolor='rgba(214, 39, 40, 0.15)',  # Muted red with transparency
                             line=dict(width=0),
                             name=f'Worst {100-confidence_level}% Cases',
                             hovertemplate='<b>Tail Risk Region</b><br>Return ≤ VaR<extra></extra>',
@@ -515,20 +496,20 @@ with tab2:  # Calculator page
                     fig1.update_layout(
                         title=dict(
                             text=f"{forecast_days}-Day Return Distribution",
-                            font=dict(size=20, color='#2c3e50'),
+                            font=dict(size=18),
                             x=0.5,
                             xanchor='center'
                         ),
                         xaxis_title=dict(
                             text=f"{forecast_days}-Day Return ($)",
-                            font=dict(size=14, color='#2c3e50')
+                            font=dict(size=14)
                         ),
                         yaxis_title=dict(
                             text="Probability Density",
-                            font=dict(size=14, color='#2c3e50')
+                            font=dict(size=14)
                         ),
                         template="plotly_white",
-                        height=600,
+                        height=550,
                         hovermode="x unified",
                         legend=dict(
                             orientation="h",
@@ -543,16 +524,32 @@ with tab2:  # Calculator page
                             itemsizing='constant'
                         ),
                         margin=dict(l=50, r=50, t=80, b=50),
-                        plot_bgcolor='rgba(240, 240, 240, 0.1)'
+                        plot_bgcolor='rgba(0, 0, 0, 0)',
+                        paper_bgcolor='rgba(0, 0, 0, 0)'
                     )
                     
                     # Add grid for better readability
-                    fig1.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,0,0,0.05)')
-                    fig1.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,0,0,0.05)')
+                    fig1.update_xaxes(
+                        showgrid=True, 
+                        gridwidth=1, 
+                        gridcolor=colors['grid'],
+                        zeroline=True,
+                        zerolinewidth=1,
+                        zerolinecolor=colors['grid']
+                    )
+                    fig1.update_yaxes(
+                        showgrid=True, 
+                        gridwidth=1, 
+                        gridcolor=colors['grid'],
+                        zeroline=True,
+                        zerolinewidth=1,
+                        zerolinecolor=colors['grid']
+                    )
                     
                     st.plotly_chart(fig1, use_container_width=True)
                     
                     # Add summary statistics below the chart
+                    st.caption("Distribution Statistics")
                     summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
                     with summary_col1:
                         st.metric("Simulation Mean", f"${portfolio_returns.mean():,.0f}")
@@ -564,6 +561,15 @@ with tab2:  # Calculator page
                         st.metric("Maximum Return", f"${portfolio_returns.max():,.0f}")
                 
                 with viz_tab2:
+                    # Neutral color scheme
+                    colors = {
+                        'primary': '#1f77b4',
+                        'secondary': '#ff7f0e',
+                        'text': '#2c3e50',
+                        'grid': 'rgba(128, 128, 128, 0.2)',
+                        'background': 'rgba(240, 240, 240, 0.1)'
+                    }
+                    
                     # Plot sample of Monte Carlo paths
                     n_sample_paths = min(50, n_simulations)
                     sample_indices = np.random.choice(n_simulations, n_sample_paths, replace=False)
@@ -579,7 +585,7 @@ with tab2:  # Calculator page
                             x=list(range(forecast_days)),
                             y=portfolio_path,
                             mode='lines',
-                            line=dict(width=1, color='rgba(52, 152, 219, 0.15)'),
+                            line=dict(width=1, color='rgba(31, 119, 180, 0.1)'),
                             showlegend=False,
                             hoverinfo='skip'
                         ))
@@ -590,7 +596,7 @@ with tab2:  # Calculator page
                         x=list(range(forecast_days)),
                         y=mean_path,
                         mode='lines',
-                        line=dict(width=3, color='#e74c3c'),
+                        line=dict(width=3, color=colors['secondary']),
                         name='Mean Path'
                     ))
                     
@@ -598,14 +604,14 @@ with tab2:  # Calculator page
                     fig2.add_hline(
                         y=investment,
                         line_dash="dash",
-                        line_color="green",
+                        line_color="#2ca02c",  # Muted green
                         line_width=2,
                         annotation=dict(
-                            text=f"Initial Investment: ${investment:,.0f}",
-                            font=dict(size=11, color="green"),
+                            text=f"Initial: ${investment:,.0f}",
+                            font=dict(size=11, color="#2ca02c"),
                             bgcolor="rgba(255,255,255,0.9)",
                             borderwidth=1,
-                            bordercolor="green",
+                            bordercolor="#2ca02c",
                             yanchor="bottom",
                             y=1.02,
                             xanchor="left",
@@ -617,20 +623,20 @@ with tab2:  # Calculator page
                     fig2.update_layout(
                         title=dict(
                             text=f"Monte Carlo Simulation Paths ({forecast_days} Days)",
-                            font=dict(size=20, color='#2c3e50'),
+                            font=dict(size=18),
                             x=0.5,
                             xanchor='center'
                         ),
                         xaxis_title=dict(
                             text="Days",
-                            font=dict(size=14, color='#2c3e50')
+                            font=dict(size=14)
                         ),
                         yaxis_title=dict(
                             text="Portfolio Value ($)",
-                            font=dict(size=14, color='#2c3e50')
+                            font=dict(size=14)
                         ),
                         template="plotly_white",
-                        height=600,
+                        height=550,
                         hovermode="x unified",
                         legend=dict(
                             orientation="h",
@@ -644,16 +650,32 @@ with tab2:  # Calculator page
                             font=dict(size=12)
                         ),
                         margin=dict(l=50, r=50, t=80, b=50),
-                        plot_bgcolor='rgba(240, 240, 240, 0.1)'
+                        plot_bgcolor='rgba(0, 0, 0, 0)',
+                        paper_bgcolor='rgba(0, 0, 0, 0)'
                     )
                     
                     # Add grid for better readability
-                    fig2.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,0,0,0.05)')
-                    fig2.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,0,0,0.05)')
+                    fig2.update_xaxes(
+                        showgrid=True, 
+                        gridwidth=1, 
+                        gridcolor=colors['grid'],
+                        zeroline=True,
+                        zerolinewidth=1,
+                        zerolinecolor=colors['grid']
+                    )
+                    fig2.update_yaxes(
+                        showgrid=True, 
+                        gridwidth=1, 
+                        gridcolor=colors['grid'],
+                        zeroline=True,
+                        zerolinewidth=1,
+                        zerolinecolor=colors['grid']
+                    )
                     
                     st.plotly_chart(fig2, use_container_width=True)
                     
                     # Add path statistics
+                    st.caption("Path Statistics")
                     path_col1, path_col2, path_col3 = st.columns(3)
                     with path_col1:
                         st.metric("Final Mean Value", f"${mean_path[-1]:,.0f}")
@@ -695,7 +717,7 @@ with tab2:  # Calculator page
                         y=parametric_vars,
                         mode='lines+markers',
                         name='Parametric VaR',
-                        line=dict(color='#2c3e50', width=3),
+                        line=dict(color='#1f77b4', width=3),
                         marker=dict(size=10, symbol='circle')
                     ))
                     
@@ -704,7 +726,7 @@ with tab2:  # Calculator page
                         y=monte_carlo_vars,
                         mode='lines+markers',
                         name='Monte Carlo VaR',
-                        line=dict(color='#3498db', width=3, dash='dash'),
+                        line=dict(color='#ff7f0e', width=3, dash='dash'),
                         marker=dict(size=10, symbol='square')
                     ))
                     
@@ -715,27 +737,27 @@ with tab2:  # Calculator page
                         y=sqrt_scaling,
                         mode='lines',
                         name='√n Scaling Reference',
-                        line=dict(color='#95a5a6', width=2, dash='dot'),
+                        line=dict(color='#7f7f7f', width=2, dash='dot'),
                         opacity=0.6
                     ))
                     
                     fig3.update_layout(
                         title=dict(
                             text=f"VaR Scaling with Time Horizon ({confidence_level}% Confidence)",
-                            font=dict(size=20, color='#2c3e50'),
+                            font=dict(size=18),
                             x=0.5,
                             xanchor='center'
                         ),
                         xaxis_title=dict(
                             text="Time Horizon (Days)",
-                            font=dict(size=14, color='#2c3e50')
+                            font=dict(size=14)
                         ),
                         yaxis_title=dict(
                             text="VaR ($)",
-                            font=dict(size=14, color='#2c3e50')
+                            font=dict(size=14)
                         ),
                         template="plotly_white",
-                        height=600,
+                        height=550,
                         hovermode="x unified",
                         legend=dict(
                             orientation="h",
@@ -749,26 +771,42 @@ with tab2:  # Calculator page
                             font=dict(size=12)
                         ),
                         margin=dict(l=50, r=50, t=80, b=50),
-                        plot_bgcolor='rgba(240, 240, 240, 0.1)'
+                        plot_bgcolor='rgba(0, 0, 0, 0)',
+                        paper_bgcolor='rgba(0, 0, 0, 0)'
                     )
                     
                     # Add grid for better readability
-                    fig3.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,0,0,0.05)')
-                    fig3.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,0,0,0.05)')
+                    fig3.update_xaxes(
+                        showgrid=True, 
+                        gridwidth=1, 
+                        gridcolor='rgba(128, 128, 128, 0.2)',
+                        zeroline=True,
+                        zerolinewidth=1,
+                        zerolinecolor='rgba(128, 128, 128, 0.2)'
+                    )
+                    fig3.update_yaxes(
+                        showgrid=True, 
+                        gridwidth=1, 
+                        gridcolor='rgba(128, 128, 128, 0.2)',
+                        zeroline=True,
+                        zerolinewidth=1,
+                        zerolinecolor='rgba(128, 128, 128, 0.2)'
+                    )
                     
                     st.plotly_chart(fig3, use_container_width=True)
                     
                     # Add scaling statistics
+                    st.caption("Scaling Analysis")
                     scaling_col1, scaling_col2, scaling_col3 = st.columns(3)
                     with scaling_col1:
                         actual_scaling = parametric_vars[-1] / parametric_vars[0]
-                        st.metric("Actual Scaling Factor", f"{actual_scaling:.2f}x")
+                        st.metric("Actual Scaling", f"{actual_scaling:.2f}x")
                     with scaling_col2:
                         expected_scaling = np.sqrt(forecast_days)
                         st.metric("Expected √n Scaling", f"{expected_scaling:.2f}x")
                     with scaling_col3:
                         scaling_difference = ((actual_scaling / expected_scaling) - 1) * 100
-                        st.metric("Deviation from √n", f"{scaling_difference:+.1f}%")
+                        st.metric("Deviation", f"{scaling_difference:+.1f}%")
                     
                     st.info(f"""
                     **Time Scaling Analysis:**
@@ -869,41 +907,7 @@ with tab2:  # Calculator page
                 
                 csv = results_df.to_csv(index=False)
                 st.download_button(
-                    label="📥 Download Complete Results as CSV",
+                    label="Download Complete Results as CSV",
                     data=csv,
                     file_name=f"var_es_{stock_symbol}_{forecast_days}d_{confidence_level}pc_{datetime.now().strftime('%Y%m%d')}.csv",
                     mime="text/csv",
-                    use_container_width=True
-                )
-        
-        except Exception as e:
-            st.error(f"An error occurred: {str(e)}")
-            st.info("""
-            **Troubleshooting steps:**
-            1. Check your internet connection
-            2. Verify the stock symbol exists (try AAPL, MSFT, GOOGL)
-            3. Try a much longer date range (e.g., 2 years)
-            4. Check if the stock trades during your selected period
-            5. Try without custom parameters first
-            """)
-    
-    else:
-        # Display placeholder when no calculation has been performed
-        st.markdown("---")
-        st.info("Enter your parameters above and click 'Calculate VaR & ES' to begin analysis.")
-        
-        st.markdown("""
-            ### How to Use This Calculator
-            
-            1. **Enter Investment Details**: Set your initial investment and select a stock
-            2. **Choose Date Range**: Select historical data period for analysis
-            3. **Set Risk Parameters**: Define time horizon and confidence level
-            4. **Optional Advanced Settings**: Customize statistical parameters if needed
-            5. **Click Calculate**: Generate VaR and ES calculations
-            
-            The calculator will:
-            - Fetch historical stock price data
-            - Calculate daily return statistics
-            - Compute Value at Risk and Expected Shortfall using both parametric and Monte Carlo methods
-            - Generate interactive visualizations of risk metrics
-        """)
