@@ -135,7 +135,7 @@ with tab1:
         within a firm, portfolio, or position over a specific time frame. It estimates the maximum 
         potential loss with a given confidence level.
         
-        **Example:** A 1-day 95% VaR of $1 million means there is a 95% confidence that losses 
+        **Example:** A 1-day 95% VaR of \$1 million means there is a 95% confidence that losses 
         will not exceed $1 million in one day (or 5% chance of exceeding it).
         """)
         
@@ -161,7 +161,7 @@ with tab1:
         that occurs in the worst-case scenarios beyond the VaR level. It provides a more 
         comprehensive view of tail risk.
         
-        **Example:** If 95% VaR is $1M, the ES might be $1.5M, meaning the average loss 
+        **Example:** If 95% VaR is \$1M, the ES might be $1.5M, meaning the average loss 
         in the worst 5% of cases is $1.5M.
         """)
         
