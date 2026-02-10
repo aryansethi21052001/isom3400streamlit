@@ -406,7 +406,7 @@ with tab2:  # Calculator page
                 
                 with viz_tab1:
                     # Calculate histogram data
-                    hist, bin_edges = np.histogram(portfolio_returns, bins=500)
+                    hist, bin_edges = np.histogram(portfolio_returns, bins=100)
                     bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
                     
                     fig1 = go.Figure()
@@ -471,7 +471,7 @@ with tab2:  # Calculator page
                         yanchor="bottom",
                         xanchor="center",
                         showarrow=False,
-                        yshift=100  # Position slightly above the histogram bar
+                        yshift=200  # Position slightly above the histogram bar
                     )
                     
                     # Add ES annotation - position it above the histogram bar
@@ -488,7 +488,7 @@ with tab2:  # Calculator page
                         yanchor="bottom",
                         xanchor="center",
                         showarrow=False,
-                        yshift=100  # Position slightly above the histogram bar
+                        yshift=200  # Position slightly above the histogram bar
                     )
                     
                     # Shade the tail region
