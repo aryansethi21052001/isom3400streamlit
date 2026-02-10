@@ -400,7 +400,7 @@ with tab2:  # Calculator page
                 # Create tabs for different visualizations
                 viz_tab1, viz_tab2, viz_tab3 = st.tabs([
                     f"{forecast_days}-Day Return Distribution", 
-                    "Monte Carlo Paths", 
+                    "Monte Carlo Simulation", 
                     "Time Horizon Analysis"
                 ])
                 
@@ -429,7 +429,7 @@ with tab2:  # Calculator page
                         line_color="#d62728",
                         line_width=2.5,
                         annotation=dict(
-                            text=f"<b>VaR ({confidence_level}%)</b><br>-${abs(var_monte_carlo):,.0f}",
+                            text=f"<b>VaR ({confidence_level}%)</b><br>-${abs(var_monte_carlo):,.2f}",
                             font=dict(size=11, color="#d62728"),
                             bgcolor="rgba(255, 255, 255, 0.9)",
                             borderwidth=1,
@@ -437,8 +437,12 @@ with tab2:  # Calculator page
                             yanchor="middle",
                             y=0.7,
                             xanchor="left",
-                            x=1.02,
-                            xref="paper",
+                            x=0,
+                            xref="x",
+                            x=var_monte_carlo,
+                            yanchor="bottom",
+                            y=0.95,
+                            xref="paper"
                             showarrow=False
                         )
                     )
@@ -450,16 +454,17 @@ with tab2:  # Calculator page
                         line_color="#ff7f0e",
                         line_width=2.5,
                         annotation=dict(
-                            text=f"<b>Expected Shortfall</b><br>-${abs(es_monte_carlo):,.0f}",
+                            text=f"<b>Expected Shortfall</b><br>-${abs(es_monte_carlo):,.2f}",
                             font=dict(size=11, color="#ff7f0e"),
                             bgcolor="rgba(255, 255, 255, 0.9)",
                             borderwidth=1,
                             bordercolor="#ff7f0e",
-                            yanchor="middle",
-                            y=0.3,
+                            yanchor="bottom",
+                            y=0.85,
                             xanchor="left",
-                            x=1.02,
-                            xref="paper",
+                            x=0,
+                            xref="x",
+                            yref="paper",
                             showarrow=False
                         )
                     )
@@ -511,7 +516,8 @@ with tab2:  # Calculator page
                             x=1.15,
                             bgcolor="rgba(255, 255, 255, 0.9)",
                             bordercolor="rgba(0, 0, 0, 0.2)",
-                            borderwidth=1
+                            borderwidth=1,
+                            font=dict(size=10, color="black")
                         ),
                         margin=dict(l=50, r=50, t=60, b=50),
                         plot_bgcolor='rgba(0, 0, 0, 0)',
@@ -658,7 +664,7 @@ with tab2:  # Calculator page
                             bgcolor="rgba(255, 255, 255, 0.9)",
                             bordercolor="rgba(0, 0, 0, 0.2)",
                             borderwidth=1,
-                            font=dict(size=10)
+                            font=dict(size=10, color="black")
                         ),
                         margin=dict(l=50, r=50, t=60, b=50),
                         plot_bgcolor='rgba(0, 0, 0, 0)',
@@ -801,7 +807,7 @@ with tab2:  # Calculator page
                             bgcolor="rgba(255, 255, 255, 0.9)",
                             bordercolor="rgba(0, 0, 0, 0.2)",
                             borderwidth=1,
-                            font=dict(size=10)
+                            font=dict(size=10, color="black")
                         ),
                         margin=dict(l=50, r=50, t=60, b=50),
                         plot_bgcolor='rgba(0, 0, 0, 0)',
