@@ -138,7 +138,7 @@ with tab2:  # Calculator page
         # Investment amount
         investment = st.number_input(
             "Initial Investment Amount ($)",
-            min_value=0,
+            min_value=0.0,
             value=100000.0,
             step=1000.0,
             help="The initial portfolio value"
