@@ -48,7 +48,7 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
     horizon_std = std_dev * np.sqrt(n_days)
     
     # Z-score for confidence level
-    z = norm.ppf(1 - confidence_level)
+    z = stats.norm.ppf(1 - confidence_level)
     
     if use_log_returns:
         # Log returns (log-normal distribution)
@@ -56,7 +56,7 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
         
         # ES for log-normal distribution
         es = investment * (1 - np.exp(horizon_mean + 0.5 * horizon_std**2) * 
-                          norm.cdf(norm.ppf(confidence_level) - horizon_std) / (1 - confidence_level))
+                          norm.cdf(stats.norm.ppf(confidence_level) - horizon_std) / (1 - confidence_level))
     else:
         # Simple returns (normal distribution)
         # VaR: investment * (-μ - z*σ) for positive loss
@@ -66,7 +66,7 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
         # ES for normal distribution
         # ES = investment * (-μ + σ * φ(-z)/(1-α))
         # Since z = norm.ppf(1-α), -z = norm.ppf(α) which is positive
-        es = investment * (-horizon_mean + horizon_std * norm.pdf(-z) / (1 - confidence_level))
+        es = investment * (-horizon_mean + horizon_std * stats.norm.pdf(-z) / (1 - confidence_level))
     
     return var, es, z_score
 
