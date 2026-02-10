@@ -80,7 +80,7 @@ def generate_distinct_colors(n):
     return colors
 
 with tab1:
-    st.header("An Introduction of VaR & ES")
+    st.header("A Brief Introduction of VaR & ES")
     
     col1, col2 = st.columns(2)
     
