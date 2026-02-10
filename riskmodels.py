@@ -195,10 +195,8 @@ with tab1:
     2. **Volatility increases** at $\sqrt{n}$ rate
     3. **Mean return increases** at linear rate
     4. **Distribution widens** with longer horizons
-    
-    **Important Note:** VaR and ES are reported as **positive loss amounts**. A VaR of $10,000 
-    means you could lose up to $10,000 with the given confidence level.
-    """)
+    """
+    )
 
 with tab2:
     use_custom_params = st.checkbox(
