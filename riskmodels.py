@@ -357,8 +357,8 @@ with tab2:
                         returns = price_series_clean.pct_change().dropna()
                         st.info("Using simple returns")
                 
-                mean_return = float(returns.mean())
-                std_dev = float(returns.std())
+                    mean_return = float(returns.mean())
+                    std_dev = float(returns.std())
                 
                 # Validate calculations
                 if mean_return is None or std_dev is None:
