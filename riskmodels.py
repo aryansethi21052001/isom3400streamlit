@@ -686,7 +686,7 @@ with tab2:
                         st.metric("Median Final", f"${median_final:,.2f}")
                 
                 with viz_tab3:
-                    horizons_to_analyze = [1, 5, 10, 20, 50, 100, 250, 365, forecast_days]
+                    horizons_to_analyze = [1, forecast_days]
                     horizons_to_analyze = sorted(set(horizons_to_analyze))
                     
                     parametric_vars, parametric_es_list = [], []
