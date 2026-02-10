@@ -39,34 +39,37 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
         mean_return: Annualized mean return (decimal)
         std_dev: Annualized standard deviation (decimal)
         n_days: Time horizon in days
-        confidence_level: Confidence level (e.g., 0.95)
+        confidence_level: Confidence level (e.g., 95 for 95%)
         use_log_returns: True for log returns, False for simple returns
     """
+    
+    # Convert confidence level from percentage to decimal
+    alpha = 1 - (confidence_level / 100)  # e.g., 95 -> 0.05 tail probability
     
     # Scale to horizon
     horizon_mean = mean_return * n_days
     horizon_std = std_dev * np.sqrt(n_days)
     
-    # Z-score for confidence level
-    z_score = stats.norm.ppf(1 - confidence_level)
+    # Z-score for tail probability (negative for VaR calculation)
+    z_score = stats.norm.ppf(alpha)  # This gives the z-score for the tail
     
     if use_log_returns:
         # Log returns (log-normal distribution)
         var = investment * (1 - np.exp(horizon_mean + z_score * horizon_std))
         
         # ES for log-normal distribution
+        # Note: Using z_score (which is negative) and alpha (tail probability)
         es = investment * (1 - np.exp(horizon_mean + 0.5 * horizon_std**2) * 
-                          stats.norm.cdf(stats.norm.ppf(confidence_level/100) - horizon_std) / (1 - confidence_level))
+                          stats.norm.cdf(z_score - horizon_std) / alpha)
     else:
         # Simple returns (normal distribution)
-        # VaR: investment * (-μ - z*σ) for positive loss
-        # Since z is negative, -z*σ is positive
+        # VaR = -investment * (horizon_mean + z_score * horizon_std)
         var = -investment * (horizon_mean + z_score * horizon_std)
         
         # ES for normal distribution
-        # ES = investment * (-μ + σ * φ(-z)/(1-α))
-        # Since z = norm.ppf(1-α), -z = norm.ppf(α) which is positive
-        es = investment * (-horizon_mean + horizon_std * stats.norm.pdf(-z_score) / (1 - confidence_level))
+        # ES = investment * (-horizon_mean + horizon_std * φ(z_score)/α)
+        # where φ is the standard normal PDF
+        es = investment * (-horizon_mean + horizon_std * stats.norm.pdf(z_score) / alpha)
     
     return var, es, z_score
 
