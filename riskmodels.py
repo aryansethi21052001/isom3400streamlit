@@ -159,6 +159,10 @@ with tab2:
                 key="use_custom_params"
             )
             
+            # Initialize custom parameters with default values
+            custom_mean_return = 0.05 / 100 
+            custom_std_dev = 1.5 / 100 
+            
             # Only show stock symbol input if NOT using custom parameters
             if not use_custom_params:
                 stock_symbol = st.text_input(
@@ -248,8 +252,8 @@ with tab2:
                 std_dev = None
                 stock_data = None
                 returns = None
-                
-                if use_custom_params and custom_mean_return is not None and custom_std_dev is not None:
+        
+                if use_custom_params:
                     # Use custom parameters
                     mean_return = custom_mean_return
                     std_dev = custom_std_dev
