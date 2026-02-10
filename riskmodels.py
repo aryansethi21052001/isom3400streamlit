@@ -98,10 +98,10 @@ with tab1:
         st.markdown("**Where:**")
         st.markdown(r"""
         - $P$ = Initial investment
-        - $Z_{\alpha}$ = Z-score for confidence level $\alpha$
         - $\mu$ = Mean daily return
-        - $\sigma$ = Daily standard deviation
         - $n$ = Time horizon in days
+        - $Z_{\alpha}$ = Z-score for confidence level $\alpha$
+        - $\sigma$ = Daily standard deviation
         """)
     
     with col2:
@@ -117,9 +117,13 @@ with tab1:
         
         st.markdown("**Where:**")
         st.markdown(r"""
+        - $P$ = Initial investment
+        - $\mu$ = Mean daily return
+        - $n$ = Time horizon in days
+        - $Z_{\alpha}$ = Z-score for confidence level $\alpha$
+        - $\sigma$ = Daily standard deviation
         - $\phi(Z_{\alpha})$ = Normal density at the VaR quantile
         - $\alpha$ = Confidence level (e.g., 0.05 for 95%)
-        - $\sigma \times \sqrt{n}$ = Volatility scaled by time horizon
         """)
     
     st.markdown("---")
