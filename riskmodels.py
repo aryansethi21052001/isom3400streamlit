@@ -138,6 +138,48 @@ with tab1:
     """)
 
 with tab2:
+    use_custom_params = st.checkbox(
+        "Use Custom Statistical Parameters",
+        help="Override automatic calculation from historical data",
+        key="use_custom_params"
+    )
+    
+    # Initialize custom parameters
+    custom_mean_return = 0.05 / 100  # 0.05%
+    custom_std_dev = 1.5 / 100  # 1.5%
+    
+    # Show custom parameter inputs only if checkbox is checked
+    if use_custom_params:
+        st.markdown("#### Custom Statistical Parameters")
+        
+        if use_custom_params:
+            st.info("""
+            **Important:** These parameters represent the mean and standard deviation of 
+            **daily log returns** (if "Use Log Returns" is checked) or **daily simple returns** 
+            (if "Use Log Returns" is unchecked).
+            """)
+        
+        custom_col1, custom_col2 = st.columns(2)
+        with custom_col1:
+            custom_mean_return = st.number_input(
+                "Daily Mean Return (%)",
+                value=0.05,
+                step=0.01,
+                format="%.2f",
+                help="Expected average daily return",
+                key="custom_mean_return"
+            ) / 100
+        
+        with custom_col2:
+            custom_std_dev = st.number_input(
+                "Daily Standard Deviation (%)",
+                value=1.5,
+                step=0.1,
+                format="%.2f",
+                help="Daily volatility (standard deviation of returns)",
+                key="custom_std_dev"
+            ) / 100
+    
     with st.form("input_form"):
         st.subheader("Input Parameters")
         
@@ -152,16 +194,6 @@ with tab2:
                 step=1000.0,
                 help="The initial portfolio value"
             )
-    
-            use_custom_params = st.checkbox(
-                "Use Custom Statistical Parameters",
-                help="Override automatic calculation from historical data",
-                key="use_custom_params"
-            )
-            
-            # Initialize custom parameters with default values
-            custom_mean_return = 0.05 / 100 
-            custom_std_dev = 1.5 / 100 
             
             # Only show stock symbol input if NOT using custom parameters
             if not use_custom_params:
@@ -171,42 +203,22 @@ with tab2:
                     help="Enter a valid stock ticker symbol"
                 ).upper()
             else:
-                stock_symbol = "CUSTOM_PARAMS"  # Default value
+                stock_symbol = "CUSTOM_PARAMS"
             
             st.markdown("#### Date Range")
             start_date = st.date_input(
                 "Start Date",
-                value=datetime.now() - timedelta(days=365)
+                value=datetime.now() - timedelta(days=365),
+                disabled=use_custom_params,
+                help="Ignored when using custom parameters" if use_custom_params else "Start date for historical data"
             ) 
             
             end_date = st.date_input(
                 "End Date",
-                value=datetime.now()
+                value=datetime.now(),
+                disabled=use_custom_params,
+                help="Ignored when using custom parameters" if use_custom_params else "End date for historical data"
             )
-            
-            # Show custom parameter inputs only if checkbox is checked
-            if use_custom_params:
-                st.markdown("#### Custom Statistical Parameters")
-                custom_col1, custom_col2 = st.columns(2)
-                with custom_col1:
-                    custom_mean_return = st.number_input(
-                        "Daily Mean Return (%)",
-                        value=0.05,
-                        step=0.01,
-                        format="%.2f",
-                        help="Expected average daily return",
-                        key="custom_mean_return"
-                    ) / 100
-                
-                with custom_col2:
-                    custom_std_dev = st.number_input(
-                        "Daily Standard Deviation (%)",
-                        value=1.5,
-                        step=0.1,
-                        format="%.2f",
-                        help="Daily volatility (standard deviation of returns)",
-                        key="custom_std_dev"
-                    ) / 100
         
         with col2:
             st.markdown("#### Risk Parameters")
@@ -239,7 +251,9 @@ with tab2:
             use_log_returns = st.checkbox(
                 "Use Log Returns (Recommended)",
                 value=True,
-                help="Use log returns for more accurate multi-period calculations"
+                help="""Use log returns for more accurate multi-period calculations. 
+                When using custom parameters, make sure your mean and std dev values 
+                correspond to log returns if this is checked."""
             )
             
         calculate_button = st.form_submit_button("Calculate VaR & ES", use_container_width=True)
