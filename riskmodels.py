@@ -11,54 +11,7 @@ warnings.filterwarnings('ignore')
 # Page configuration
 st.set_page_config(
     page_title="VaR & ES Calculator",
-    page_icon="📊",
-    layout="wide"
 )
-
-# Custom CSS for elegant styling
-st.markdown("""
-    <style>
-    .main {
-        padding: 0rem 1rem;
-    }
-    .stButton>button {
-        width: 100%;
-        background-color: #2c3e50;
-        color: white;
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 4px;
-    }
-    .stButton>button:hover {
-        background-color: #34495e;
-        color: white;
-    }
-    .metric-card {
-        background-color: #f8f9fa;
-        padding: 1rem;
-        border-radius: 5px;
-        border-left: 4px solid #2c3e50;
-        margin: 0.5rem 0;
-    }
-    .info-box {
-        background-color: #e8f4f8;
-        padding: 1rem;
-        border-radius: 5px;
-        border-left: 4px solid #3498db;
-        margin: 1rem 0;
-    }
-    .warning-box {
-        background-color: #fff3cd;
-        padding: 1rem;
-        border-radius: 5px;
-        border-left: 4px solid #ffc107;
-        margin: 1rem 0;
-    }
-    h1, h2, h3 {
-        color: #2c3e50;
-    }
-    </style>
-""", unsafe_allow_html=False)
 
 # Title and Introduction
 st.title("Value at Risk (VaR) and Expected Shortfall (ES) Calculator")
@@ -396,7 +349,8 @@ else:  # Calculator page
                         stock_symbol,
                         start=start_date,
                         end=end_date,
-                        progress=False
+                        progress=False,
+                        auto_adjust=False
                     )
                     
                     if len(stock_data) == 0:
@@ -863,15 +817,3 @@ else:  # Calculator page
                 
                 This means with 95% confidence, losses won't exceed $7,300 over 10 days.
                 """)
-
-# Footer
-st.markdown("---")
-st.markdown(
-    """
-    <div style='text-align: center; color: #7f8c8d; font-size: 0.9em;'>
-        <p><strong>Multi-Period Risk Metrics Calculator</strong> | Time-scaled VaR & ES calculations</p>
-        <p>For educational and research purposes only | Past performance ≠ future results</p>
-    </div>
-    """,
-    unsafe_allow_html=False
-)
