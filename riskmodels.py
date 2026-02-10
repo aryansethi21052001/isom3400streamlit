@@ -17,9 +17,8 @@ st.set_page_config(
 st.title("Value at Risk (VaR) and Expected Shortfall (ES) Calculator")
 st.markdown("---")
 
-# Sidebar for navigation
-st.sidebar.title("Navigation")
-page = st.sidebar.radio("Go to", ["Introduction & Theory", "Calculator"])
+# Use tabs for navigation instead of radio buttons
+tab1, tab2 = st.tabs(["Introduction & Theory", "Calculator"])
 
 def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confidence_level):
     """Calculate parametric VaR and ES for n-day horizon"""
@@ -64,72 +63,65 @@ def calculate_monte_carlo_var_es(investment, mean_return, std_dev, n_days, confi
     
     return var_mc, es_mc, portfolio_returns, daily_returns
 
-if page == "Introduction & Theory":
+with tab1:  # Introduction & Theory
     st.header("Introduction to Risk Metrics")
     
     col1, col2 = st.columns(2)
     
     with col1:
+        st.markdown("### What is Value at Risk (VaR)?")
         st.markdown("""
-        ### What is Value at Risk (VaR)?
-        
         **Value at Risk (VaR)** is a statistical measure that quantifies the level of financial risk 
         within a firm, portfolio, or position over a specific time frame. It estimates the maximum 
         potential loss with a given confidence level.
+        """)
         
-        #### Time-Adjusted Formula:
-        ```
-        VaR = Initial Investment × (μ × n - Zα × σ × √n)
-        ```
+        st.markdown("#### Time-Adjusted Formula:")
+        st.latex(r"VaR = P \times (\mu \times n - Z_{\alpha} \times \sigma \times \sqrt{n})")
         
-        Where:
-        - **Zα** = Z-score corresponding to confidence level α
-        - **μ** = Mean daily return
-        - **σ** = Daily standard deviation
-        - **n** = Time horizon in days
+        st.markdown("**Where:**")
+        st.markdown(r"""
+        - $P$ = Initial investment
+        - $Z_{\alpha}$ = Z-score for confidence level $\alpha$
+        - $\mu$ = Mean daily return
+        - $\sigma$ = Daily standard deviation
+        - $n$ = Time horizon in days
         """)
     
     with col2:
+        st.markdown("### What is Expected Shortfall (ES)?")
         st.markdown("""
-        ### What is Expected Shortfall (ES)?
-        
         **Expected Shortfall (ES)**, also known as Conditional VaR, measures the average loss 
         that occurs in the worst-case scenarios beyond the VaR level. It provides a more 
         comprehensive view of tail risk.
+        """)
         
-        #### Time-Adjusted Formula (Parametric):
-        ```
-        ES = Initial Investment × (μ × n - σ × √n × φ(Zα) / (1-α))
-        ```
+        st.markdown("#### Time-Adjusted Formula (Parametric):")
+        st.latex(r"ES = P \times (\mu \times n - \sigma \times \sqrt{n} \times \frac{\phi(Z_{\alpha})}{1-\alpha})")
         
-        Where:
-        - **φ(Zα)** = Normal density at the VaR quantile
-        - **α** = Confidence level (e.g., 0.05 for 95%)
-        - **σ × √n** = Volatility scaled by time horizon
+        st.markdown("**Where:**")
+        st.markdown(r"""
+        - $\phi(Z_{\alpha})$ = Normal density at the VaR quantile
+        - $\alpha$ = Confidence level (e.g., 0.05 for 95%)
+        - $\sigma \times \sqrt{n}$ = Volatility scaled by time horizon
         """)
     
     st.markdown("---")
     
     st.header("Time Horizon Scaling")
     
+    st.markdown("### How Time Horizon Affects Risk Metrics")
+    
+    st.markdown("#### Volatility Scaling:")
+    st.latex(r"\sigma_n = \sigma_{daily} \times \sqrt{n}")
+    
+    st.markdown("#### Mean Return Scaling:")
+    st.latex(r"\mu_n = \mu_{daily} \times n")
+    
+    st.markdown("#### Impact on VaR and ES:")
     st.markdown("""
-    ### How Time Horizon Affects Risk Metrics
-    
-    #### Volatility Scaling:
-    For independent returns, volatility scales with the square root of time:
-    ```
-    σ_n = σ_daily × √n
-    ```
-    
-    #### Mean Return Scaling:
-    Expected return scales linearly with time:
-    ```
-    μ_n = μ_daily × n
-    ```
-    
-    #### Impact on VaR and ES:
     1. **Longer horizons** → Higher absolute VaR/ES values
-    2. **Volatility increases** at √n rate
+    2. **Volatility increases** at $\sqrt{n}$ rate
     3. **Mean return increases** at linear rate
     4. **Distribution widens** with longer horizons
     """)
@@ -182,7 +174,16 @@ if page == "Introduction & Theory":
         yaxis_title="VaR ($)",
         template="plotly_white",
         height=400,
-        hovermode="x unified"
+        hovermode="x unified",
+        legend=dict(
+            yanchor="top",
+            y=0.99,
+            xanchor="left",
+            x=0.01,
+            bgcolor='rgba(255, 255, 255, 0.8)',
+            bordercolor='rgba(0, 0, 0, 0.2)',
+            borderwidth=1
+        )
     )
     
     st.plotly_chart(fig, use_container_width=True)
@@ -194,46 +195,43 @@ if page == "Introduction & Theory":
     method_col1, method_col2 = st.columns(2)
     
     with method_col1:
+        st.markdown("### Parametric Method (Variance-Covariance)")
+        
+        st.markdown("#### Time Scaling Formulas:")
+        st.latex(r"\mu_n = \mu_{daily} \times n")
+        st.latex(r"\sigma_n = \sigma_{daily} \times \sqrt{n}")
+        st.latex(r"VaR_n = P \times (\mu_n - Z \times \sigma_n)")
+        
+        st.markdown("#### Assumptions:")
         st.markdown("""
-        ### Parametric Method (Variance-Covariance)
-        
-        #### Time Scaling:
-        ```python
-        # Daily to n-day conversion
-        n_day_mean = daily_mean * n
-        n_day_vol = daily_vol * sqrt(n)
-        
-        # VaR calculation
-        VaR_n = investment * (n_day_mean - Z * n_day_vol)
-        ```
-        
-        #### Assumptions:
         1. Returns follow normal distribution
         2. Independent daily returns
         3. Constant volatility over time
         """)
     
     with method_col2:
+        st.markdown("### Monte Carlo Simulation")
+        
+        st.markdown("#### Simulation Process:")
+        st.latex(r"r_{i,t} \sim N(\mu, \sigma^2)")
+        st.latex(r"R_{i,n} = \prod_{t=1}^{n} (1 + r_{i,t}) - 1")
+        st.latex(r"P_{i,n} = P \times (1 + R_{i,n})")
+        
+        st.markdown("**Where:**")
+        st.markdown(r"""
+        - $r_{i,t}$ = Daily return for simulation $i$ at day $t$
+        - $R_{i,n}$ = Cumulative $n$-day return for simulation $i$
+        - $P_{i,n}$ = Portfolio value after $n$ days for simulation $i$
+        """)
+        
+        st.markdown("#### Key Features:")
         st.markdown("""
-        ### Historical Simulation (Monte Carlo)
-        
-        #### Time Scaling:
-        ```python
-        # Generate n-day returns
-        daily_returns = normal(mean, std, (simulations, n))
-        n_day_returns = prod(1 + daily_returns, axis=1) - 1
-        
-        # Calculate portfolio values
-        portfolio_values = investment * (1 + n_day_returns)
-        ```
-        
-        #### Key Features:
         1. Captures compounding effects
         2. No normality assumption needed
         3. Can simulate path-dependent scenarios
         """)
 
-else:  # Calculator page
+with tab2:  # Calculator page
     st.header("VaR and ES Calculator")
     
     # Create two main columns
@@ -350,14 +348,21 @@ else:  # Calculator page
                         start=start_date,
                         end=end_date,
                         progress=False,
-                        auto_adjust=False
+                        auto_adjust=True
                     )
                     
                     if len(stock_data) == 0:
                         st.error(f"No data found for {stock_symbol}. Please check the symbol and date range.")
                     else:
+                        # Use Close if Adj Close doesn't exist
+                        if 'Adj Close' in stock_data.columns:
+                            price_column = 'Adj Close'
+                        else:
+                            price_column = 'Close'
+                            st.info(f"Using Close prices instead of Adjusted Close for {stock_symbol}")
+                        
                         # Calculate returns
-                        stock_data['Returns'] = stock_data['Adj Close'].pct_change().dropna()
+                        stock_data['Returns'] = stock_data[price_column].pct_change().dropna()
                         returns = stock_data['Returns'].values
                         
                         # Use custom parameters or calculate from data
@@ -379,7 +384,7 @@ else:  # Calculator page
                         with stats_col4:
                             st.metric("Data Points", f"{len(returns)}")
                         
-                        # Time-scaled parameters
+                        # Time-scaled parameters with LaTeX formulas
                         st.markdown(f"#### {forecast_days}-Day Scaled Parameters")
                         
                         scaled_mean = mean_return * forecast_days
@@ -387,8 +392,11 @@ else:  # Calculator page
                         
                         scale_col1, scale_col2 = st.columns(2)
                         with scale_col1:
+                            st.latex(rf"\mu_{{{forecast_days}}} = \mu \times n = {mean_return*100:.3f}\% \times {forecast_days} = {scaled_mean*100:.3f}\%")
                             st.info(f"**Scaled Mean Return:** {scaled_mean*100:.3f}%")
+                        
                         with scale_col2:
+                            st.latex(rf"\sigma_{{{forecast_days}}} = \sigma \times \sqrt{{n}} = {std_dev*100:.3f}\% \times \sqrt{{{forecast_days}}} = {scaled_vol*100:.3f}\%")
                             st.info(f"**Scaled Volatility:** {scaled_vol*100:.3f}%")
                         
                         # Calculate VaR and ES using time-scaled formulas
@@ -473,48 +481,9 @@ else:  # Calculator page
                                 name=f'{forecast_days}-Day Returns',
                                 marker_color='#3498db',
                                 opacity=0.7,
-                                histnorm='probability density'
+                                histnorm='probability density',
+                                hovertemplate='Return: $%{x:,.0f}<br>Density: %{y:.2e}<extra></extra>'
                             ))
-                            
-                            # Add vertical lines for VaR and ES
-                            fig1.add_vline(
-                                x=var_monte_carlo,
-                                line_dash="dash",
-                                line_color="red",
-                                annotation_text=f"VaR ({confidence_level}%): -${abs(var_monte_carlo):,.0f}",
-                                annotation_position="top left"
-                            )
-                            
-                            fig1.add_vline(
-                                x=es_monte_carlo,
-                                line_dash="dot",
-                                line_color="orange",
-                                annotation_text=f"ES: -${abs(es_monte_carlo):,.0f}",
-                                annotation_position="top right"
-                            )
-                            
-                            # Shade the tail region
-                            tail_returns = portfolio_returns[portfolio_returns <= var_monte_carlo]
-                            if len(tail_returns) > 0:
-                                fig1.add_trace(go.Scatter(
-                                    x=np.sort(tail_returns),
-                                    y=np.zeros_like(tail_returns),
-                                    fill='tozeroy',
-                                    fillcolor='rgba(231, 76, 60, 0.3)',
-                                    line=dict(width=0),
-                                    name='Tail Risk Region',
-                                    showlegend=True
-                                ))
-                            
-                            fig1.update_layout(
-                                title=f"Monte Carlo {forecast_days}-Day Return Distribution",
-                                xaxis_title=f"{forecast_days}-Day Return ($)",
-                                yaxis_title="Density",
-                                template="plotly_white",
-                                height=400,
-                                legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
-                                hovermode="x unified"
-                            )
                             
                             # Add normal distribution overlay for comparison
                             x_norm = np.linspace(portfolio_returns.min(), portfolio_returns.max(), 1000)
@@ -529,8 +498,107 @@ else:  # Calculator page
                                 y=y_norm,
                                 mode='lines',
                                 name='Normal Distribution',
-                                line=dict(color='#2c3e50', width=2, dash='dash')
+                                line=dict(color='#2c3e50', width=2, dash='dash'),
+                                hovertemplate='Normal Distribution<br>Return: $%{x:,.0f}<br>Density: %{y:.2e}<extra></extra>'
                             ))
+                            
+                            # Add vertical lines for VaR and ES with better positioning
+                            fig1.add_vline(
+                                x=var_monte_carlo,
+                                line_dash="dash",
+                                line_color="red",
+                                annotation=dict(
+                                    text=f"VaR ({confidence_level}%)<br>-${abs(var_monte_carlo):,.0f}",
+                                    font=dict(size=10),
+                                    bgcolor="rgba(255,255,255,0.8)",
+                                    borderwidth=1,
+                                    bordercolor="red",
+                                    yanchor="bottom",
+                                    y=0.95,
+                                    xanchor="right",
+                                    x=0.95
+                                )
+                            )
+                            
+                            fig1.add_vline(
+                                x=es_monte_carlo,
+                                line_dash="dot",
+                                line_color="orange",
+                                annotation=dict(
+                                    text=f"ES<br>-${abs(es_monte_carlo):,.0f}",
+                                    font=dict(size=10),
+                                    bgcolor="rgba(255,255,255,0.8)",
+                                    borderwidth=1,
+                                    bordercolor="orange",
+                                    yanchor="bottom",
+                                    y=0.85,
+                                    xanchor="right",
+                                    x=0.95
+                                )
+                            )
+                            
+                            # Shade the tail region with better positioning
+                            tail_returns = portfolio_returns[portfolio_returns <= var_monte_carlo]
+                            if len(tail_returns) > 0:
+                                x_tail = np.sort(tail_returns)
+                                y_tail = np.zeros_like(x_tail)
+                                
+                                # Get histogram data for proper shading
+                                hist, bin_edges = np.histogram(portfolio_returns, bins=50, density=True)
+                                bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+                                
+                                # Interpolate y-values for tail region
+                                from scipy.interpolate import interp1d
+                                if len(bin_centers) > 1 and len(hist) > 1:
+                                    interp_func = interp1d(bin_centers, hist, bounds_error=False, fill_value=0)
+                                    y_tail = interp_func(x_tail)
+                                
+                                fig1.add_trace(go.Scatter(
+                                    x=x_tail,
+                                    y=y_tail,
+                                    fill='tozeroy',
+                                    fillcolor='rgba(231, 76, 60, 0.3)',
+                                    line=dict(width=0),
+                                    name='Tail Risk (Worst 5%)',
+                                    hovertemplate='Tail Region<br>Return: $%{x:,.0f}<extra></extra>',
+                                    showlegend=True
+                                ))
+                            
+                            fig1.update_layout(
+                                title=f"Monte Carlo {forecast_days}-Day Return Distribution",
+                                xaxis_title=f"{forecast_days}-Day Return ($)",
+                                yaxis_title="Probability Density",
+                                template="plotly_white",
+                                height=500,
+                                hovermode="x unified",
+                                legend=dict(
+                                    yanchor="top",
+                                    y=0.99,
+                                    xanchor="left",
+                                    x=0.01,
+                                    bgcolor='rgba(255, 255, 255, 0.8)',
+                                    bordercolor='rgba(0, 0, 0, 0.2)',
+                                    borderwidth=1,
+                                    font=dict(size=10)
+                                ),
+                                margin=dict(l=50, r=50, t=60, b=50)
+                            )
+                            
+                            # Add annotation for statistics
+                            fig1.add_annotation(
+                                xref="paper",
+                                yref="paper",
+                                x=0.02,
+                                y=0.98,
+                                text=f"Total Simulations: {n_simulations:,}<br>Mean: ${portfolio_returns.mean():,.0f}<br>Std Dev: ${portfolio_returns.std():,.0f}",
+                                showarrow=False,
+                                font=dict(size=10),
+                                align="left",
+                                bgcolor="rgba(255, 255, 255, 0.8)",
+                                bordercolor="rgba(0, 0, 0, 0.2)",
+                                borderwidth=1,
+                                borderpad=4
+                            )
                             
                             st.plotly_chart(fig1, use_container_width=True)
                         
@@ -550,7 +618,7 @@ else:  # Calculator page
                                     x=list(range(forecast_days)),
                                     y=portfolio_path,
                                     mode='lines',
-                                    line=dict(width=1, color='rgba(52, 152, 219, 0.3)'),
+                                    line=dict(width=1, color='rgba(52, 152, 219, 0.2)'),
                                     showlegend=False,
                                     hoverinfo='skip'
                                 ))
@@ -578,8 +646,17 @@ else:  # Calculator page
                                 xaxis_title="Days",
                                 yaxis_title="Portfolio Value ($)",
                                 template="plotly_white",
-                                height=400,
-                                hovermode="x unified"
+                                height=500,
+                                hovermode="x unified",
+                                legend=dict(
+                                    yanchor="top",
+                                    y=0.99,
+                                    xanchor="left",
+                                    x=0.01,
+                                    bgcolor='rgba(255, 255, 255, 0.8)',
+                                    bordercolor='rgba(0, 0, 0, 0.2)',
+                                    borderwidth=1
+                                )
                             )
                             
                             st.plotly_chart(fig2, use_container_width=True)
@@ -615,7 +692,8 @@ else:  # Calculator page
                                 y=parametric_vars,
                                 mode='lines+markers',
                                 name='Parametric VaR',
-                                line=dict(color='#2c3e50', width=3)
+                                line=dict(color='#2c3e50', width=3),
+                                marker=dict(size=8)
                             ))
                             
                             fig3.add_trace(go.Scatter(
@@ -623,7 +701,8 @@ else:  # Calculator page
                                 y=monte_carlo_vars,
                                 mode='lines+markers',
                                 name='Monte Carlo VaR',
-                                line=dict(color='#3498db', width=3, dash='dash')
+                                line=dict(color='#3498db', width=3, dash='dash'),
+                                marker=dict(size=8)
                             ))
                             
                             # Add square root scaling reference
@@ -632,37 +711,45 @@ else:  # Calculator page
                                 x=horizons_to_analyze,
                                 y=sqrt_scaling,
                                 mode='lines',
-                                name='√n Scaling Reference',
+                                name=r'$\sqrt{n}$ Scaling Reference',
                                 line=dict(color='#95a5a6', width=2, dash='dot'),
                                 opacity=0.5
                             ))
                             
                             fig3.update_layout(
-                                title="VaR Scaling with Different Time Horizons",
+                                title=f"VaR Scaling with Time Horizon ({confidence_level}% Confidence)",
                                 xaxis_title="Time Horizon (Days)",
-                                yaxis_title=f"VaR ({confidence_level}%) ($)",
+                                yaxis_title="VaR ($)",
                                 template="plotly_white",
-                                height=400,
+                                height=500,
                                 hovermode="x unified",
                                 legend=dict(
                                     yanchor="top",
                                     y=0.99,
                                     xanchor="left",
-                                    x=0.01
+                                    x=0.01,
+                                    bgcolor='rgba(255, 255, 255, 0.8)',
+                                    bordercolor='rgba(0, 0, 0, 0.2)',
+                                    borderwidth=1
                                 )
                             )
                             
                             st.plotly_chart(fig3, use_container_width=True)
                             
-                            # Add explanation
+                            # Add explanation with LaTeX
                             st.info(f"""
                             **Time Scaling Analysis:**
-                            - VaR scales approximately with √n (square root of time)
-                            - {forecast_days}-day VaR is about {np.sqrt(forecast_days):.1f} times 1-day VaR
+                            
+                            VaR scales approximately with the square root of time:
+                            
+                            {st.latex(rf"\text{{VaR}}_{{{forecast_days}}} \approx \text{{VaR}}_1 \times \sqrt{{{forecast_days}}} = \text{{VaR}}_1 \times {np.sqrt(forecast_days):.1f}")}
+                            
+                            - {forecast_days}-day VaR is about **{np.sqrt(forecast_days):.1f} times** 1-day VaR
                             - Differences between methods increase with longer horizons due to compounding effects
+                            - Parametric method assumes normal distribution, while Monte Carlo captures actual return distribution
                             """)
                         
-                        # Interpretation
+                        # Interpretation with formulas
                         st.markdown("---")
                         st.subheader("Risk Interpretation")
                         
@@ -676,10 +763,19 @@ else:  # Calculator page
                             
                             - **{confidence_level}% confidence** that losses won't exceed **${abs(var_parametric):,.0f}**
                             - **Expected average loss** in worst {100-confidence_level}% scenarios: **${abs(es_parametric):,.0f}**
-                            - **Daily volatility scaled by √{forecast_days} = {np.sqrt(forecast_days):.2f}**
                             
-                            *Assumes normally distributed, independent daily returns.*
+                            **Formula Applied:**
                             """)
+                            
+                            st.latex(rf"""
+                            \begin{{aligned}}
+                            \text{{VaR}} &= P \times (\mu \times n - Z_{{\alpha}} \times \sigma \times \sqrt{{n}}) \\
+                            &= \${investment:,.0f} \times \left({mean_return*100:.3f}\% \times {forecast_days} - {z_score:.3f} \times {std_dev*100:.3f}\% \times \sqrt{{{forecast_days}}}\right) \\
+                            &= -\${abs(var_parametric):,.0f}
+                            \end{{aligned}}
+                            """)
+                            
+                            st.markdown("*Assumes normally distributed, independent daily returns.*")
                         
                         with interp_col2:
                             worst_case_loss = portfolio_returns.min()
@@ -694,8 +790,14 @@ else:  # Calculator page
                             - **Maximum simulated loss**: **${abs(worst_case_loss):,.0f}**
                             - **Median {forecast_days}-day return**: **${np.median(portfolio_returns):,.0f}**
                             
-                            *Captures compounding and non-normal distribution effects.*
+                            **Methodology:**
+                            1. Generated {n_simulations:,} random return paths
+                            2. Applied compounding over {forecast_days} days
+                            3. Calculated empirical percentiles
+                            4. Averaged worst-case scenarios
                             """)
+                            
+                            st.markdown("*Captures compounding and non-normal distribution effects.*")
                         
                         # Download results
                         st.markdown("---")
@@ -781,19 +883,20 @@ else:  # Calculator page
             This calculator computes **{forecast_days if calculate_button else 'N'}-day Value at Risk and Expected Shortfall** using:
             
             1. **Time-scaled parametric formulas:**
-               ```
-               VaR_n = Investment × (μ×n - Z×σ×√n)
-               ES_n = Investment × (μ×n - σ×√n × φ(Z)/(1-α))
-               ```
+            """)
             
+            st.latex(r"VaR_n = P \times (\mu \times n - Z_{\alpha} \times \sigma \times \sqrt{n})")
+            st.latex(r"ES_n = P \times (\mu \times n - \sigma \times \sqrt{n} \times \frac{\phi(Z_{\alpha})}{1-\alpha})")
+            
+            st.markdown("""
             2. **Multi-period Monte Carlo simulation:**
-               - Generates {n_simulations if calculate_button else 'thousands'} of {forecast_days if calculate_button else 'N'}-day return paths
+               - Generates thousands of N-day return paths
                - Accounts for compounding effects
                - No normality assumption required
             
             **Key time scaling concepts:**
-            - Volatility scales with √n (square root of time)
-            - Expected return scales linearly with n
+            - Volatility scales with $\sqrt{n}$ (square root of time)
+            - Expected return scales linearly with $n$
             - VaR typically increases with longer time horizons
             """)
             
@@ -805,15 +908,5 @@ else:  # Calculator page
                 - Daily volatility: 1.5%
                 - 10-day horizon
                 - 95% confidence
-                
-                **Time-scaled parameters:**
-                - 10-day mean: 0.5% (0.05% × 10)
-                - 10-day volatility: 4.74% (1.5% × √10)
-                
-                **Approximate 10-day VaR:**
-                ```
-                VaR ≈ $100,000 × (0.005 - 1.645 × 0.0474) ≈ -$7,300
-                ```
-                
-                This means with 95% confidence, losses won't exceed $7,300 over 10 days.
                 """)
+                
