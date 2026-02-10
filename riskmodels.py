@@ -46,9 +46,9 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
         es = investment * (1 - np.exp(mean_return * n_days - std_dev * np.sqrt(n_days) * 
                                      stats.norm.pdf(z_score) / alpha))
     else:
-        # For simple returns: VaR = P * (μ*n - Zα*σ*√n)
+        # For simple returns: VaR = P * (μ*n + Zα*σ*√n)
         # Since Zα is negative, this formula gives us the loss
-        var = investment * (mean_return * n_days - z_score * std_dev * np.sqrt(n_days))
+        var = investment * (mean_return * n_days + z_score * std_dev * np.sqrt(n_days))
         
         # ES = -P * (μ*n + σ*√n * φ(Zα)/α)
         es = -investment * (mean_return * n_days + std_dev * np.sqrt(n_days) * 
