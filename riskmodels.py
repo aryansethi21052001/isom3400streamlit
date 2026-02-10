@@ -422,6 +422,27 @@ with tab2:  # Calculator page
                         hovertemplate='<b>Return</b>: $%{x:,.0f}<br><b>Frequency</b>: %{y}<extra></extra>'
                     ))
                     
+                    # Shade the tail region
+                    tail_mask = portfolio_returns <= var_monte_carlo
+                    tail_returns = portfolio_returns[tail_mask]
+                    
+                    if len(tail_returns) > 0:
+                        # Find which histogram bins are in the tail
+                        tail_bin_indices = [i for i, center in enumerate(bin_centers) if center <= var_monte_carlo]
+                        
+                        if tail_bin_indices:
+                            # Add shaded bars for tail region
+                            for idx in tail_bin_indices:
+                                fig1.add_trace(go.Bar(
+                                    x=[bin_centers[idx]],
+                                    y=[hist[idx]],
+                                    width=[(bin_edges[idx+1] - bin_edges[idx]) * 0.9],
+                                    marker_color='rgba(214, 39, 40, 0.3)',
+                                    name='Tail Risk Region' if idx == tail_bin_indices[0] else '',
+                                    showlegend=True if idx == tail_bin_indices[0] else False,
+                                    hovertemplate='<b>Tail Return</b>: $%{x:,.0f}<br><b>Frequency</b>: %{y}<extra></extra>'
+                                ))
+
                     fig1.add_trace(go.Scatter(
                         x=[None],
                         y=[None],
@@ -432,7 +453,7 @@ with tab2:  # Calculator page
                             color='#d62728',
                             line=dict(width=1, color='#d62728')
                         ),
-                        name=f'VaR ({confidence_level}%): -${abs(var_monte_carlo):,.0f}',
+                        name=f'VaR ({confidence_level}%): -${abs(var_monte_carlo):,.2f}',
                         showlegend=True
                     ))
                     
@@ -446,7 +467,7 @@ with tab2:  # Calculator page
                             color='#ff7f0e',
                             line=dict(width=1, color='#ff7f0e')
                         ),
-                        name=f'Expected Shortfall: -${abs(es_monte_carlo):,.0f}',
+                        name=f'Expected Shortfall: -${abs(es_monte_carlo):,.2f}',
                         showlegend=True
                     ))
                     
@@ -465,28 +486,6 @@ with tab2:  # Calculator page
                         line_width=2.5,
                         showlegend=False
                     )
-                    
-                    # Shade the tail region
-                    tail_mask = portfolio_returns <= var_monte_carlo
-                    tail_returns = portfolio_returns[tail_mask]
-                    
-                    if len(tail_returns) > 0:
-                        # Find which histogram bins are in the tail
-                        tail_bin_indices = [i for i, center in enumerate(bin_centers) 
-                                          if center <= var_monte_carlo]
-                        
-                        if tail_bin_indices:
-                            # Add shaded bars for tail region
-                            for idx in tail_bin_indices:
-                                fig1.add_trace(go.Bar(
-                                    x=[bin_centers[idx]],
-                                    y=[hist[idx]],
-                                    width=[(bin_edges[idx+1] - bin_edges[idx]) * 0.9],
-                                    marker_color='rgba(214, 39, 40, 0.3)',
-                                    name='Tail Risk Region' if idx == tail_bin_indices[0] else '',
-                                    showlegend=True if idx == tail_bin_indices[0] else False,
-                                    hovertemplate='<b>Tail Return</b>: $%{x:,.0f}<br><b>Frequency</b>: %{y}<extra></extra>'
-                                ))
                     
                     fig1.update_layout(
                         title=dict(
