@@ -406,7 +406,7 @@ with tab2:  # Calculator page
                 
                 with viz_tab1:
                     # Calculate histogram data
-                    hist, bin_edges = np.histogram(portfolio_returns, bins=50)
+                    hist, bin_edges = np.histogram(portfolio_returns, bins=500)
                     bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
                     
                     fig1 = go.Figure()
@@ -471,7 +471,7 @@ with tab2:  # Calculator page
                         yanchor="bottom",
                         xanchor="center",
                         showarrow=False,
-                        yshift=10  # Position slightly above the histogram bar
+                        yshift=100  # Position slightly above the histogram bar
                     )
                     
                     # Add ES annotation - position it above the histogram bar
@@ -488,7 +488,7 @@ with tab2:  # Calculator page
                         yanchor="bottom",
                         xanchor="center",
                         showarrow=False,
-                        yshift=10  # Position slightly above the histogram bar
+                        yshift=100  # Position slightly above the histogram bar
                     )
                     
                     # Shade the tail region
@@ -528,6 +528,8 @@ with tab2:  # Calculator page
                             text="Frequency",
                             font=dict(size=12)
                         ),
+                        xaxis=dict(fixedrange=True, showgrid=True, gridwidth=1, gridcolor='rgba(128, 128, 128, 0.2)'),
+                        yaxis=dict(fixedrange=True, showgrid=True, gridwidth=1, gridcolor='rgba(128, 128, 128, 0.2)'),
                         template="plotly_white",
                         height=500,
                         hovermode="x unified",
@@ -570,7 +572,7 @@ with tab2:  # Calculator page
                     status_text = st.empty()
                     
                     # Generate distinct colors for all paths
-                    status_text.text(f"Generating {n_simulations:,} distinct paths with unique colors...")
+                    status_text.text(f"Generating {n_simulations:,} simulations...")
                     colors = generate_distinct_colors(n_simulations)
                     
                     fig2 = go.Figure()
@@ -588,7 +590,7 @@ with tab2:  # Calculator page
                             mode='lines',
                             line=dict(width=1, color=colors[i]),
                             name=f'Path {i+1}',
-                            showlegend=False,  # Hide individual path legends to avoid overcrowding
+                            showlegend=False, 
                             hovertemplate=f'<b>Path {i+1}</b><br>Day %{{x}}<br>Value: $%{{y:,.0f}}<extra></extra>'
                         ))
                         
@@ -615,7 +617,7 @@ with tab2:  # Calculator page
                         line_color="#2ca02c",
                         line_width=2,
                         annotation=dict(
-                            text=f"Initial: ${investment:,.0f}",
+                            text=f"Initial: ${investment:,.2f}",
                             font=dict(size=10, color="#2ca02c"),
                             bgcolor="rgba(255,255,255,0.9)",
                             borderwidth=1,
@@ -662,7 +664,7 @@ with tab2:  # Calculator page
                     
                     fig2.update_layout(
                         title=dict(
-                            text=f"All {n_simulations:,} Monte Carlo Simulation Paths ({forecast_days} Days)",
+                            text=f"Monte Carlo Simulation ({n_simulations:,} Paths) for {forecast_days} Days)",
                             font=dict(size=16),
                             x=0.5,
                             xanchor='center'
@@ -675,6 +677,8 @@ with tab2:  # Calculator page
                             text="Portfolio Value ($)",
                             font=dict(size=12)
                         ),
+                        xaxis=dict(fixedrange=True, showgrid=True, gridwidth=1, gridcolor='rgba(128, 128, 128, 0.2)'),
+                        yaxis=dict(fixedrange=True, showgrid=True, gridwidth=1, gridcolor='rgba(128, 128, 128, 0.2)'),
                         template="plotly_white",
                         height=600,
                         hovermode="closest",
@@ -818,6 +822,8 @@ with tab2:  # Calculator page
                             text="Risk Metric ($)",
                             font=dict(size=12)
                         ),
+                        xaxis=dict(fixedrange=True, showgrid=True, gridwidth=1, gridcolor='rgba(128, 128, 128, 0.2)'),
+                        yaxis=dict(fixedrange=True, showgrid=True, gridwidth=1, gridcolor='rgba(128, 128, 128, 0.2)'),
                         template="plotly_white",
                         height=500,
                         hovermode="x unified",
