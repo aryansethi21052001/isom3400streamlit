@@ -220,39 +220,40 @@ with tab2:  # Calculator page
                 step=1000,
                 help="More simulations = more accurate but slower computation"
             )
-        
-        # Advanced parameters in expander
-        with st.expander("Advanced Parameters"):
-            adv_col1, adv_col2 = st.columns(2)
-            
-            with adv_col1:
-                st.markdown("#### Statistical Parameters")
-                use_custom_params = st.checkbox(
-                    "Use Custom Statistical Parameters",
-                    help="Override automatic calculation from historical data"
-                )
-            
-            with adv_col2:
-                if use_custom_params:
-                    mean_return = st.number_input(
-                        "Daily Mean Return (%)",
-                        value=0.05,
-                        step=0.01,
-                        format="%.2f",
-                        help="Expected average daily return"
-                    ) / 100
-                    
-                    std_dev = st.number_input(
-                        "Daily Standard Deviation (%)",
-                        value=1.5,
-                        step=0.1,
-                        format="%.2f",
-                        help="Daily volatility (standard deviation of returns)"
-                    ) / 100
-                else:
-                    mean_return = None
-                    std_dev = None
-        
+
+            # Advanced parameters in expander
+            with st.expander("Advanced Parameters"):
+                adv_col1, adv_col2 = st.columns(2)
+                
+                with adv_col1:
+                    st.markdown("#### Statistical Parameters")
+                    use_custom_params = st.checkbox(
+                        "Use Custom Statistical Parameters",
+                        help="Override automatic calculation from historical data"
+                    )
+                
+                with adv_col2:
+                    if use_custom_params:
+                        custom_mean_return = st.number_input(
+                            "Daily Mean Return (%)",
+                            value=0.05,
+                            step=0.01,
+                            format="%.2f",
+                            help="Expected average daily return",
+                            key="custom_mean_return"
+                        ) / 100
+                        
+                        custom_std_dev = st.number_input(
+                            "Daily Standard Deviation (%)",
+                            value=1.5,
+                            step=0.1,
+                            format="%.2f",
+                            help="Daily volatility (standard deviation of returns)",
+                            key="custom_std_dev"
+                        ) / 100
+                    else:
+                        custom_mean_return = None
+                        custom_std_dev = None
         # Submit button
         calculate_button = st.form_submit_button("Calculate VaR & ES", use_container_width=True)
     
@@ -294,7 +295,10 @@ with tab2:  # Calculator page
                 returns = price_series_clean.pct_change().dropna()
                 
                 # Use custom parameters or calculate from data
-                if mean_return is None:
+                if use_custom_params and custom_mean_return is not None and custom_std_dev is not None:
+                    mean_return = custom_mean_return
+                    std_dev = custom_std_dev
+                else:
                     mean_return = float(returns.mean())
                     std_dev = float(returns.std())
                 
