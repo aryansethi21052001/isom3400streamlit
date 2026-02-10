@@ -457,7 +457,7 @@ with tab2:  # Calculator page
                         line_width=2.5
                     )
                     
-                    # Add VaR annotation - position it above the histogram bar
+                    # Add VaR annotation
                     fig1.add_annotation(
                         x=var_monte_carlo,
                         y=var_y_pos,
@@ -471,10 +471,10 @@ with tab2:  # Calculator page
                         yanchor="bottom",
                         xanchor="center",
                         showarrow=False,
-                        yshift=250  # Position slightly above the histogram bar
+                        yshift=-15  
                     )
                     
-                    # Add ES annotation - position it above the histogram bar
+                    # Add ES annotation
                     fig1.add_annotation(
                         x=es_monte_carlo,
                         y=es_y_pos,
@@ -488,7 +488,7 @@ with tab2:  # Calculator page
                         yanchor="bottom",
                         xanchor="center",
                         showarrow=False,
-                        yshift=400  # Position slightly above the histogram bar
+                        yshift=-10  # Position slightly above the histogram bar
                     )
                     
                     # Shade the tail region
