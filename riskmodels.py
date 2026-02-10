@@ -31,12 +31,7 @@ def fetch_stock_data(symbol, start_date, end_date):
 
 @st.cache_data
 def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confidence_level, use_log_returns=True):
-    """Calculate parametric VaR & ES for n-day horizon
-    
-    CORRECTED FORMULAS:
-    VaR represents the loss (positive value) at the confidence level
-    ES represents the expected loss beyond VaR (positive value)
-    """
+    """Calculate parametric VaR & ES for n-day horizon"""
     alpha = 1 - (confidence_level / 100)
     z_score = stats.norm.ppf(alpha) 
     
@@ -51,9 +46,9 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
         es = investment * (1 - np.exp(mean_return * n_days - std_dev * np.sqrt(n_days) * 
                                      stats.norm.pdf(z_score) / alpha))
     else:
-        # For simple returns: VaR = -P * (μ*n + Zα*σ*√n)
+        # For simple returns: VaR = P * (μ*n - Zα*σ*√n)
         # Since Zα is negative, this formula gives us the loss
-        var = -investment * (mean_return * n_days + z_score * std_dev * np.sqrt(n_days))
+        var = investment * (mean_return * n_days - z_score * std_dev * np.sqrt(n_days))
         
         # ES = -P * (μ*n + σ*√n * φ(Zα)/α)
         es = -investment * (mean_return * n_days + std_dev * np.sqrt(n_days) * 
