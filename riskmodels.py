@@ -471,7 +471,7 @@ with tab2:  # Calculator page
                         yanchor="bottom",
                         xanchor="center",
                         showarrow=False,
-                        yshift=200  # Position slightly above the histogram bar
+                        yshift=250  # Position slightly above the histogram bar
                     )
                     
                     # Add ES annotation - position it above the histogram bar
@@ -488,7 +488,7 @@ with tab2:  # Calculator page
                         yanchor="bottom",
                         xanchor="center",
                         showarrow=False,
-                        yshift=200  # Position slightly above the histogram bar
+                        yshift=350  # Position slightly above the histogram bar
                     )
                     
                     # Shade the tail region
@@ -664,7 +664,7 @@ with tab2:  # Calculator page
                     
                     fig2.update_layout(
                         title=dict(
-                            text=f"Monte Carlo Simulation ({n_simulations:,} Paths) for {forecast_days} Days)",
+                            text=f"Monte Carlo Simulation ({n_simulations:,} Paths) for {forecast_days} Days",
                             font=dict(size=16),
                             x=0.5,
                             xanchor='center'
@@ -746,9 +746,9 @@ with tab2:  # Calculator page
                         parametric_vars.append(abs(var_para))
                         parametric_es_list.append(abs(es_para))
                         
-                        # Monte Carlo VaR & ES (use fewer simulations for speed)
+                        # Monte Carlo VaR & ES
                         var_mc, es_mc, _, _ = calculate_monte_carlo_var_es(
-                            investment, mean_return, std_dev, horizon, confidence_level, min(2000, n_simulations)
+                            investment, mean_return, std_dev, horizon, confidence_level, n_simulations
                         )
                         monte_carlo_vars.append(abs(var_mc))
                         monte_carlo_es_list.append(abs(es_mc))
