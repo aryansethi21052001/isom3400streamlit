@@ -42,7 +42,7 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
         var = investment * (1 - np.exp(mean_return * n_days + z_score * std_dev * np.sqrt(n_days)))
         
         # ES (Expected Shortfall) - average loss in the tail
-        # ES = P * (1 - exp(μ*n - σ*√n * φ(Zα)/α))
+        # ES = P * (1 - exp(μ*n - σ*√n * φ(Zα)/(1-α)))
         es = investment * (1 - np.exp(mean_return * n_days - std_dev * np.sqrt(n_days) * 
                                      stats.norm.pdf(z_score) / alpha))
     else:
@@ -50,7 +50,7 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
         # Since Zα is negative, this formula gives us the loss
         var = -investment * (mean_return * n_days + z_score * std_dev * np.sqrt(n_days))
         
-        # ES = -P * (μ*n + σ*√n * φ(Zα)/α)
+        # ES = -P * (μ*n + σ*√n * φ(Zα)/(1-α))
         es = -investment * (mean_return * n_days + std_dev * np.sqrt(n_days) * 
                           stats.norm.pdf(z_score) / alpha)
     
