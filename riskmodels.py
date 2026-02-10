@@ -442,7 +442,7 @@ with tab2:  # Calculator page
                             x=var_monte_carlo,
                             yanchor="bottom",
                             y=0.95,
-                            xref="paper"
+                            xref="paper",
                             showarrow=False
                         )
                     )
