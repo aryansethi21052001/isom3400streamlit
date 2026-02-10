@@ -348,7 +348,7 @@ with tab2:  # Calculator page
                         start=start_date,
                         end=end_date,
                         progress=False,
-                        auto_adjust=True
+                        auto_adjust=False
                     )
                     
                     if len(stock_data) == 0:
