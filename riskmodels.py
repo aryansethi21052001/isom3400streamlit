@@ -9,9 +9,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Page configuration
-st.set_page_config(
-    page_title="VaR & ES Calculator",
-)
+st.set_page_config(page_title="VaR & ES Calculator")
 
 # Title and Introduction
 st.title("Value at Risk (VaR) and Expected Shortfall (ES) Calculator")
@@ -76,7 +74,7 @@ with tab1:  # Introduction & Theory
         potential loss with a given confidence level.
         """)
         
-        st.markdown("#### Time-Adjusted Formula:")
+        st.markdown("#### Formula:")
         st.latex(r"VaR = P \times (\mu \times n - Z_{\alpha} \times \sigma \times \sqrt{n})")
         
         st.markdown("**Where:**")
@@ -91,12 +89,12 @@ with tab1:  # Introduction & Theory
     with col2:
         st.markdown("### What is Expected Shortfall (ES)?")
         st.markdown("""
-        **Expected Shortfall (ES)**, also known as Conditional VaR, measures the average loss 
+        **Expected Shortfall (ES)**, also known as Conditional VaR (CVaR), measures the average loss 
         that occurs in the worst-case scenarios beyond the VaR level. It provides a more 
         comprehensive view of tail risk.
         """)
         
-        st.markdown("#### Time-Adjusted Formula (Parametric):")
+        st.markdown("#### Formula:")
         st.latex(r"ES = P \times (\mu \times n - \sigma \times \sqrt{n} \times \frac{\phi(Z_{\alpha})}{1-\alpha})")
         
         st.markdown("**Where:**")
@@ -110,7 +108,7 @@ with tab1:  # Introduction & Theory
     
     st.header("Time Horizon Scaling")
     
-    st.markdown("### How Time Horizon Affects Risk Metrics")
+    st.markdown("### How Time Horizon Affects VaR and ES")
     
     st.markdown("#### Volatility Scaling:")
     st.latex(r"\sigma_n = \sigma_{daily} \times \sqrt{n}")
@@ -232,535 +230,594 @@ with tab2:  # Calculator page
             try:
                 # Display loading
                 with st.spinner(f"Fetching data and calculating {forecast_days}-day VaR & ES..."):
-                    # Fetch historical data
-                    stock_data = yf.download(
-                        stock_symbol,
-                        start=start_date,
-                        end=end_date,
-                        progress=False,
-                        auto_adjust=False
+                    # Fetch historical data using yfinance
+                    ticker = yf.Ticker(stock_symbol)
+                    
+                    # Get data without filling NaN values
+                    stock_data = ticker.history(
+                        start=start_date.strftime('%Y-%m-%d'),
+                        end=end_date.strftime('%Y-%m-%d'),
+                        auto_adjust=True
                     )
                     
-                    if len(stock_data) == 0:
+                    # Check if data was retrieved
+                    if stock_data.empty:
                         st.error(f"No data found for {stock_symbol}. Please check the symbol and date range.")
+                        st.stop()
+                    
+                    # Get basic stock info for validation
+                    try:
+                        info = ticker.info
+                        st.success(f"✓ Retrieved data for {info.get('longName', stock_symbol)}")
+                    except:
+                        st.success(f"✓ Retrieved data for {stock_symbol}")
+                    
+                    # Display data summary
+                    with st.expander("View Data Summary"):
+                        st.write(f"**Total trading days retrieved:** {len(stock_data)}")
+                        st.write(f"**Date range:** {stock_data.index[0].date()} to {stock_data.index[-1].date()}")
+                        st.write(f"**Available columns:** {list(stock_data.columns)}")
+                        st.dataframe(stock_data[['Open', 'High', 'Low', 'Close', 'Volume']].head())
+                    
+                    # Select price column (use Close if Adj Close not available)
+                    if 'Close' in stock_data.columns:
+                        price_series = stock_data['Close']
                     else:
-                        # Use Close if Adj Close doesn't exist
-                        if 'Adj Close' in stock_data.columns:
-                            price_column = 'Adj Close'
-                        else:
-                            price_column = 'Close'
-                            st.info(f"Using Close prices instead of Adjusted Close for {stock_symbol}")
+                        # Fall back to the first numeric column
+                        numeric_cols = stock_data.select_dtypes(include=[np.number]).columns
+                        price_series = stock_data[numeric_cols[0]]
+                        st.warning(f"Using '{numeric_cols[0]}' column for price data")
+                    
+                    # Drop NaN values from price series (no forward filling)
+                    price_series_clean = price_series.dropna()
+                    
+                    if len(price_series_clean) == 0:
+                        st.error("No valid price data after removing NaN values. Please try a different date range.")
+                        st.stop()
+                    
+                    # Calculate returns and drop NaN values from returns
+                    returns = price_series_clean.pct_change().dropna()
+                    
+                    if len(returns) < 10:
+                        st.warning(f"Only {len(returns)} valid return data points after removing NaN values. For more reliable results, use a longer date range.")
+                    
+                    if len(returns) < 2:
+                        st.error("Insufficient return data for calculations. Please use a longer date range.")
+                        st.stop()
+                    
+                    # Display data quality metrics
+                    st.markdown("#### Data Quality Summary")
+                    quality_col1, quality_col2, quality_col3 = st.columns(3)
+                    
+                    with quality_col1:
+                        missing_days = len(price_series) - len(price_series_clean)
+                        st.metric("Missing Price Days", missing_days)
+                    
+                    with quality_col2:
+                        st.metric("Valid Return Days", len(returns))
+                    
+                    with quality_col3:
+                        data_completeness = (len(returns) / len(price_series)) * 100
+                        st.metric("Data Completeness", f"{data_completeness:.1f}%")
+                    
+                    if missing_days > 0:
+                        st.info(f"⚠️ {missing_days} days had missing price data and were excluded from calculations.")
+                    
+                    # Use custom parameters or calculate from data
+                    if mean_return is None:
+                        mean_return = float(returns.mean())
+                        std_dev = float(returns.std())
+                    
+                    # Check for valid calculations
+                    if pd.isna(mean_return) or pd.isna(std_dev):
+                        st.error("Could not calculate mean or standard deviation. Please check your data.")
+                        st.stop()
+                    
+                    if std_dev == 0:
+                        st.warning("Standard deviation is zero. This may indicate insufficient price variation in the selected period.")
+                    
+                    # Display statistical parameters
+                    st.markdown("#### Statistical Summary")
+                    
+                    stats_col1, stats_col2, stats_col3, stats_col4 = st.columns(4)
+                    with stats_col1:
+                        st.metric("Daily Mean", f"{mean_return*100:.4f}%")
+                    with stats_col2:
+                        st.metric("Daily Std Dev", f"{std_dev*100:.4f}%")
+                    with stats_col3:
+                        annualized_vol = std_dev * np.sqrt(252)
+                        st.metric("Annual Volatility", f"{annualized_vol*100:.2f}%")
+                    with stats_col4:
+                        st.metric("Data Points", f"{len(returns)}")
+                    
+                    # Time-scaled parameters with LaTeX formulas
+                    st.markdown(f"#### {forecast_days}-Day Scaled Parameters")
+                    
+                    scaled_mean = mean_return * forecast_days
+                    scaled_vol = std_dev * np.sqrt(forecast_days)
+                    
+                    scale_col1, scale_col2 = st.columns(2)
+                    with scale_col1:
+                        st.latex(rf"\mu_{{{forecast_days}}} = \mu \times n = {mean_return*100:.4f}\% \times {forecast_days} = {scaled_mean*100:.4f}\%")
+                        st.info(f"**Scaled Mean Return:** {scaled_mean*100:.4f}%")
+                    
+                    with scale_col2:
+                        st.latex(rf"\sigma_{{{forecast_days}}} = \sigma \times \sqrt{{n}} = {std_dev*100:.4f}\% \times \sqrt{{{forecast_days}}} = {scaled_vol*100:.4f}\%")
+                        st.info(f"**Scaled Volatility:** {scaled_vol*100:.4f}%")
+                    
+                    # Calculate VaR and ES using time-scaled formulas
+                    var_parametric, es_parametric, z_score = calculate_parametric_var_es(
+                        investment, mean_return, std_dev, forecast_days, confidence_level
+                    )
+                    
+                    var_monte_carlo, es_monte_carlo, portfolio_returns, daily_returns = calculate_monte_carlo_var_es(
+                        investment, mean_return, std_dev, forecast_days, confidence_level, n_simulations
+                    )
+                    
+                    # Display results
+                    st.markdown("---")
+                    st.subheader(f"{forecast_days}-Day Risk Metrics")
+                    
+                    # Create metrics
+                    results_col1, results_col2 = st.columns(2)
+                    
+                    with results_col1:
+                        st.markdown("##### Parametric Method")
+                        st.metric(
+                            f"Value at Risk ({confidence_level}%)",
+                            f"-${abs(var_parametric):,.2f}",
+                            delta=None
+                        )
+                        st.metric(
+                            "Expected Shortfall",
+                            f"-${abs(es_parametric):,.2f}",
+                            delta=None
+                        )
+                        st.caption(f"Z-score: {z_score:.4f}")
+                    
+                    with results_col2:
+                        st.markdown("##### Monte Carlo Simulation")
+                        st.metric(
+                            f"Value at Risk ({confidence_level}%)",
+                            f"-${abs(var_monte_carlo):,.2f}",
+                            delta=None
+                        )
+                        st.metric(
+                            "Expected Shortfall",
+                            f"-${abs(es_monte_carlo):,.2f}",
+                            delta=None
+                        )
+                        st.caption(f"Based on {n_simulations:,} simulations")
+                    
+                    # Display percentage of investment
+                    st.markdown("#### As Percentage of Investment")
+                    
+                    percent_col1, percent_col2 = st.columns(2)
+                    with percent_col1:
+                        var_percent_para = abs(var_parametric) / investment * 100
+                        es_percent_para = abs(es_parametric) / investment * 100
+                        st.metric("Parametric VaR", f"{var_percent_para:.2f}%")
+                        st.metric("Parametric ES", f"{es_percent_para:.2f}%")
+                    
+                    with percent_col2:
+                        var_percent_mc = abs(var_monte_carlo) / investment * 100
+                        es_percent_mc = abs(es_monte_carlo) / investment * 100
+                        st.metric("Monte Carlo VaR", f"{var_percent_mc:.2f}%")
+                        st.metric("Monte Carlo ES", f"{es_percent_mc:.2f}%")
+                    
+                    # Visualization
+                    st.markdown("---")
+                    st.subheader("Visualizations")
+                    
+                    # Create tabs for different visualizations
+                    viz_tab1, viz_tab2, viz_tab3 = st.tabs([
+                        f"{forecast_days}-Day Return Distribution", 
+                        "Monte Carlo Paths", 
+                        "Time Horizon Analysis"
+                    ])
+                    
+                    with viz_tab1:
+                        # Histogram of Monte Carlo returns with VaR/ES
+                        fig1 = go.Figure()
                         
-                        # Calculate returns
-                        stock_data['Returns'] = stock_data[price_column].pct_change().dropna()
-                        returns = stock_data['Returns'].values
+                        # Add histogram
+                        fig1.add_trace(go.Histogram(
+                            x=portfolio_returns,
+                            nbinsx=50,
+                            name=f'{forecast_days}-Day Returns',
+                            marker_color='#3498db',
+                            opacity=0.7,
+                            histnorm='probability density',
+                            hovertemplate='Return: $%{x:,.0f}<br>Density: %{y:.2e}<extra></extra>'
+                        ))
                         
-                        # Use custom parameters or calculate from data
-                        if mean_return is None:
-                            mean_return = returns.mean()
-                            std_dev = returns.std()
-                        
-                        # Display statistical parameters
-                        st.markdown("#### Statistical Summary")
-                        
-                        stats_col1, stats_col2, stats_col3, stats_col4 = st.columns(4)
-                        with stats_col1:
-                            st.metric("Daily Mean", f"{mean_return*100:.2f}%")
-                        with stats_col2:
-                            st.metric("Daily Std Dev", f"{std_dev*100:.2f}%")
-                        with stats_col3:
-                            annualized_vol = std_dev * np.sqrt(252)
-                            st.metric("Annual Volatility", f"{annualized_vol*100:.2f}%")
-                        with stats_col4:
-                            st.metric("Data Points", f"{len(returns)}")
-                        
-                        # Time-scaled parameters with LaTeX formulas
-                        st.markdown(f"#### {forecast_days}-Day Scaled Parameters")
-                        
-                        scaled_mean = mean_return * forecast_days
-                        scaled_vol = std_dev * np.sqrt(forecast_days)
-                        
-                        scale_col1, scale_col2 = st.columns(2)
-                        with scale_col1:
-                            st.latex(rf"\mu_{{{forecast_days}}} = \mu \times n = {mean_return*100:.2f}\% \times {forecast_days} = {scaled_mean*100:.2f}\%")
-                            st.info(f"**Scaled Mean Return:** {scaled_mean*100:.2f}%")
-                        
-                        with scale_col2:
-                            st.latex(rf"\sigma_{{{forecast_days}}} = \sigma \times \sqrt{{n}} = {std_dev*100:.2f}\% \times \sqrt{{{forecast_days}}} = {scaled_vol*100:.2f}\%")
-                            st.info(f"**Scaled Volatility:** {scaled_vol*100:.2f}%")
-                        
-                        # Calculate VaR and ES using time-scaled formulas
-                        var_parametric, es_parametric, z_score = calculate_parametric_var_es(
-                            investment, mean_return, std_dev, forecast_days, confidence_level
+                        # Add normal distribution overlay for comparison
+                        x_norm = np.linspace(portfolio_returns.min(), portfolio_returns.max(), 1000)
+                        y_norm = stats.norm.pdf(
+                            x_norm, 
+                            loc=investment * scaled_mean,
+                            scale=investment * scaled_vol
                         )
                         
-                        var_monte_carlo, es_monte_carlo, portfolio_returns, daily_returns = calculate_monte_carlo_var_es(
-                            investment, mean_return, std_dev, forecast_days, confidence_level, n_simulations
+                        fig1.add_trace(go.Scatter(
+                            x=x_norm,
+                            y=y_norm,
+                            mode='lines',
+                            name='Normal Distribution',
+                            line=dict(color='#2c3e50', width=2, dash='dash'),
+                            hovertemplate='Normal Distribution<br>Return: $%{x:,.0f}<br>Density: %{y:.2e}<extra></extra>'
+                        ))
+                        
+                        # Add vertical lines for VaR and ES with better positioning
+                        fig1.add_vline(
+                            x=var_monte_carlo,
+                            line_dash="dash",
+                            line_color="red",
+                            annotation=dict(
+                                text=f"VaR ({confidence_level}%)<br>-${abs(var_monte_carlo):,.0f}",
+                                font=dict(size=10),
+                                bgcolor="rgba(255,255,255,0.8)",
+                                borderwidth=1,
+                                bordercolor="red",
+                                yanchor="bottom",
+                                y=0.95,
+                                xanchor="right",
+                                x=0.95
+                            )
                         )
                         
-                        # Display results
-                        st.markdown("---")
-                        st.subheader(f"{forecast_days}-Day Risk Metrics")
-                        
-                        # Create metrics
-                        results_col1, results_col2 = st.columns(2)
-                        
-                        with results_col1:
-                            st.markdown("##### Parametric Method")
-                            st.metric(
-                                f"Value at Risk ({confidence_level}%)",
-                                f"-${abs(var_parametric):,.2f}",
-                                delta=None
+                        fig1.add_vline(
+                            x=es_monte_carlo,
+                            line_dash="dot",
+                            line_color="orange",
+                            annotation=dict(
+                                text=f"ES<br>-${abs(es_monte_carlo):,.0f}",
+                                font=dict(size=10),
+                                bgcolor="rgba(255,255,255,0.8)",
+                                borderwidth=1,
+                                bordercolor="orange",
+                                yanchor="bottom",
+                                y=0.85,
+                                xanchor="right",
+                                x=0.95
                             )
-                            st.metric(
-                                "Expected Shortfall",
-                                f"-${abs(es_parametric):,.2f}",
-                                delta=None
-                            )
-                            st.caption(f"Z-score: {z_score:.4f}")
+                        )
                         
-                        with results_col2:
-                            st.markdown("##### Monte Carlo Simulation")
-                            st.metric(
-                                f"Value at Risk ({confidence_level}%)",
-                                f"-${abs(var_monte_carlo):,.2f}",
-                                delta=None
-                            )
-                            st.metric(
-                                "Expected Shortfall",
-                                f"-${abs(es_monte_carlo):,.2f}",
-                                delta=None
-                            )
-                            st.caption(f"Based on {n_simulations:,} simulations")
-                        
-                        # Display percentage of investment
-                        st.markdown("#### As Percentage of Investment")
-                        
-                        percent_col1, percent_col2 = st.columns(2)
-                        with percent_col1:
-                            var_percent_para = abs(var_parametric) / investment * 100
-                            es_percent_para = abs(es_parametric) / investment * 100
-                            st.metric("Parametric VaR", f"{var_percent_para:.2f}%")
-                            st.metric("Parametric ES", f"{es_percent_para:.2f}%")
-                        
-                        with percent_col2:
-                            var_percent_mc = abs(var_monte_carlo) / investment * 100
-                            es_percent_mc = abs(es_monte_carlo) / investment * 100
-                            st.metric("Monte Carlo VaR", f"{var_percent_mc:.2f}%")
-                            st.metric("Monte Carlo ES", f"{es_percent_mc:.2f}%")
-                        
-                        # Visualization
-                        st.markdown("---")
-                        st.subheader("Visualizations")
-                        
-                        # Create tabs for different visualizations
-                        viz_tab1, viz_tab2, viz_tab3 = st.tabs([
-                            f"{forecast_days}-Day Return Distribution", 
-                            "Monte Carlo Paths", 
-                            "Time Horizon Analysis"
-                        ])
-                        
-                        with viz_tab1:
-                            # Histogram of Monte Carlo returns with VaR/ES
-                            fig1 = go.Figure()
+                        # Shade the tail region with better positioning
+                        tail_returns = portfolio_returns[portfolio_returns <= var_monte_carlo]
+                        if len(tail_returns) > 0:
+                            x_tail = np.sort(tail_returns)
+                            y_tail = np.zeros_like(x_tail)
                             
-                            # Add histogram
-                            fig1.add_trace(go.Histogram(
-                                x=portfolio_returns,
-                                nbinsx=50,
-                                name=f'{forecast_days}-Day Returns',
-                                marker_color='#3498db',
-                                opacity=0.7,
-                                histnorm='probability density',
-                                hovertemplate='Return: $%{x:,.0f}<br>Density: %{y:.2e}<extra></extra>'
-                            ))
+                            # Get histogram data for proper shading
+                            hist, bin_edges = np.histogram(portfolio_returns, bins=50, density=True)
+                            bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
                             
-                            # Add normal distribution overlay for comparison
-                            x_norm = np.linspace(portfolio_returns.min(), portfolio_returns.max(), 1000)
-                            y_norm = stats.norm.pdf(
-                                x_norm, 
-                                loc=investment * scaled_mean,
-                                scale=investment * scaled_vol
-                            )
+                            # Interpolate y-values for tail region
+                            from scipy.interpolate import interp1d
+                            if len(bin_centers) > 1 and len(hist) > 1:
+                                interp_func = interp1d(bin_centers, hist, bounds_error=False, fill_value=0)
+                                y_tail = interp_func(x_tail)
                             
                             fig1.add_trace(go.Scatter(
-                                x=x_norm,
-                                y=y_norm,
-                                mode='lines',
-                                name='Normal Distribution',
-                                line=dict(color='#2c3e50', width=2, dash='dash'),
-                                hovertemplate='Normal Distribution<br>Return: $%{x:,.0f}<br>Density: %{y:.2e}<extra></extra>'
+                                x=x_tail,
+                                y=y_tail,
+                                fill='tozeroy',
+                                fillcolor='rgba(231, 76, 60, 0.3)',
+                                line=dict(width=0),
+                                name='Tail Risk (Worst 5%)',
+                                hovertemplate='Tail Region<br>Return: $%{x:,.0f}<extra></extra>',
+                                showlegend=True
                             ))
-                            
-                            # Add vertical lines for VaR and ES with better positioning
-                            fig1.add_vline(
-                                x=var_monte_carlo,
-                                line_dash="dash",
-                                line_color="red",
-                                annotation=dict(
-                                    text=f"VaR ({confidence_level}%)<br>-${abs(var_monte_carlo):,.0f}",
-                                    font=dict(size=10),
-                                    bgcolor="rgba(255,255,255,0.8)",
-                                    borderwidth=1,
-                                    bordercolor="red",
-                                    yanchor="bottom",
-                                    y=0.95,
-                                    xanchor="right",
-                                    x=0.95
-                                )
-                            )
-                            
-                            fig1.add_vline(
-                                x=es_monte_carlo,
-                                line_dash="dot",
-                                line_color="orange",
-                                annotation=dict(
-                                    text=f"ES<br>-${abs(es_monte_carlo):,.0f}",
-                                    font=dict(size=10),
-                                    bgcolor="rgba(255,255,255,0.8)",
-                                    borderwidth=1,
-                                    bordercolor="orange",
-                                    yanchor="bottom",
-                                    y=0.85,
-                                    xanchor="right",
-                                    x=0.95
-                                )
-                            )
-                            
-                            # Shade the tail region with better positioning
-                            tail_returns = portfolio_returns[portfolio_returns <= var_monte_carlo]
-                            if len(tail_returns) > 0:
-                                x_tail = np.sort(tail_returns)
-                                y_tail = np.zeros_like(x_tail)
-                                
-                                # Get histogram data for proper shading
-                                hist, bin_edges = np.histogram(portfolio_returns, bins=50, density=True)
-                                bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-                                
-                                # Interpolate y-values for tail region
-                                from scipy.interpolate import interp1d
-                                if len(bin_centers) > 1 and len(hist) > 1:
-                                    interp_func = interp1d(bin_centers, hist, bounds_error=False, fill_value=0)
-                                    y_tail = interp_func(x_tail)
-                                
-                                fig1.add_trace(go.Scatter(
-                                    x=x_tail,
-                                    y=y_tail,
-                                    fill='tozeroy',
-                                    fillcolor='rgba(231, 76, 60, 0.3)',
-                                    line=dict(width=0),
-                                    name='Tail Risk (Worst 5%)',
-                                    hovertemplate='Tail Region<br>Return: $%{x:,.0f}<extra></extra>',
-                                    showlegend=True
-                                ))
-                            
-                            fig1.update_layout(
-                                title=f"Monte Carlo {forecast_days}-Day Return Distribution",
-                                xaxis_title=f"{forecast_days}-Day Return ($)",
-                                yaxis_title="Probability Density",
-                                template="plotly_white",
-                                height=500,
-                                hovermode="x unified",
-                                legend=dict(
-                                    yanchor="top",
-                                    y=0.99,
-                                    xanchor="left",
-                                    x=0.01,
-                                    bgcolor='rgba(255, 255, 255, 0.8)',
-                                    bordercolor='rgba(0, 0, 0, 0.2)',
-                                    borderwidth=1,
-                                    font=dict(size=10)
-                                ),
-                                margin=dict(l=50, r=50, t=60, b=50)
-                            )
-                            
-                            # Add annotation for statistics
-                            fig1.add_annotation(
-                                xref="paper",
-                                yref="paper",
-                                x=0.02,
-                                y=0.98,
-                                text=f"Total Simulations: {n_simulations:,}<br>Mean: ${portfolio_returns.mean():,.0f}<br>Std Dev: ${portfolio_returns.std():,.0f}",
-                                showarrow=False,
-                                font=dict(size=10),
-                                align="left",
-                                bgcolor="rgba(255, 255, 255, 0.8)",
-                                bordercolor="rgba(0, 0, 0, 0.2)",
-                                borderwidth=1,
-                                borderpad=4
-                            )
-                            
-                            st.plotly_chart(fig1, use_container_width=True)
                         
-                        with viz_tab2:
-                            # Plot sample of Monte Carlo paths
-                            n_sample_paths = min(50, n_simulations)
-                            sample_indices = np.random.choice(n_simulations, n_sample_paths, replace=False)
+                        fig1.update_layout(
+                            title=f"Monte Carlo {forecast_days}-Day Return Distribution",
+                            xaxis_title=f"{forecast_days}-Day Return ($)",
+                            yaxis_title="Probability Density",
+                            template="plotly_white",
+                            height=500,
+                            hovermode="x unified",
+                            legend=dict(
+                                yanchor="top",
+                                y=0.99,
+                                xanchor="left",
+                                x=0.01,
+                                bgcolor='rgba(255, 255, 255, 0.8)',
+                                bordercolor='rgba(0, 0, 0, 0.2)',
+                                borderwidth=1,
+                                font=dict(size=10)
+                            ),
+                            margin=dict(l=50, r=50, t=60, b=50)
+                        )
+                        
+                        # Add annotation for statistics
+                        fig1.add_annotation(
+                            xref="paper",
+                            yref="paper",
+                            x=0.02,
+                            y=0.98,
+                            text=f"Total Simulations: {n_simulations:,}<br>Mean: ${portfolio_returns.mean():,.0f}<br>Std Dev: ${portfolio_returns.std():,.0f}",
+                            showarrow=False,
+                            font=dict(size=10),
+                            align="left",
+                            bgcolor="rgba(255, 255, 255, 0.8)",
+                            bordercolor="rgba(0, 0, 0, 0.2)",
+                            borderwidth=1,
+                            borderpad=4
+                        )
+                        
+                        st.plotly_chart(fig1, use_container_width=True)
+                    
+                    with viz_tab2:
+                        # Plot sample of Monte Carlo paths
+                        n_sample_paths = min(50, n_simulations)
+                        sample_indices = np.random.choice(n_simulations, n_sample_paths, replace=False)
+                        
+                        fig2 = go.Figure()
+                        
+                        for idx in sample_indices:
+                            # Calculate cumulative portfolio value over time
+                            cumulative_return = np.cumprod(1 + daily_returns[idx])
+                            portfolio_path = investment * cumulative_return
                             
-                            fig2 = go.Figure()
-                            
-                            for idx in sample_indices:
-                                # Calculate cumulative portfolio value over time
-                                cumulative_return = np.cumprod(1 + daily_returns[idx])
-                                portfolio_path = investment * cumulative_return
-                                
-                                fig2.add_trace(go.Scatter(
-                                    x=list(range(forecast_days)),
-                                    y=portfolio_path,
-                                    mode='lines',
-                                    line=dict(width=1, color='rgba(52, 152, 219, 0.2)'),
-                                    showlegend=False,
-                                    hoverinfo='skip'
-                                ))
-                            
-                            # Add mean path
-                            mean_path = investment * np.cumprod(1 + daily_returns.mean(axis=0))
                             fig2.add_trace(go.Scatter(
                                 x=list(range(forecast_days)),
-                                y=mean_path,
+                                y=portfolio_path,
                                 mode='lines',
-                                line=dict(width=3, color='#e74c3c'),
-                                name='Mean Path'
+                                line=dict(width=1, color='rgba(52, 152, 219, 0.2)'),
+                                showlegend=False,
+                                hoverinfo='skip'
                             ))
-                            
-                            # Add initial investment line
-                            fig2.add_hline(
-                                y=investment,
-                                line_dash="dash",
-                                line_color="green",
-                                annotation_text=f"Initial: ${investment:,.0f}"
-                            )
-                            
-                            fig2.update_layout(
-                                title=f"Monte Carlo Simulation Paths ({forecast_days} Days)",
-                                xaxis_title="Days",
-                                yaxis_title="Portfolio Value ($)",
-                                template="plotly_white",
-                                height=500,
-                                hovermode="x unified",
-                                legend=dict(
-                                    yanchor="top",
-                                    y=0.99,
-                                    xanchor="left",
-                                    x=0.01,
-                                    bgcolor='rgba(255, 255, 255, 0.8)',
-                                    bordercolor='rgba(0, 0, 0, 0.2)',
-                                    borderwidth=1
-                                )
-                            )
-                            
-                            st.plotly_chart(fig2, use_container_width=True)
                         
-                        with viz_tab3:
-                            # Analyze how VaR scales with different time horizons
-                            horizons_to_analyze = [1, 5, 10, 20, forecast_days]
-                            if forecast_days not in horizons_to_analyze:
-                                horizons_to_analyze.append(forecast_days)
-                                horizons_to_analyze.sort()
-                            
-                            parametric_vars = []
-                            monte_carlo_vars = []
-                            
-                            for horizon in horizons_to_analyze:
-                                # Parametric VaR
-                                var_para, _, _ = calculate_parametric_var_es(
-                                    investment, mean_return, std_dev, horizon, confidence_level
-                                )
-                                parametric_vars.append(abs(var_para))
-                                
-                                # Monte Carlo VaR
-                                var_mc, _, _, _ = calculate_monte_carlo_var_es(
-                                    investment, mean_return, std_dev, horizon, confidence_level, 5000
-                                )
-                                monte_carlo_vars.append(abs(var_mc))
-                            
-                            # Create comparison plot
-                            fig3 = go.Figure()
-                            
-                            fig3.add_trace(go.Scatter(
-                                x=horizons_to_analyze,
-                                y=parametric_vars,
-                                mode='lines+markers',
-                                name='Parametric VaR',
-                                line=dict(color='#2c3e50', width=3),
-                                marker=dict(size=8)
-                            ))
-                            
-                            fig3.add_trace(go.Scatter(
-                                x=horizons_to_analyze,
-                                y=monte_carlo_vars,
-                                mode='lines+markers',
-                                name='Monte Carlo VaR',
-                                line=dict(color='#3498db', width=3, dash='dash'),
-                                marker=dict(size=8)
-                            ))
-                            
-                            # Add square root scaling reference
-                            sqrt_scaling = [parametric_vars[0] * np.sqrt(h) for h in horizons_to_analyze]
-                            fig3.add_trace(go.Scatter(
-                                x=horizons_to_analyze,
-                                y=sqrt_scaling,
-                                mode='lines',
-                                name=r'$\sqrt{n}$ Scaling Reference',
-                                line=dict(color='#95a5a6', width=2, dash='dot'),
-                                opacity=0.5
-                            ))
-                            
-                            fig3.update_layout(
-                                title=f"VaR Scaling with Time Horizon ({confidence_level}% Confidence)",
-                                xaxis_title="Time Horizon (Days)",
-                                yaxis_title="VaR ($)",
-                                template="plotly_white",
-                                height=500,
-                                hovermode="x unified",
-                                legend=dict(
-                                    yanchor="top",
-                                    y=0.99,
-                                    xanchor="left",
-                                    x=0.01,
-                                    bgcolor='rgba(255, 255, 255, 0.8)',
-                                    bordercolor='rgba(0, 0, 0, 0.2)',
-                                    borderwidth=1
-                                )
-                            )
-                            
-                            st.plotly_chart(fig3, use_container_width=True)
-                            
-                            # Add explanation with LaTeX
-                            st.info(f"""
-                            **Time Scaling Analysis:**
-                            
-                            VaR scales approximately with the square root of time:
-                            
-                            {st.latex(rf"\text{{VaR}}_{{{forecast_days}}} \approx \text{{VaR}}_1 \times \sqrt{{{forecast_days}}} = \text{{VaR}}_1 \times {np.sqrt(forecast_days):.1f}")}
-                            
-                            - {forecast_days}-day VaR is about **{np.sqrt(forecast_days):.1f} times** 1-day VaR
-                            - Differences between methods increase with longer horizons due to compounding effects
-                            - Parametric method assumes normal distribution, while Monte Carlo captures actual return distribution
-                            """)
+                        # Add mean path
+                        mean_path = investment * np.cumprod(1 + daily_returns.mean(axis=0))
+                        fig2.add_trace(go.Scatter(
+                            x=list(range(forecast_days)),
+                            y=mean_path,
+                            mode='lines',
+                            line=dict(width=3, color='#e74c3c'),
+                            name='Mean Path'
+                        ))
                         
-                        # Interpretation with formulas
-                        st.markdown("---")
-                        st.subheader("Risk Interpretation")
-                        
-                        interp_col1, interp_col2 = st.columns(2)
-                        
-                        with interp_col1:
-                            st.markdown(f"""
-                            ### Parametric Method
-                            
-                            **For a {forecast_days}-day holding period:**
-                            
-                            - **{confidence_level}% confidence** that losses won't exceed **${abs(var_parametric):,.0f}**
-                            - **Expected average loss** in worst {100-confidence_level}% scenarios: **${abs(es_parametric):,.0f}**
-                            
-                            **Formula Applied:**
-                            """)
-                            
-                            st.latex(rf"""
-                            \begin{{aligned}}
-                            \text{{VaR}} &= P \times (\mu \times n - Z_{{\alpha}} \times \sigma \times \sqrt{{n}}) \\
-                            &= \${investment:,.0f} \times \left({mean_return*100:.3f}\% \times {forecast_days} - {z_score:.3f} \times {std_dev*100:.3f}\% \times \sqrt{{{forecast_days}}}\right) \\
-                            &= -\${abs(var_parametric):,.0f}
-                            \end{{aligned}}
-                            """)
-                            
-                            st.markdown("*Assumes normally distributed, independent daily returns.*")
-                        
-                        with interp_col2:
-                            worst_case_loss = portfolio_returns.min()
-                            probability_below_var = np.mean(portfolio_returns <= var_monte_carlo) * 100
-                            
-                            st.markdown(f"""
-                            ### Monte Carlo Simulation
-                            
-                            **Based on {n_simulations:,} simulated {forecast_days}-day paths:**
-                            
-                            - **{probability_below_var:.1f}%** of scenarios exceeded VaR (target: {100-confidence_level}%)
-                            - **Maximum simulated loss**: **${abs(worst_case_loss):,.0f}**
-                            - **Median {forecast_days}-day return**: **${np.median(portfolio_returns):,.0f}**
-                            
-                            **Methodology:**
-                            1. Generated {n_simulations:,} random return paths
-                            2. Applied compounding over {forecast_days} days
-                            3. Calculated empirical percentiles
-                            4. Averaged worst-case scenarios
-                            """)
-                            
-                            st.markdown("*Captures compounding and non-normal distribution effects.*")
-                        
-                        # Download results
-                        st.markdown("---")
-                        st.subheader("Export Results")
-                        
-                        # Create comprehensive results dataframe
-                        results_df = pd.DataFrame({
-                            'Parameter': [
-                                'Stock Symbol',
-                                'Initial Investment',
-                                'Time Horizon (Days)',
-                                'Confidence Level',
-                                'Daily Mean Return',
-                                'Daily Standard Deviation',
-                                f'{forecast_days}-Day Scaled Mean',
-                                f'{forecast_days}-Day Scaled Volatility',
-                                'Parametric VaR ($)',
-                                'Parametric VaR (%)',
-                                'Parametric ES ($)',
-                                'Parametric ES (%)',
-                                'Monte Carlo VaR ($)',
-                                'Monte Carlo VaR (%)',
-                                'Monte Carlo ES ($)',
-                                'Monte Carlo ES (%)',
-                                'Z-score',
-                                'Number of Simulations',
-                                'Maximum Simulated Loss ($)'
-                            ],
-                            'Value': [
-                                stock_symbol,
-                                investment,
-                                forecast_days,
-                                f'{confidence_level}%',
-                                f'{mean_return*100:.4f}%',
-                                f'{std_dev*100:.4f}%',
-                                f'{scaled_mean*100:.3f}%',
-                                f'{scaled_vol*100:.3f}%',
-                                -abs(var_parametric),
-                                f'{abs(var_parametric)/investment*100:.2f}%',
-                                -abs(es_parametric),
-                                f'{abs(es_parametric)/investment*100:.2f}%',
-                                -abs(var_monte_carlo),
-                                f'{abs(var_monte_carlo)/investment*100:.2f}%',
-                                -abs(es_monte_carlo),
-                                f'{abs(es_monte_carlo)/investment*100:.2f}%',
-                                f'{z_score:.4f}',
-                                n_simulations,
-                                -abs(worst_case_loss)
-                            ]
-                        })
-                        
-                        csv = results_df.to_csv(index=False)
-                        st.download_button(
-                            label="Download Complete Results as CSV",
-                            data=csv,
-                            file_name=f"var_es_{stock_symbol}_{forecast_days}d_{confidence_level}pc_{datetime.now().strftime('%Y%m%d')}.csv",
-                            mime="text/csv"
+                        # Add initial investment line
+                        fig2.add_hline(
+                            y=investment,
+                            line_dash="dash",
+                            line_color="green",
+                            annotation_text=f"Initial: ${investment:,.0f}"
                         )
+                        
+                        fig2.update_layout(
+                            title=f"Monte Carlo Simulation Paths ({forecast_days} Days)",
+                            xaxis_title="Days",
+                            yaxis_title="Portfolio Value ($)",
+                            template="plotly_white",
+                            height=500,
+                            hovermode="x unified",
+                            legend=dict(
+                                yanchor="top",
+                                y=0.99,
+                                xanchor="left",
+                                x=0.01,
+                                bgcolor='rgba(255, 255, 255, 0.8)',
+                                bordercolor='rgba(0, 0, 0, 0.2)',
+                                borderwidth=1
+                            )
+                        )
+                        
+                        st.plotly_chart(fig2, use_container_width=True)
+                    
+                    with viz_tab3:
+                        # Analyze how VaR scales with different time horizons
+                        horizons_to_analyze = [1, 5, 10, 20, forecast_days]
+                        if forecast_days not in horizons_to_analyze:
+                            horizons_to_analyze.append(forecast_days)
+                            horizons_to_analyze.sort()
+                        
+                        parametric_vars = []
+                        monte_carlo_vars = []
+                        
+                        for horizon in horizons_to_analyze:
+                            # Parametric VaR
+                            var_para, _, _ = calculate_parametric_var_es(
+                                investment, mean_return, std_dev, horizon, confidence_level
+                            )
+                            parametric_vars.append(abs(var_para))
+                            
+                            # Monte Carlo VaR
+                            var_mc, _, _, _ = calculate_monte_carlo_var_es(
+                                investment, mean_return, std_dev, horizon, confidence_level, 5000
+                            )
+                            monte_carlo_vars.append(abs(var_mc))
+                        
+                        # Create comparison plot
+                        fig3 = go.Figure()
+                        
+                        fig3.add_trace(go.Scatter(
+                            x=horizons_to_analyze,
+                            y=parametric_vars,
+                            mode='lines+markers',
+                            name='Parametric VaR',
+                            line=dict(color='#2c3e50', width=3),
+                            marker=dict(size=8)
+                        ))
+                        
+                        fig3.add_trace(go.Scatter(
+                            x=horizons_to_analyze,
+                            y=monte_carlo_vars,
+                            mode='lines+markers',
+                            name='Monte Carlo VaR',
+                            line=dict(color='#3498db', width=3, dash='dash'),
+                            marker=dict(size=8)
+                        ))
+                        
+                        # Add square root scaling reference
+                        sqrt_scaling = [parametric_vars[0] * np.sqrt(h) for h in horizons_to_analyze]
+                        fig3.add_trace(go.Scatter(
+                            x=horizons_to_analyze,
+                            y=sqrt_scaling,
+                            mode='lines',
+                            name=r'$\sqrt{n}$ Scaling Reference',
+                            line=dict(color='#95a5a6', width=2, dash='dot'),
+                            opacity=0.5
+                        ))
+                        
+                        fig3.update_layout(
+                            title=f"VaR Scaling with Time Horizon ({confidence_level}% Confidence)",
+                            xaxis_title="Time Horizon (Days)",
+                            yaxis_title="VaR ($)",
+                            template="plotly_white",
+                            height=500,
+                            hovermode="x unified",
+                            legend=dict(
+                                yanchor="top",
+                                y=0.99,
+                                xanchor="left",
+                                x=0.01,
+                                bgcolor='rgba(255, 255, 255, 0.8)',
+                                bordercolor='rgba(0, 0, 0, 0.2)',
+                                borderwidth=1
+                            )
+                        )
+                        
+                        st.plotly_chart(fig3, use_container_width=True)
+                        
+                        # Add explanation with LaTeX
+                        st.info(f"""
+                        **Time Scaling Analysis:**
+                        
+                        VaR scales approximately with the square root of time:
+                        
+                        {st.latex(rf"\text{{VaR}}_{{{forecast_days}}} \approx \text{{VaR}}_1 \times \sqrt{{{forecast_days}}} = \text{{VaR}}_1 \times {np.sqrt(forecast_days):.1f}")}
+                        
+                        - {forecast_days}-day VaR is about **{np.sqrt(forecast_days):.1f} times** 1-day VaR
+                        - Differences between methods increase with longer horizons due to compounding effects
+                        - Parametric method assumes normal distribution, while Monte Carlo captures actual return distribution
+                        """)
+                    
+                    # Interpretation with formulas
+                    st.markdown("---")
+                    st.subheader("Risk Interpretation")
+                    
+                    interp_col1, interp_col2 = st.columns(2)
+                    
+                    with interp_col1:
+                        st.markdown(f"""
+                        ### Parametric Method
+                        
+                        **For a {forecast_days}-day holding period:**
+                        
+                        - **{confidence_level}% confidence** that losses won't exceed **${abs(var_parametric):,.0f}**
+                        - **Expected average loss** in worst {100-confidence_level}% scenarios: **${abs(es_parametric):,.0f}**
+                        
+                        **Formula Applied:**
+                        """)
+                        
+                        st.latex(rf"""
+                        \begin{{aligned}}
+                        \text{{VaR}} &= P \times (\mu \times n - Z_{{\alpha}} \times \sigma \times \sqrt{{n}}) \\
+                        &= \${investment:,.0f} \times \left({mean_return*100:.3f}\% \times {forecast_days} - {z_score:.3f} \times {std_dev*100:.3f}\% \times \sqrt{{{forecast_days}}}\right) \\
+                        &= -\${abs(var_parametric):,.0f}
+                        \end{{aligned}}
+                        """)
+                        
+                        st.markdown("*Assumes normally distributed, independent daily returns.*")
+                    
+                    with interp_col2:
+                        worst_case_loss = portfolio_returns.min()
+                        probability_below_var = np.mean(portfolio_returns <= var_monte_carlo) * 100
+                        
+                        st.markdown(f"""
+                        ### Monte Carlo Simulation
+                        
+                        **Based on {n_simulations:,} simulated {forecast_days}-day paths:**
+                        
+                        - **{probability_below_var:.1f}%** of scenarios exceeded VaR (target: {100-confidence_level}%)
+                        - **Maximum simulated loss**: **${abs(worst_case_loss):,.0f}**
+                        - **Median {forecast_days}-day return**: **${np.median(portfolio_returns):,.0f}**
+                        
+                        **Methodology:**
+                        1. Generated {n_simulations:,} random return paths
+                        2. Applied compounding over {forecast_days} days
+                        3. Calculated empirical percentiles
+                        4. Averaged worst-case scenarios
+                        """)
+                        
+                        st.markdown("*Captures compounding and non-normal distribution effects.*")
+                    
+                    # Download results
+                    st.markdown("---")
+                    st.subheader("Export Results")
+                    
+                    # Create comprehensive results dataframe
+                    results_df = pd.DataFrame({
+                        'Parameter': [
+                            'Stock Symbol',
+                            'Initial Investment',
+                            'Time Horizon (Days)',
+                            'Confidence Level',
+                            'Daily Mean Return',
+                            'Daily Standard Deviation',
+                            f'{forecast_days}-Day Scaled Mean',
+                            f'{forecast_days}-Day Scaled Volatility',
+                            'Parametric VaR ($)',
+                            'Parametric VaR (%)',
+                            'Parametric ES ($)',
+                            'Parametric ES (%)',
+                            'Monte Carlo VaR ($)',
+                            'Monte Carlo VaR (%)',
+                            'Monte Carlo ES ($)',
+                            'Monte Carlo ES (%)',
+                            'Z-score',
+                            'Number of Simulations',
+                            'Maximum Simulated Loss ($)',
+                            'Valid Return Days',
+                            'Missing Price Days'
+                        ],
+                        'Value': [
+                            stock_symbol,
+                            investment,
+                            forecast_days,
+                            f'{confidence_level}%',
+                            f'{mean_return*100:.4f}%',
+                            f'{std_dev*100:.4f}%',
+                            f'{scaled_mean*100:.4f}%',
+                            f'{scaled_vol*100:.4f}%',
+                            -abs(var_parametric),
+                            f'{abs(var_parametric)/investment*100:.2f}%',
+                            -abs(es_parametric),
+                            f'{abs(es_parametric)/investment*100:.2f}%',
+                            -abs(var_monte_carlo),
+                            f'{abs(var_monte_carlo)/investment*100:.2f}%',
+                            -abs(es_monte_carlo),
+                            f'{abs(es_monte_carlo)/investment*100:.2f}%',
+                            f'{z_score:.4f}',
+                            n_simulations,
+                            -abs(worst_case_loss),
+                            len(returns),
+                            len(price_series) - len(price_series_clean)
+                        ]
+                    })
+                    
+                    csv = results_df.to_csv(index=False)
+                    st.download_button(
+                        label="Download Complete Results as CSV",
+                        data=csv,
+                        file_name=f"var_es_{stock_symbol}_{forecast_days}d_{confidence_level}pc_{datetime.now().strftime('%Y%m%d')}.csv",
+                        mime="text/csv"
+                    )
             
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
+                import traceback
+                st.code(traceback.format_exc())
                 st.info("""
-                **Common issues:**
-                - Invalid stock symbol
-                - Insufficient historical data for selected date range
-                - Network connectivity issues
-                - Extreme parameter values causing calculation errors
-                
-                **Suggestions:**
-                1. Verify the stock symbol is valid
-                2. Try a longer date range
-                3. Check if the stock was trading during your selected period
-                4. Try different statistical parameters
+                **Troubleshooting steps:**
+                1. Check your internet connection
+                2. Verify the stock symbol exists (try AAPL, MSFT, GOOGL)
+                3. Try a much longer date range (e.g., 2 years)
+                4. Check if the stock trades during your selected period
+                5. Try without custom parameters first
                 """)
         
         else:
@@ -788,6 +845,8 @@ with tab2:  # Calculator page
             - Volatility scales with $\sqrt{n}$ (square root of time)
             - Expected return scales linearly with $n$
             - VaR typically increases with longer time horizons
+            
+            **Note:** NaN values in price data are automatically excluded from calculations to ensure accuracy.
             """)
             
             # Example calculation display
