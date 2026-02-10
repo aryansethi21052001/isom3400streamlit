@@ -125,111 +125,6 @@ with tab1:  # Introduction & Theory
     3. **Mean return increases** at linear rate
     4. **Distribution widens** with longer horizons
     """)
-    
-    # Create a visualization of time scaling
-    st.subheader("Time Scaling Visualization")
-    
-    # Example parameters
-    example_investment = 100000
-    example_mean = 0.0005  # 0.05% daily
-    example_std = 0.015  # 1.5% daily
-    example_conf = 95
-    
-    # Calculate for different horizons
-    horizons = [1, 5, 10, 20, 30]
-    vars_parametric = []
-    vars_monte_carlo = []
-    
-    for n in horizons:
-        var_para, es_para, z_score = calculate_parametric_var_es(
-            example_investment, example_mean, example_std, n, example_conf
-        )
-        vars_parametric.append(abs(var_para))
-        
-        var_mc, es_mc, _, _ = calculate_monte_carlo_var_es(
-            example_investment, example_mean, example_std, n, example_conf, 10000
-        )
-        vars_monte_carlo.append(abs(var_mc))
-    
-    # Create plot
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=horizons,
-        y=vars_parametric,
-        mode='lines+markers',
-        name='Parametric VaR',
-        line=dict(color='#2c3e50', width=3)
-    ))
-    fig.add_trace(go.Scatter(
-        x=horizons,
-        y=vars_monte_carlo,
-        mode='lines+markers',
-        name='Monte Carlo VaR',
-        line=dict(color='#3498db', width=3, dash='dash')
-    ))
-    
-    fig.update_layout(
-        title="VaR Scaling with Time Horizon",
-        xaxis_title="Time Horizon (Days)",
-        yaxis_title="VaR ($)",
-        template="plotly_white",
-        height=400,
-        hovermode="x unified",
-        legend=dict(
-            yanchor="top",
-            y=0.99,
-            xanchor="left",
-            x=0.01,
-            bgcolor='rgba(255, 255, 255, 0.8)',
-            bordercolor='rgba(0, 0, 0, 0.2)',
-            borderwidth=1
-        )
-    )
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
-    st.markdown("---")
-    
-    st.header("Calculation Methods")
-    
-    method_col1, method_col2 = st.columns(2)
-    
-    with method_col1:
-        st.markdown("### Parametric Method (Variance-Covariance)")
-        
-        st.markdown("#### Time Scaling Formulas:")
-        st.latex(r"\mu_n = \mu_{daily} \times n")
-        st.latex(r"\sigma_n = \sigma_{daily} \times \sqrt{n}")
-        st.latex(r"VaR_n = P \times (\mu_n - Z \times \sigma_n)")
-        
-        st.markdown("#### Assumptions:")
-        st.markdown("""
-        1. Returns follow normal distribution
-        2. Independent daily returns
-        3. Constant volatility over time
-        """)
-    
-    with method_col2:
-        st.markdown("### Monte Carlo Simulation")
-        
-        st.markdown("#### Simulation Process:")
-        st.latex(r"r_{i,t} \sim N(\mu, \sigma^2)")
-        st.latex(r"R_{i,n} = \prod_{t=1}^{n} (1 + r_{i,t}) - 1")
-        st.latex(r"P_{i,n} = P \times (1 + R_{i,n})")
-        
-        st.markdown("**Where:**")
-        st.markdown(r"""
-        - $r_{i,t}$ = Daily return for simulation $i$ at day $t$
-        - $R_{i,n}$ = Cumulative $n$-day return for simulation $i$
-        - $P_{i,n}$ = Portfolio value after $n$ days for simulation $i$
-        """)
-        
-        st.markdown("#### Key Features:")
-        st.markdown("""
-        1. Captures compounding effects
-        2. No normality assumption needed
-        3. Can simulate path-dependent scenarios
-        """)
 
 with tab2:  # Calculator page
     st.header("VaR and ES Calculator")
@@ -243,8 +138,7 @@ with tab2:  # Calculator page
         # Investment amount
         investment = st.number_input(
             "Initial Investment Amount ($)",
-            min_value=1000.0,
-            max_value=10000000.0,
+            min_value=0,
             value=100000.0,
             step=1000.0,
             help="The initial portfolio value"
@@ -278,7 +172,6 @@ with tab2:  # Calculator page
         forecast_days = st.slider(
             "Time Horizon (Days)",
             min_value=1,
-            max_value=252,
             value=10,
             step=1,
             help="Number of days for VaR/ES calculation"
@@ -286,8 +179,8 @@ with tab2:  # Calculator page
         
         confidence_level = st.slider(
             "Confidence Level (%)",
-            min_value=90,
-            max_value=99,
+            min_value=0,
+            max_value=100,
             value=95,
             step=1,
             help="Confidence level for risk calculation (e.g., 95% means 5% worst cases)"
@@ -305,8 +198,6 @@ with tab2:  # Calculator page
             if use_custom_params:
                 mean_return = st.number_input(
                     "Daily Mean Return (%)",
-                    min_value=-1.0,
-                    max_value=1.0,
                     value=0.05,
                     step=0.01,
                     format="%.3f",
@@ -315,8 +206,6 @@ with tab2:  # Calculator page
                 
                 std_dev = st.number_input(
                     "Daily Standard Deviation (%)",
-                    min_value=0.1,
-                    max_value=10.0,
                     value=1.5,
                     step=0.1,
                     format="%.2f",
@@ -328,10 +217,11 @@ with tab2:  # Calculator page
         
         # Simulation parameters
         st.markdown("#### Simulation Settings")
-        n_simulations = st.selectbox(
+        n_simulations = st.number_input(
             "Number of Monte Carlo Simulations",
-            options=[1000, 5000, 10000, 50000],
-            index=1,
+            min_value = 1,
+            value = 1000,
+            step = 1000,
             help="More simulations = more accurate but slower computation"
         )
         
@@ -375,9 +265,9 @@ with tab2:  # Calculator page
                         
                         stats_col1, stats_col2, stats_col3, stats_col4 = st.columns(4)
                         with stats_col1:
-                            st.metric("Daily Mean", f"{mean_return*100:.4f}%")
+                            st.metric("Daily Mean", f"{mean_return*100:.2f}%")
                         with stats_col2:
-                            st.metric("Daily Std Dev", f"{std_dev*100:.4f}%")
+                            st.metric("Daily Std Dev", f"{std_dev*100:.2f}%")
                         with stats_col3:
                             annualized_vol = std_dev * np.sqrt(252)
                             st.metric("Annual Volatility", f"{annualized_vol*100:.2f}%")
@@ -392,12 +282,12 @@ with tab2:  # Calculator page
                         
                         scale_col1, scale_col2 = st.columns(2)
                         with scale_col1:
-                            st.latex(rf"\mu_{{{forecast_days}}} = \mu \times n = {mean_return*100:.3f}\% \times {forecast_days} = {scaled_mean*100:.3f}\%")
-                            st.info(f"**Scaled Mean Return:** {scaled_mean*100:.3f}%")
+                            st.latex(rf"\mu_{{{forecast_days}}} = \mu \times n = {mean_return*100:.2f}\% \times {forecast_days} = {scaled_mean*100:.2f}\%")
+                            st.info(f"**Scaled Mean Return:** {scaled_mean*100:.2f}%")
                         
                         with scale_col2:
-                            st.latex(rf"\sigma_{{{forecast_days}}} = \sigma \times \sqrt{{n}} = {std_dev*100:.3f}\% \times \sqrt{{{forecast_days}}} = {scaled_vol*100:.3f}\%")
-                            st.info(f"**Scaled Volatility:** {scaled_vol*100:.3f}%")
+                            st.latex(rf"\sigma_{{{forecast_days}}} = \sigma \times \sqrt{{n}} = {std_dev*100:.2f}\% \times \sqrt{{{forecast_days}}} = {scaled_vol*100:.2f}\%")
+                            st.info(f"**Scaled Volatility:** {scaled_vol*100:.2f}%")
                         
                         # Calculate VaR and ES using time-scaled formulas
                         var_parametric, es_parametric, z_score = calculate_parametric_var_es(
