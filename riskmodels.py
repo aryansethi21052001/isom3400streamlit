@@ -27,6 +27,7 @@ def fetch_stock_data(symbol, start_date, end_date):
         end=end_date.strftime('%Y-%m-%d'),
         auto_adjust=False
     )
+    # Return only the data, not the ticker object
     return stock_data
 
 @st.cache_data
@@ -261,14 +262,15 @@ with tab2:  # Calculator page
             # Display loading
             with st.spinner(f"Fetching data and calculating {forecast_days}-day VaR & ES..."):
                 # Fetch historical data using cached function
-                ticker, stock_data = fetch_stock_data(stock_symbol, start_date, end_date)
+                stock_data = fetch_stock_data(stock_symbol, start_date, end_date)
                 
                 # Check if data was retrieved
                 if stock_data.empty:
                     st.error(f"No data found for {stock_symbol}. Please check the symbol and date range.")
                     st.stop()
                 
-                # Get basic stock info for validation
+                # Get basic stock info for validation (create new ticker object but don't cache it)
+                ticker = yf.Ticker(stock_symbol)
                 try:
                     info = ticker.info
                     st.success(f"✓ Retrieved data for {info.get('longName', stock_symbol)}")
@@ -340,7 +342,7 @@ with tab2:  # Calculator page
                     investment, mean_return, std_dev, forecast_days, confidence_level, n_simulations
                 )
                 
-                # Display results - FIXED: Use the correct var_monte_carlo and es_monte_carlo
+                # Display results
                 st.markdown("---")
                 st.subheader(f"{forecast_days}-Day Risk Metrics")
                 
@@ -403,7 +405,6 @@ with tab2:  # Calculator page
                 ])
                 
                 with viz_tab1:
-                    # Fix: Ensure VaR and ES in graph match the calculated values
                     # Calculate histogram data
                     hist, bin_edges = np.histogram(portfolio_returns, bins=50)
                     bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
@@ -421,7 +422,7 @@ with tab2:  # Calculator page
                         hovertemplate='<b>Return</b>: $%{x:,.0f}<br><b>Frequency</b>: %{y}<extra></extra>'
                     ))
                     
-                    # Add VaR line - Use var_monte_carlo
+                    # Add VaR line
                     fig1.add_vline(
                         x=var_monte_carlo,
                         line_dash="dash",
@@ -442,7 +443,7 @@ with tab2:  # Calculator page
                         )
                     )
                     
-                    # Add ES line - Use es_monte_carlo
+                    # Add ES line
                     fig1.add_vline(
                         x=es_monte_carlo,
                         line_dash="dot",
