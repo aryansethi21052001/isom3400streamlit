@@ -457,40 +457,6 @@ with tab2:  # Calculator page
                         line_width=2.5
                     )
                     
-                    # Add VaR annotation
-                    fig1.add_annotation(
-                        x=var_monte_carlo,
-                        y=var_y_pos,
-                        xref="x",
-                        yref="y",
-                        text=f"<b>VaR ({confidence_level}%)</b><br>-${abs(var_monte_carlo):,.2f}",
-                        font=dict(size=11, color="#d62728"),
-                        bgcolor="rgba(255, 255, 255, 0.9)",
-                        borderwidth=1,
-                        bordercolor="#d62728",
-                        yanchor="bottom",
-                        xanchor="center",
-                        showarrow=False,
-                        yshift=-15  
-                    )
-                    
-                    # Add ES annotation
-                    fig1.add_annotation(
-                        x=es_monte_carlo,
-                        y=es_y_pos,
-                        xref="x",
-                        yref="y",
-                        text=f"<b>Expected Shortfall</b><br>-${abs(es_monte_carlo):,.2f}",
-                        font=dict(size=11, color="#ff7f0e"),
-                        bgcolor="rgba(255, 255, 255, 0.9)",
-                        borderwidth=1,
-                        bordercolor="#ff7f0e",
-                        yanchor="bottom",
-                        xanchor="center",
-                        showarrow=False,
-                        yshift=-10  # Position slightly above the histogram bar
-                    )
-                    
                     # Shade the tail region
                     tail_mask = portfolio_returns <= var_monte_carlo
                     tail_returns = portfolio_returns[tail_mask]
@@ -541,7 +507,12 @@ with tab2:  # Calculator page
                             bgcolor="rgba(255, 255, 255, 0.9)",
                             bordercolor="rgba(0, 0, 0, 0.2)",
                             borderwidth=1,
-                            font=dict(size=10, color="black")
+                            font=dict(size=10, color="black"),
+                            itemsizing="constant",
+                            title=dict(
+                                text=f"<b>Risk Metrics</b><br>VaR ({confidence_level}%): -${abs(var_monte_carlo):,.2f}<br>ES: -${abs(es_monte_carlo):,.2f}",
+                                font=dict(size=10)
+                            )
                         ),
                         margin=dict(l=50, r=50, t=60, b=50),
                         plot_bgcolor='rgba(0, 0, 0, 0)',
