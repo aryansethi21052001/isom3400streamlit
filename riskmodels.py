@@ -429,20 +429,17 @@ with tab2:  # Calculator page
                         line_color="#d62728",
                         line_width=2.5,
                         annotation=dict(
-                            text=f"<b>VaR ({confidence_level}%)</b><br>-${abs(var_monte_carlo):,.2f}",
+                            text=f"<b>VaR ({confidence_level}%)</b><br>-${abs(var_monte_carlo):,.0f}",
                             font=dict(size=11, color="#d62728"),
                             bgcolor="rgba(255, 255, 255, 0.9)",
                             borderwidth=1,
                             bordercolor="#d62728",
-                            yanchor="middle",
-                            y=0.7,
+                            yanchor="bottom",
+                            y=0.95,
                             xanchor="left",
                             x=0,
                             xref="x",
-                            x=var_monte_carlo,
-                            yanchor="bottom",
-                            y=0.95,
-                            xref="paper",
+                            yref="paper",
                             showarrow=False
                         )
                     )
