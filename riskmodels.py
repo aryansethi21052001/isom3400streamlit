@@ -419,12 +419,12 @@ with tab2:  # Calculator page
                         # Find which histogram bins are in the tail
                         tail_bin_indices = [i for i, center in enumerate(bin_centers) if center <= var_monte_carlo]
 
-                    # All legend items as scatter traces with identical marker settings:
+                    # All legend items with identical marker settings:
                     legend_items = [
                         ('Simulated Returns', 'rgba(31, 119, 180, 0.7)'),
                         ('Tail Risk Region', 'rgba(214, 39, 40, 0.3)'),
-                        (f'VaR ({confidence_level}%): -${abs(var_monte_carlo):,.0f}', '#d62728'),
-                        (f'Expected Shortfall: -${abs(es_monte_carlo):,.0f}', '#ff7f0e')
+                        (f'VaR ({confidence_level}%): -${abs(var_monte_carlo):,.2f}', '#d62728'),
+                        (f'Expected Shortfall: -${abs(es_monte_carlo):,.2f}', '#ff7f0e')
                     ]
                     
                     for name, color in legend_items:
@@ -434,15 +434,14 @@ with tab2:  # Calculator page
                             mode='markers',
                             marker=dict(
                                 symbol='square',
-                                size=12,  # All same size
+                                size=12,
                                 color=color,
-                                line=dict(width=1, color='white')  # All same border
+                                line=dict(width=1, color='white') 
                             ),
                             name=name,
                             showlegend=True
                         ))
                     
-                    # Add actual data traces with showlegend=False
                     fig1.add_trace(go.Bar(
                         x=bin_centers,
                         y=hist,
@@ -451,7 +450,7 @@ with tab2:  # Calculator page
                         marker_color='rgba(31, 119, 180, 0.7)',
                         marker_line=dict(width=1, color='white'),
                         opacity=0.7,
-                        hovertemplate='<b>Return</b>: $%{x:,.0f}<br><b>Frequency</b>: %{y}<extra></extra>',
+                        hovertemplate='<b>Return</b>: $%{x:,.2f}<br><b>Frequency</b>: %{y}<extra></extra>',
                         showlegend=False
                     ))
                     
@@ -515,14 +514,14 @@ with tab2:  # Calculator page
                     summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
                     with summary_col1:
                         sim_mean = portfolio_returns.mean()
-                        st.metric("Simulation Mean", f"${sim_mean:,.0f}")
+                        st.metric("Simulation Mean", f"${sim_mean:,.2f}")
                     with summary_col2:
                         sim_median = np.median(portfolio_returns)
-                        st.metric("Simulation Median", f"${sim_median:,.0f}")
+                        st.metric("Simulation Median", f"${sim_median:,.2f}")
                     with summary_col3:
-                        st.metric("Simulation Std Dev", f"${portfolio_returns.std():,.0f}")
+                        st.metric("Simulation Std Dev", f"${portfolio_returns.std():,.2f}")
                     with summary_col4:
-                        st.metric("Tail Probability", f"{len(tail_returns)/len(portfolio_returns)*100:.1f}%")
+                        st.metric("Tail Probability", f"{len(tail_returns)/len(portfolio_returns)*100:.2f}%")
                 
                 with viz_tab2:
                     # Show ALL individual paths with unique colors
@@ -549,7 +548,7 @@ with tab2:  # Calculator page
                             line=dict(width=1, color=colors[i]),
                             name=f'Path {i+1}',
                             showlegend=False, 
-                            hovertemplate=f'<b>Path {i+1}</b><br>Day %{{x}}<br>Value: $%{{y:,.0f}}<extra></extra>'
+                            hovertemplate=f'<b>Path {i+1}</b><br>Day %{{x}}<br>Value: $%{{y:,.2f}}<extra></extra>'
                         ))
                         
                         # Update progress every 10 paths
@@ -565,7 +564,7 @@ with tab2:  # Calculator page
                         mode='lines',
                         line=dict(width=3, color='#000000'),
                         name='Mean Path',
-                        hovertemplate='<b>Mean Path</b><br>Day %{x}<br>Value: $%{y:,.0f}<extra></extra>'
+                        hovertemplate='<b>Mean Path</b><br>Day %{x}<br>Value: $%{y:,.2f}<extra></extra>'
                     ))
                     
                     # Add initial investment line
@@ -596,7 +595,7 @@ with tab2:  # Calculator page
                         mode='lines',
                         line=dict(width=2, color='#ff7f0e', dash='dash'),
                         name='Median Path',
-                        hovertemplate='<b>Median Path</b><br>Day %{x}<br>Value: $%{y:,.0f}<extra></extra>'
+                        hovertemplate='<b>Median Path</b><br>Day %{x}<br>Value: $%{y:,.2f}<extra></extra>'
                     ))
                     
                     # Add VaR threshold line (at VaR level portfolio value)
@@ -607,7 +606,7 @@ with tab2:  # Calculator page
                         line_color="#d62728",
                         line_width=2,
                         annotation=dict(
-                            text=f"VaR ({confidence_level}%): ${var_portfolio_value:,.0f}",
+                            text=f"VaR ({confidence_level}%): ${var_portfolio_value:,.2f}",
                             font=dict(size=10, color="#d62728"),
                             bgcolor="rgba(255,255,255,0.9)",
                             borderwidth=1,
@@ -665,16 +664,16 @@ with tab2:  # Calculator page
                     st.caption("Path Statistics")
                     path_col1, path_col2, path_col3, path_col4 = st.columns(4)
                     with path_col1:
-                        st.metric("Final Mean Value", f"${mean_path[-1]:,.0f}")
+                        st.metric("Final Mean Value", f"${mean_path[-1]:,.2f}")
                     with path_col2:
                         max_final_value = investment * np.max(np.prod(1 + daily_returns, axis=1))
-                        st.metric("Max Final Value", f"${max_final_value:,.0f}")
+                        st.metric("Max Final Value", f"${max_final_value:,.2f}")
                     with path_col3:
                         min_final_value = investment * np.min(np.prod(1 + daily_returns, axis=1))
-                        st.metric("Min Final Value", f"${min_final_value:,.0f}")
+                        st.metric("Min Final Value", f"${min_final_value:,.2f}")
                     with path_col4:
                         median_final = investment * np.median(np.prod(1 + daily_returns, axis=1))
-                        st.metric("Median Final", f"${median_final:,.0f}")
+                        st.metric("Median Final", f"${median_final:,.2f}")
                     
                     # Add path density information
                     st.info(f"**Visualization Note:** Showing all {n_simulations:,} paths.")
@@ -841,8 +840,8 @@ with tab2:  # Calculator page
                     
                     **For a {forecast_days}-day holding period:**
                     
-                    - **{confidence_level}% confidence** that losses won't exceed **${abs(var_parametric):,.0f}**
-                    - **Expected average loss** in worst {100-confidence_level}% scenarios: **${abs(es_parametric):,.0f}**
+                    - **{confidence_level}% confidence** that losses won't exceed **${abs(var_parametric):,.2f}**
+                    - **Expected average loss** in worst {100-confidence_level}% scenarios: **${abs(es_parametric):,.2f}**
                     
                     **Assumptions:**
                     - Returns follow normal distribution
@@ -861,8 +860,8 @@ with tab2:  # Calculator page
                     **Based on {n_simulations:,} simulated {forecast_days}-day paths:**
                     
                     - **{probability_below_var:.1f}%** of scenarios exceeded VaR (target: {100-confidence_level}%)
-                    - **Maximum simulated loss**: **${abs(worst_case_loss):,.0f}**
-                    - **Median {forecast_days}-day return**: **${median_return:,.0f}**
+                    - **Maximum simulated loss**: **${abs(worst_case_loss):,.2f}**
+                    - **Median {forecast_days}-day return**: **${median_return:,.2f}**
                     
                     **Advantages:**
                     - Captures compounding effects
@@ -902,7 +901,7 @@ with tab2:  # Calculator page
                     ],
                     'Value': [
                         stock_symbol,
-                        f'{investment:,.0f}',
+                        f'{investment:,.2f}',
                         forecast_days,
                         f'{confidence_level}',
                         f'{mean_return*100:.2f}',
