@@ -37,9 +37,9 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
     
     if use_log_returns:
         # For log returns: VaR = P * (1 - exp(μ*n + Zα*σ*√n))
-        var = investment * (1 - np.exp(mean_return * n_days - z_score * std_dev * np.sqrt(n_days)))
+        var = investment * (1 - np.exp(mean_return * n_days + z_score * std_dev * np.sqrt(n_days)))
         # ES = P * (1 - exp(μ*n + σ*√n * φ(Zα)/(1-α)))
-        es = investment * (1 - np.exp(mean_return * n_days - std_dev * np.sqrt(n_days) * 
+        es = investment * (1 - np.exp(mean_return * n_days + std_dev * np.sqrt(n_days) * 
                                      stats.norm.pdf(z_score) / alpha))
     else:
         # For simple returns: VaR = P * (μ*n - Zα*σ*√n)
