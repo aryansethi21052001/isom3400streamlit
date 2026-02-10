@@ -60,7 +60,7 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
         # VaR = -P * (μ*n + Zα*σ*√n)
         var = -investment * (scaled_mean + z_score * scaled_std)
         
-        # ES for normal distribution (Wikipedia formula):
+        # ES for normal distribution:
         # ES_α(L) = μ + σ * φ(Φ^(-1)(α)) / (1-α)
         # For losses (negative returns): ES = -P * (μ - σ * φ(Zα)/(1-α))
         es = -investment * (scaled_mean - scaled_std * stats.norm.pdf(z_score) / alpha)
@@ -87,7 +87,7 @@ def calculate_monte_carlo_var_es(investment, mean_return, std_dev, n_days, confi
         portfolio_returns = final_values - investment
     
     # Calculate losses (negative returns become positive losses)
-    portfolio_losses = -portfolio_returns  # Convert returns to losses
+    portfolio_losses = -portfolio_returns 
     
     # Sort losses from smallest to largest
     sorted_losses = np.sort(portfolio_losses)
