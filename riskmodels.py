@@ -48,7 +48,7 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
         # For normal distribution: E[X | X < q] = μ - σ * φ(z) / Φ(z)
         # where z = (q - μ) / σ
         phi_z = stats.norm.pdf(z_score)
-        es_return = mean_n_days - std_n_days * (phi_z / alpha)
+        es_return = mean_n_days - std_n_days * (phi_z / (alpha * z_score))
         
         # Convert to losses (positive values)
         # Loss = Investment * (1 - exp(return)) for log returns
@@ -60,7 +60,7 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
         
         # Expected Shortfall for simple returns
         phi_z = stats.norm.pdf(z_score)
-        es_return = mean_n_days - std_n_days * (phi_z / alpha)
+        es_return = mean_n_days - std_n_days * (phi_z / (alpha * z_score))
         
         # Convert to losses (negative returns become positive losses)
         var = -investment * var_return
