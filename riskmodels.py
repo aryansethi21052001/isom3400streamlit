@@ -132,6 +132,40 @@ with tab1:
 with tab2:
     st.header("VaR and ES Calculator")
     
+    # Add custom parameters checkboxes outside the form to ensure they persist
+    use_custom_params = st.checkbox(
+        "Use Custom Statistical Parameters",
+        help="Override automatic calculation from historical data",
+        key="use_custom_params"
+    )
+    
+    # Initialize custom parameters
+    custom_mean_return = None
+    custom_std_dev = None
+    
+    # Show custom parameter inputs only if checkbox is checked
+    if use_custom_params:
+        col_custom1, col_custom2 = st.columns(2)
+        with col_custom1:
+            custom_mean_return = st.number_input(
+                "Daily Mean Return (%)",
+                value=0.05,
+                step=0.01,
+                format="%.2f",
+                help="Expected average daily return",
+                key="custom_mean_return"
+            ) / 100
+        
+        with col_custom2:
+            custom_std_dev = st.number_input(
+                "Daily Standard Deviation (%)",
+                value=1.5,
+                step=0.1,
+                format="%.2f",
+                help="Daily volatility (standard deviation of returns)",
+                key="custom_std_dev"
+            ) / 100
+    
     with st.form("input_form"):
         st.subheader("Input Parameters")
         
@@ -147,24 +181,33 @@ with tab2:
                 help="The initial portfolio value"
             )
             
-            stock_symbol = st.text_input(
-                "Stock Symbol (e.g., AAPL, MSFT, GOOGL)", 
-                "AAPL",
-                help="Enter a valid stock ticker symbol"
-            ).upper()
+            # Only show stock symbol input if NOT using custom parameters
+            if not use_custom_params:
+                stock_symbol = st.text_input(
+                    "Stock Symbol (e.g., AAPL, MSFT, GOOGL)", 
+                    "AAPL",
+                    help="Enter a valid stock ticker symbol"
+                ).upper()
             
             st.markdown("#### Date Range")
-            start_date = st.date_input(
-                "Start Date",
-                value=datetime.now() - timedelta(days=365),
-                help="Start date for historical data"
-            )
-            
-            end_date = st.date_input(
-                "End Date",
-                value=datetime.now(),
-                help="End date for historical data"
-            )
+            # Only show date range if NOT using custom parameters
+            if not use_custom_params:
+                start_date = st.date_input(
+                    "Start Date",
+                    value=datetime.now() - timedelta(days=365),
+                    help="Start date for historical data"
+                )
+                
+                end_date = st.date_input(
+                    "End Date",
+                    value=datetime.now(),
+                    help="End date for historical data"
+                )
+            else:
+                # Still need these variables defined even if not shown
+                stock_symbol = "CUSTOM"
+                start_date = datetime.now() - timedelta(days=365)
+                end_date = datetime.now()
         
         with col2:
             st.markdown("#### Risk Parameters")
@@ -193,40 +236,6 @@ with tab2:
                 step=1000,
                 help="More simulations = more accurate but slower computation"
             )
-            
-            with st.expander("Advanced Parameters"):
-                adv_col1, adv_col2 = st.columns(2)
-                
-                with adv_col1:
-                    st.markdown("#### Statistical Parameters")
-                    use_custom_params = st.checkbox(
-                        "Use Custom Statistical Parameters",
-                        help="Override automatic calculation from historical data",
-                        key="use_custom_params"
-                    )
-                
-                with adv_col2:
-                    if use_custom_params:
-                        custom_mean_return = st.number_input(
-                            "Daily Mean Return (%)",
-                            value=0.05,
-                            step=0.01,
-                            format="%.2f",
-                            help="Expected average daily return",
-                            key="custom_mean_return"
-                        ) / 100
-                        
-                        custom_std_dev = st.number_input(
-                            "Daily Standard Deviation (%)",
-                            value=1.5,
-                            step=0.1,
-                            format="%.2f",
-                            help="Daily volatility (standard deviation of returns)",
-                            key="custom_std_dev"
-                        ) / 100
-                    else:
-                        custom_mean_return = None
-                        custom_std_dev = None
         
         calculate_button = st.form_submit_button("Calculate VaR & ES", use_container_width=True)
     
@@ -239,12 +248,13 @@ with tab2:
                 stock_data = None
                 returns = None
                 
-                # MODIFICATION 1: Skip stock data fetching when using custom parameters
+                # Handle custom parameters
                 if use_custom_params and custom_mean_return is not None and custom_std_dev is not None:
                     # Use custom parameters
                     mean_return = custom_mean_return
                     std_dev = custom_std_dev
-                    st.info("ℹ️ Using custom statistical parameters. Stock data not fetched.")
+                    stock_symbol = "CUSTOM_PARAMS"
+                    st.success(f"✓ Using custom parameters: Mean={mean_return*100:.2f}%, Std Dev={std_dev*100:.2f}%")
                     
                     # Create empty returns for Data Points metric
                     returns = pd.Series([])
@@ -257,7 +267,6 @@ with tab2:
                         st.error(f"No data found for {stock_symbol}. Please check the symbol and date range.")
                         st.stop()
                     
-                    # Simplified success message (removed redundant ticker.info call)
                     st.success(f"✓ Retrieved {len(stock_data)} trading days of data for {stock_symbol}")
                     
                     # MODIFICATION 2: Add stock data table
@@ -328,6 +337,10 @@ with tab2:
                     std_dev = float(returns.std())
                 
                 # Validate calculations
+                if mean_return is None or std_dev is None:
+                    st.error("Could not determine mean or standard deviation. Please check your inputs.")
+                    st.stop()
+                
                 if pd.isna(mean_return) or pd.isna(std_dev):
                     st.error("Could not calculate mean or standard deviation. Please check your data.")
                     st.stop()
