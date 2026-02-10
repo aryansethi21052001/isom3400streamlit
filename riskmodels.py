@@ -212,11 +212,11 @@ with tab2:  # Calculator page
             
             # Simulation parameters
             st.markdown("#### Simulation Settings")
-            n_simulations = st.slider(
+            n_simulations = st.number_input(
                 "Number of Monte Carlo Simulations",
                 min_value=1,
                 value=1000,
-                step=100,
+                step=1000,
                 help="More simulations = more accurate but slower computation"
             )
         
