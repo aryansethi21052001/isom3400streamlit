@@ -56,7 +56,7 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
         
         # ES for log-normal distribution
         es = investment * (1 - np.exp(horizon_mean + 0.5 * horizon_std**2) * 
-                          norm.cdf(stats.norm.ppf(confidence_level) - horizon_std) / (1 - confidence_level))
+                          stats.norm.cdf(stats.norm.ppf(confidence_level) - horizon_std) / (1 - confidence_level))
     else:
         # Simple returns (normal distribution)
         # VaR: investment * (-μ - z*σ) for positive loss
