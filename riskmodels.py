@@ -37,8 +37,8 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
     z_score = stats.norm.ppf(alpha)  # Negative value for left tail (e.g., -1.645 for 95%)
     
     # Scale parameters for n-day horizon
-    scaled_mean = mean_return * n_days
-    scaled_std = std_dev * np.sqrt(n_days)
+    mean_n_days = mean_return * n_days
+    std_n_days = std_dev * np.sqrt(n_days)
     
     if use_log_returns:
        # VaR: the alpha-quantile of returns
