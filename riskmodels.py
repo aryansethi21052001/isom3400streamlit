@@ -453,6 +453,7 @@ with tab2:  # Calculator page
                             color='#d62728',
                             line=dict(width=1, color='#d62728')
                         ),
+                        opacity=0.7,
                         name=f'VaR ({confidence_level}%): -${abs(var_monte_carlo):,.2f}',
                         showlegend=True
                     ))
@@ -467,6 +468,7 @@ with tab2:  # Calculator page
                             color='#ff7f0e',
                             line=dict(width=1, color='#ff7f0e')
                         ),
+                        opacity=0.7,
                         name=f'Expected Shortfall: -${abs(es_monte_carlo):,.2f}',
                         showlegend=True
                     ))
