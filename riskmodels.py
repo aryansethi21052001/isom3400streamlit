@@ -16,7 +16,7 @@ st.set_page_config(page_title="VaR & ES Calculator", layout="wide")
 st.title("Value at Risk (VaR) & Expected Shortfall (ES) Calculator")
 st.markdown("---")
 
-tab1, tab2 = st.tabs(["Introduction & Theory", "Calculator"])
+tab1, tab2 = st.tabs(["Introduction", "Calculator"])
 
 @st.cache_data(ttl=3600)
 def fetch_stock_data(symbol, start_date, end_date):
@@ -80,7 +80,7 @@ def generate_distinct_colors(n):
     return colors
 
 with tab1:
-    st.header("Introduction to Risk Metrics")
+    st.header("An Introduction of VaR & ES")
     
     col1, col2 = st.columns(2)
     
