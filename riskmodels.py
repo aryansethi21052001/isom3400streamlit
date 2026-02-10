@@ -190,24 +190,18 @@ with tab2:
                 ).upper()
             
             st.markdown("#### Date Range")
-            # Only show date range if NOT using custom parameters
-            if not use_custom_params:
-                start_date = st.date_input(
-                    "Start Date",
-                    value=datetime.now() - timedelta(days=365),
-                    help="Start date for historical data"
-                )
-                
-                end_date = st.date_input(
-                    "End Date",
-                    value=datetime.now(),
-                    help="End date for historical data"
-                )
-            else:
-                # Still need these variables defined even if not shown
-                stock_symbol = "CUSTOM"
-                start_date = datetime.now() - timedelta(days=365)
-                end_date = datetime.now()
+
+            start_date = st.date_input(
+                "Start Date",
+                value=datetime.now() - timedelta(days=365),
+                help="Start date for historical data"
+            )
+            
+            end_date = st.date_input(
+                "End Date",
+                value=datetime.now(),
+                help="End date for historical data"
+            )
         
         with col2:
             st.markdown("#### Risk Parameters")
