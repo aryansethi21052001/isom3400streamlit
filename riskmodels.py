@@ -463,7 +463,7 @@ with tab2:  # Calculator page
                         y=var_y_pos,
                         xref="x",
                         yref="y",
-                        text=f"<b>VaR ({confidence_level}%)</b><br>-${abs(var_monte_carlo):,.0f}",
+                        text=f"<b>VaR ({confidence_level}%)</b><br>-${abs(var_monte_carlo):,.2f}",
                         font=dict(size=11, color="#d62728"),
                         bgcolor="rgba(255, 255, 255, 0.9)",
                         borderwidth=1,
@@ -480,7 +480,7 @@ with tab2:  # Calculator page
                         y=es_y_pos,
                         xref="x",
                         yref="y",
-                        text=f"<b>Expected Shortfall</b><br>-${abs(es_monte_carlo):,.0f}",
+                        text=f"<b>Expected Shortfall</b><br>-${abs(es_monte_carlo):,.2f}",
                         font=dict(size=11, color="#ff7f0e"),
                         bgcolor="rgba(255, 255, 255, 0.9)",
                         borderwidth=1,
@@ -488,7 +488,7 @@ with tab2:  # Calculator page
                         yanchor="bottom",
                         xanchor="center",
                         showarrow=False,
-                        yshift=350  # Position slightly above the histogram bar
+                        yshift=400  # Position slightly above the histogram bar
                     )
                     
                     # Shade the tail region
