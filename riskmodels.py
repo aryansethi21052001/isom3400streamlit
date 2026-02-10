@@ -422,39 +422,48 @@ with tab2:  # Calculator page
                         hovertemplate='<b>Return</b>: $%{x:,.0f}<br><b>Frequency</b>: %{y}<extra></extra>'
                     ))
                     
-                    # Calculate the appropriate y-position based on histogram height at VaR position
-                    # Find the histogram bin that contains the VaR value
-                    var_bin_idx = np.digitize(var_monte_carlo, bin_edges) - 1
-                    if var_bin_idx >= 0 and var_bin_idx < len(hist):
-                        var_y_pos = hist[var_bin_idx] if var_bin_idx < len(hist) else 0
-                    else:
-                        var_y_pos = max(hist) * 0.8  # Fallback position
+                    fig1.add_trace(go.Scatter(
+                        x=[None],
+                        y=[None],
+                        mode='markers',
+                        marker=dict(
+                            symbol='square',
+                            size=10,
+                            color='#d62728',
+                            line=dict(width=1, color='#d62728')
+                        ),
+                        name=f'VaR ({confidence_level}%): -${abs(var_monte_carlo):,.0f}',
+                        showlegend=True
+                    ))
                     
-                    # Find the histogram bin that contains the ES value
-                    es_bin_idx = np.digitize(es_monte_carlo, bin_edges) - 1
-                    if es_bin_idx >= 0 and es_bin_idx < len(hist):
-                        es_y_pos = hist[es_bin_idx] if es_bin_idx < len(hist) else 0
-                    else:
-                        es_y_pos = max(hist) * 0.7  # Fallback position
+                    fig1.add_trace(go.Scatter(
+                        x=[None], 
+                        y=[None],
+                        mode='markers',
+                        marker=dict(
+                            symbol='square',
+                            size=10,
+                            color='#ff7f0e',
+                            line=dict(width=1, color='#ff7f0e')
+                        ),
+                        name=f'Expected Shortfall: -${abs(es_monte_carlo):,.0f}',
+                        showlegend=True
+                    ))
                     
-                    # Ensure positions don't overlap
-                    if abs(var_bin_idx - es_bin_idx) < 2:  # If they're in same or adjacent bins
-                        es_y_pos = var_y_pos * 0.8  # Place ES lower
-                    
-                    # Add VaR line
                     fig1.add_vline(
                         x=var_monte_carlo,
                         line_dash="dash",
                         line_color="#d62728",
-                        line_width=2.5
+                        line_width=2.5,
+                        showlegend=False
                     )
                     
-                    # Add ES line
                     fig1.add_vline(
                         x=es_monte_carlo,
                         line_dash="dot",
                         line_color="#ff7f0e",
-                        line_width=2.5
+                        line_width=2.5,
+                        showlegend=False
                     )
                     
                     # Shade the tail region
@@ -508,11 +517,6 @@ with tab2:  # Calculator page
                             bordercolor="rgba(0, 0, 0, 0.2)",
                             borderwidth=1,
                             font=dict(size=10, color="black"),
-                            itemsizing="constant",
-                            title=dict(
-                                text=f"<b>Risk Metrics</b><br>VaR ({confidence_level}%): -${abs(var_monte_carlo):,.2f}<br>ES: -${abs(es_monte_carlo):,.2f}",
-                                font=dict(size=10)
-                            )
                         ),
                         margin=dict(l=50, r=50, t=60, b=50),
                         plot_bgcolor='rgba(0, 0, 0, 0)',
