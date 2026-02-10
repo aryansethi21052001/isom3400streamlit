@@ -31,28 +31,39 @@ def fetch_stock_data(symbol, start_date, end_date):
 
 @st.cache_data
 def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confidence_level, use_log_returns=True):
-    """Calculate parametric VaR & ES for n-day horizon"""
-    alpha = 1 - (confidence_level / 100)
-    z_score = stats.norm.ppf(alpha) 
+    """Calculate parametric VaR & ES for n-day horizon
+    
+    Uses correct formulas from Wikipedia:
+    - For normal distribution: ES_α(L) = μ + σ * φ(Φ^(-1)(α)) / (1-α)
+    - Where α is the tail probability (e.g., 0.05 for 95% confidence)
+    - φ is the standard normal PDF, Φ^(-1) is the inverse CDF (quantile function)
+    """
+    alpha = 1 - (confidence_level / 100)  # Tail probability (e.g., 0.05 for 95%)
+    z_score = stats.norm.ppf(alpha)  # Negative value for left tail (e.g., -1.645 for 95%)
+    
+    # Scale parameters for n-day horizon
+    scaled_mean = mean_return * n_days
+    scaled_std = std_dev * np.sqrt(n_days)
     
     if use_log_returns:
         # For log returns, the loss at the alpha percentile is:
-        # Loss = P * (1 - exp(μ*n + Zα*σ*√n))
-        # Since Zα is negative, this gives us the loss amount
-        var = investment * (1 - np.exp(mean_return * n_days + z_score * std_dev * np.sqrt(n_days)))
+        # VaR = P * (1 - exp(μ*n + Zα*σ*√n))
+        var = investment * (1 - np.exp(scaled_mean + z_score * scaled_std))
         
-        # ES (Expected Shortfall) - average loss in the tail
+        # ES for log-normal distribution
+        # Using the approximation based on normal distribution formula applied to log returns
         # ES = P * (1 - exp(μ*n - σ*√n * φ(Zα)/(1-α)))
-        es = investment * (1 - np.exp(mean_return * n_days - std_dev * np.sqrt(n_days) * 
+        es = investment * (1 - np.exp(scaled_mean - scaled_std * 
                                      stats.norm.pdf(z_score) / alpha))
     else:
-        # For simple returns: VaR = -P * (μ*n + Zα*σ*√n)
-        # Since Zα is negative, this formula gives us the loss
-        var = -investment * (mean_return * n_days + z_score * std_dev * np.sqrt(n_days))
+        # For simple returns (normal distribution):
+        # VaR = -P * (μ*n + Zα*σ*√n)
+        var = -investment * (scaled_mean + z_score * scaled_std)
         
-        # ES = -P * (μ*n + σ*√n * φ(Zα)/(1-α))
-        es = -investment * (mean_return * n_days + std_dev * np.sqrt(n_days) * 
-                          stats.norm.pdf(z_score) / alpha)
+        # ES for normal distribution (Wikipedia formula):
+        # ES_α(L) = μ + σ * φ(Φ^(-1)(α)) / (1-α)
+        # For losses (negative returns): ES = -P * (μ - σ * φ(Zα)/(1-α))
+        es = -investment * (scaled_mean - scaled_std * stats.norm.pdf(z_score) / alpha)
     
     return var, es, z_score
 
@@ -145,8 +156,9 @@ with tab1:
         - $P$ = Initial investment
         - $\mu$ = Mean daily return
         - $n$ = Time horizon in days
-        - $Z_{\alpha}$ = Z-score for confidence level (negative value, e.g., -1.645 for 95%)
+        - $Z_{\alpha}$ = Z-score for tail probability (negative value, e.g., -1.645 for 95%)
         - $\sigma$ = Daily standard deviation
+        - $\alpha$ = Tail probability (e.g., 0.05 for 95% confidence)
         """)
     
     with col2:
@@ -161,20 +173,21 @@ with tab1:
         """)
         
         st.markdown("#### Formula (Log Returns):")
-        st.latex(r"ES = P \times (1 - e^{\mu n - \sigma \sqrt{n} \frac{\phi(Z_{\alpha})}{1-\alpha}})")
+        st.latex(r"ES = P \times \left(1 - e^{\mu n - \sigma \sqrt{n} \frac{\phi(Z_{\alpha})}{1-\alpha}}\right)")
         
         st.markdown("#### Formula (Simple Returns):")
-        st.latex(r"ES = -P \times (\mu n + \sigma \sqrt{n} \frac{\phi(Z_{\alpha})}{1-\alpha})")
+        st.latex(r"ES = -P \times \left(\mu n - \sigma \sqrt{n} \frac{\phi(Z_{\alpha})}{1-\alpha}\right)")
         
         st.markdown("**Where:**")
         st.markdown(r"""
         - $P$ = Initial investment
         - $\mu$ = Mean daily return
         - $n$ = Time horizon in days
-        - $Z_{\alpha}$ = Z-score for confidence level
+        - $Z_{\alpha}$ = Z-score for tail probability
         - $\sigma$ = Daily standard deviation
-        - $\phi(Z_{\alpha})$ = Normal density at the VaR quantile
+        - $\phi(Z_{\alpha})$ = Standard normal PDF at $Z_{\alpha}$
         - $\alpha$ = Tail probability (e.g., 0.05 for 95% confidence)
+        - **Note:** Denominator is $(1-\alpha)$, not $\alpha$
         """)
     
     st.markdown("---")
@@ -434,9 +447,9 @@ with tab2:
                 
                 stats_col1, stats_col2, stats_col3, stats_col4 = st.columns(4)
                 with stats_col1:
-                    st.metric("Daily Mean", f"{mean_return*100:.4f}%")
+                    st.metric("Daily Mean", f"{mean_return*100:.2f}%")
                 with stats_col2:
-                    st.metric("Daily Std Dev", f"{std_dev*100:.4f}%")
+                    st.metric("Daily Std Dev", f"{std_dev*100:.2f}%")
                 with stats_col3:
                     annualized_vol = std_dev * np.sqrt(252)
                     st.metric("Annual Volatility", f"{annualized_vol*100:.2f}%")
@@ -453,9 +466,9 @@ with tab2:
                 
                 scale_col1, scale_col2 = st.columns(2)
                 with scale_col1:
-                    st.metric(f"{forecast_days}-Day Mean Return", f"{scaled_mean*100:.4f}%")
+                    st.metric(f"{forecast_days}-Day Mean Return", f"{scaled_mean*100:.2f}%")
                 with scale_col2:
-                    st.metric(f"{forecast_days}-Day Volatility", f"{scaled_vol*100:.4f}%")
+                    st.metric(f"{forecast_days}-Day Volatility", f"{scaled_vol*100:.2f}%")
                 
                 # Calculate VaR & ES
                 var_parametric, es_parametric, z_score = calculate_parametric_var_es(
@@ -819,8 +832,8 @@ with tab2:
                     ],
                     'Value': [
                         stock_symbol, f'{investment:,.2f}', forecast_days, f'{confidence_level}',
-                        f'{mean_return*100:.4f}', f'{std_dev*100:.4f}', f'{scaled_mean*100:.4f}',
-                        f'{scaled_vol*100:.4f}', f'{abs(var_parametric):,.2f}', f'{abs(var_parametric)/investment*100:.2f}',
+                        f'{mean_return*100:.2f}', f'{std_dev*100:.2f}', f'{scaled_mean*100:.2f}',
+                        f'{scaled_vol*100:.2f}', f'{abs(var_parametric):,.2f}', f'{abs(var_parametric)/investment*100:.2f}',
                         f'{abs(es_parametric):,.2f}', f'{abs(es_parametric)/investment*100:.2f}', f'{abs(var_monte_carlo):,.2f}',
                         f'{abs(var_monte_carlo)/investment*100:.2f}', f'{abs(es_monte_carlo):,.2f}', f'{abs(es_monte_carlo)/investment*100:.2f}',
                         f'{z_score:.4f}', f'{n_simulations:,}', f'{abs(worst_case_loss):,.2f}',
