@@ -161,8 +161,8 @@ with tab1:
         that occurs in the worst-case scenarios beyond the VaR level. It provides a more 
         comprehensive view of tail risk.
         
-        **Example:** If 95% VaR is \$1M, the ES might be $1.5M, meaning the average loss 
-        in the worst 5% of cases is $1.5M.
+        **Example:** If 95% VaR is \$1M, the ES might be \$1.5M, meaning the average loss 
+        in the worst 5% of cases is \$1.5M.
         """)
         
         st.markdown("#### Formula (Log Returns):")
