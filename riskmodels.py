@@ -136,7 +136,7 @@ with tab1:
         potential loss with a given confidence level.
         
         **Example:** A 1-day 95% VaR of \$1 million means there is a 95% confidence that losses 
-        will not exceed $1 million in one day (or 5% chance of exceeding it).
+        will not exceed \$1 million in one day (or 5% chance of exceeding it).
         """)
         
         st.markdown("#### Formula (Log Returns):")
