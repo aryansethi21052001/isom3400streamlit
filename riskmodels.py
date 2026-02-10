@@ -31,13 +31,8 @@ def fetch_stock_data(symbol, start_date, end_date):
 
 @st.cache_data
 def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confidence_level, use_log_returns=True):
-    """Calculate parametric VaR & ES for n-day horizon
+    """Calculate parametric VaR & ES for n-day horizon"""
     
-    Uses correct formulas from Wikipedia:
-    - For normal distribution: ES_α(L) = μ + σ * φ(Φ^(-1)(α)) / (1-α)
-    - Where α is the tail probability (e.g., 0.05 for 95% confidence)
-    - φ is the standard normal PDF, Φ^(-1) is the inverse CDF (quantile function)
-    """
     alpha = 1 - (confidence_level / 100)  # Tail probability (e.g., 0.05 for 95%)
     z_score = stats.norm.ppf(alpha)  # Negative value for left tail (e.g., -1.645 for 95%)
     
@@ -47,17 +42,13 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
     
     if use_log_returns:
         # For log returns, the loss at the alpha percentile is:
-        # VaR = P * (1 - exp(μ*n + Zα*σ*√n))
         var = investment * (1 - np.exp(scaled_mean + z_score * scaled_std))
         
-        # ES for log-normal distribution
-        # Using the approximation based on normal distribution formula applied to log returns
-        # ES = P * (1 - exp(μ*n - σ*√n * φ(Zα)/(1-α)))
-        es = investment * (1 - np.exp(scaled_mean - scaled_std * 
-                                     stats.norm.pdf(z_score) / alpha))
+        # Expected Shortfall (ES) for log returns
+        # ES = E[Loss | Loss > VaR]
+        es = investment * (1 - np.exp(scaled_mean - scaled_std * stats.norm.pdf(z_score) / alpha))
     else:
         # For simple returns (normal distribution):
-        # VaR = -P * (μ*n + Zα*σ*√n)
         var = -investment * (scaled_mean + z_score * scaled_std)
         
         # ES for normal distribution:
