@@ -411,17 +411,6 @@ with tab2:  # Calculator page
                     
                     fig1 = go.Figure()
                     
-                    # Add histogram bars
-                    fig1.add_trace(go.Bar(
-                        x=bin_centers,
-                        y=hist,
-                        width=[(bin_edges[i+1] - bin_edges[i]) * 0.9 for i in range(len(bin_edges)-1)],
-                        name='Simulated Returns',
-                        marker_color='rgba(31, 119, 180, 0.7)',
-                        opacity=0.7,
-                        hovertemplate='<b>Return</b>: $%{x:,.0f}<br><b>Frequency</b>: %{y}<extra></extra>'
-                    ))
-                    
                     # Shade the tail region
                     tail_mask = portfolio_returns <= var_monte_carlo
                     tail_returns = portfolio_returns[tail_mask]
@@ -429,48 +418,41 @@ with tab2:  # Calculator page
                     if len(tail_returns) > 0:
                         # Find which histogram bins are in the tail
                         tail_bin_indices = [i for i, center in enumerate(bin_centers) if center <= var_monte_carlo]
-                        
-                        if tail_bin_indices:
-                            # Add shaded bars for tail region
-                            for idx in tail_bin_indices:
-                                fig1.add_trace(go.Bar(
-                                    x=[bin_centers[idx]],
-                                    y=[hist[idx]],
-                                    width=[(bin_edges[idx+1] - bin_edges[idx]) * 0.9],
-                                    marker_color='rgba(214, 39, 40, 0.3)',
-                                    name='Tail Risk Region' if idx == tail_bin_indices[0] else '',
-                                    showlegend=True if idx == tail_bin_indices[0] else False,
-                                    hovertemplate='<b>Tail Return</b>: $%{x:,.0f}<br><b>Frequency</b>: %{y}<extra></extra>'
-                                ))
 
-                    fig1.add_trace(go.Scatter(
-                        x=[None],
-                        y=[None],
-                        mode='markers',
-                        marker=dict(
-                            symbol='square',
-                            size=10,
-                            color='#d62728',
-                            line=dict(width=1, color='white')
-                        ),
-                        opacity=0.7,
-                        name=f'VaR ({confidence_level}%): -${abs(var_monte_carlo):,.2f}',
-                        showlegend=True
-                    ))
+                    # All legend items as scatter traces with identical marker settings:
+                    legend_items = [
+                        ('Simulated Returns', 'rgba(31, 119, 180, 0.7)'),
+                        ('Tail Risk Region', 'rgba(214, 39, 40, 0.3)'),
+                        (f'VaR ({confidence_level}%): -${abs(var_monte_carlo):,.0f}', '#d62728'),
+                        (f'Expected Shortfall: -${abs(es_monte_carlo):,.0f}', '#ff7f0e')
+                    ]
                     
-                    fig1.add_trace(go.Scatter(
-                        x=[None], 
-                        y=[None],
-                        mode='markers',
-                        marker=dict(
-                            symbol='square',
-                            size=10,
-                            color='#ff7f0e',
-                            line=dict(width=1, color='white')
-                        ),
+                    for name, color in legend_items:
+                        fig1.add_trace(go.Scatter(
+                            x=[None],
+                            y=[None],
+                            mode='markers',
+                            marker=dict(
+                                symbol='square',
+                                size=12,  # All same size
+                                color=color,
+                                line=dict(width=1, color='white')  # All same border
+                            ),
+                            name=name,
+                            showlegend=True
+                        ))
+                    
+                    # Add actual data traces with showlegend=False
+                    fig1.add_trace(go.Bar(
+                        x=bin_centers,
+                        y=hist,
+                        width=[(bin_edges[i+1] - bin_edges[i]) * 0.9 for i in range(len(bin_edges)-1)],
+                        name='_Simulated Returns Data',
+                        marker_color='rgba(31, 119, 180, 0.7)',
+                        marker_line=dict(width=1, color='white'),
                         opacity=0.7,
-                        name=f'Expected Shortfall: -${abs(es_monte_carlo):,.2f}',
-                        showlegend=True
+                        hovertemplate='<b>Return</b>: $%{x:,.0f}<br><b>Frequency</b>: %{y}<extra></extra>',
+                        showlegend=False
                     ))
                     
                     fig1.add_vline(
