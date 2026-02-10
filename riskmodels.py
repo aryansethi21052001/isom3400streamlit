@@ -194,7 +194,7 @@ with tab2:  # Calculator page
         with col2:
             # Risk Parameters
             st.markdown("#### Risk Parameters")
-            forecast_days = st.slider(
+            forecast_days = st.number_input(
                 "Time Horizon (Days)",
                 min_value=1,
                 value=10,
