@@ -80,15 +80,29 @@ def calculate_var_es(portfolio_value, mu_daily=0, sigma_daily=0,
         if daily_returns is None:
             raise ValueError("daily_returns required for historical method")
         
-        # Generate horizon returns using block bootstrapping
-        n_simulations = min(10000, len(daily_returns))
-        horizon_returns = []
-        
-        for _ in range(n_simulations):
-            indices = np.random.randint(0, len(daily_returns), horizon_days)
-            selected_returns = daily_returns[indices]
-            cum_return = np.prod(1 + selected_returns) - 1
-            horizon_returns.append(cum_return)
+        # Check if we have enough data
+        if len(daily_returns) < horizon_days:
+            # If we can't do proper bootstrapping, use simpler approach
+            # Generate horizon returns by sampling individual days
+            n_simulations = min(10000, len(daily_returns) * 10)
+            horizon_returns = []
+            for _ in range(n_simulations):
+                indices = np.random.choice(len(daily_returns), horizon_days, replace=True)
+                selected_returns = daily_returns[indices]
+                cum_return = np.prod(1 + selected_returns) - 1
+                horizon_returns.append(cum_return)
+        else:
+            # Use overlapping periods (block bootstrap)
+            n_simulations = min(10000, len(daily_returns) - horizon_days + 1)
+            horizon_returns = []
+            possible_starts = len(daily_returns) - horizon_days + 1
+            
+            # Use overlapping periods
+            for _ in range(n_simulations):
+                start_idx = np.random.randint(0, possible_starts)
+                block_returns = daily_returns[start_idx:start_idx + horizon_days]
+                cum_return = np.prod(1 + block_returns) - 1
+                horizon_returns.append(cum_return)
         
         horizon_returns = np.array(horizon_returns)
         pnl = portfolio_value * horizon_returns
@@ -106,17 +120,29 @@ def calculate_var_es(portfolio_value, mu_daily=0, sigma_daily=0,
     elif method == 'monte_carlo':
         n_simulations = 10000
         
-        # Scale for horizon
-        mu_horizon = mu_daily * horizon_days
-        sigma_horizon = sigma_daily * np.sqrt(horizon_days)
-        
-        if lognormal:
-            # Simulate log returns
-            horizon_log_returns = np.random.normal(mu_horizon, sigma_horizon, n_simulations)
-            horizon_returns = np.exp(horizon_log_returns) - 1
+        if daily_returns is not None and not lognormal:
+            # Use empirical distribution from historical data if available
+            # Bootstrap from historical returns
+            horizon_returns = []
+            for _ in range(n_simulations):
+                indices = np.random.choice(len(daily_returns), horizon_days, replace=True)
+                selected_returns = daily_returns[indices]
+                cum_return = np.prod(1 + selected_returns) - 1
+                horizon_returns.append(cum_return)
+            horizon_returns = np.array(horizon_returns)
         else:
-            # Simulate simple returns
-            horizon_returns = np.random.normal(mu_horizon, sigma_horizon, n_simulations)
+            # Use parametric simulation
+            # Scale for horizon
+            mu_horizon = mu_daily * horizon_days
+            sigma_horizon = sigma_daily * np.sqrt(horizon_days)
+            
+            if lognormal:
+                # Simulate log returns
+                horizon_log_returns = np.random.normal(mu_horizon, sigma_horizon, n_simulations)
+                horizon_returns = np.exp(horizon_log_returns) - 1
+            else:
+                # Simulate simple returns
+                horizon_returns = np.random.normal(mu_horizon, sigma_horizon, n_simulations)
         
         # Calculate VaR and ES
         pnl = portfolio_value * horizon_returns
@@ -421,30 +447,48 @@ with tab2:
                 with scale_col2:
                     st.metric(f"{forecast_days}-Day Volatility", f"{scaled_vol*100:.2f}%")
                 
-                # CHANGED: Use the simplified calculate_var_es function
-                # Calculate Parametric VaR & ES
-                var_parametric, es_parametric = calculate_var_es(
-                    portfolio_value=investment,
-                    mu_daily=mean_return,
-                    sigma_daily=std_dev,
-                    confidence=confidence_level/100,
-                    horizon_days=forecast_days,
-                    method='parametric',
-                    lognormal=False  # Using normal distribution for simplicity
-                )
-                
-                # Calculate Monte Carlo VaR & ES
+                # Use appropriate methods based on data source
+                if use_custom_params:
+                    # For custom parameters: Use Parametric and Monte Carlo
+                    # Calculate Parametric VaR & ES
+                    var_method1, es_method1 = calculate_var_es(
+                        portfolio_value=investment,
+                        mu_daily=mean_return,
+                        sigma_daily=std_dev,
+                        confidence=confidence_level/100,
+                        horizon_days=forecast_days,
+                        method='parametric',
+                        lognormal=use_log_returns  # Use lognormal if log returns are selected
+                    )
+                    
+                    method1_name = "Parametric"
+                    
+                else:
+                    # For historical data: Use Historical and Monte Carlo
+                    # Calculate Historical VaR & ES
+                    var_method1, es_method1 = calculate_var_es(
+                        portfolio_value=investment,
+                        daily_returns=returns.values if returns is not None else None,
+                        confidence=confidence_level/100,
+                        horizon_days=forecast_days,
+                        method='historical'
+                    )
+                    
+                    method1_name = "Historical"
+
+                # Always calculate Monte Carlo (common to both approaches)
                 var_monte_carlo, es_monte_carlo = calculate_var_es(
                     portfolio_value=investment,
                     mu_daily=mean_return,
                     sigma_daily=std_dev,
+                    daily_returns=returns.values if (returns is not None and not use_custom_params) else None,
                     confidence=confidence_level/100,
                     horizon_days=forecast_days,
                     method='monte_carlo',
-                    lognormal=False  # Using normal distribution for consistency
+                    lognormal=use_log_returns
                 )
                 
-                # Get z-score for display
+                # Get z-score for display (only relevant for parametric method)
                 alpha = 1 - (confidence_level/100)
                 z_score = stats.norm.ppf(alpha)
                 
@@ -464,10 +508,13 @@ with tab2:
                 
                 results_col1, results_col2 = st.columns(2)
                 with results_col1:
-                    st.markdown("##### Parametric Method")
-                    st.metric(f"Value at Risk ({confidence_level}%)", f"${var_parametric:,.2f}")
-                    st.metric("Expected Shortfall", f"${es_parametric:,.2f}")
-                    st.caption(f"Z-score: {z_score:.4f}")
+                    st.markdown(f"##### {method1_name} Method")
+                    st.metric(f"Value at Risk ({confidence_level}%)", f"${var_method1:,.2f}")
+                    st.metric("Expected Shortfall", f"${es_method1:,.2f}")
+                    if method1_name == "Parametric":
+                        st.caption(f"Z-score: {z_score:.4f}")
+                    else:
+                        st.caption(f"Based on {len(returns) if returns is not None else 0} historical returns")
                 
                 with results_col2:
                     st.markdown("##### Monte Carlo Simulation")
@@ -479,10 +526,10 @@ with tab2:
                 st.markdown("#### As Percentage of Investment")
                 percent_col1, percent_col2 = st.columns(2)
                 with percent_col1:
-                    var_percent_para = var_parametric / investment * 100
-                    es_percent_para = es_parametric / investment * 100
-                    st.metric("Parametric VaR", f"{var_percent_para:.2f}%")
-                    st.metric("Parametric ES", f"{es_percent_para:.2f}%")
+                    var_percent_method1 = var_method1 / investment * 100
+                    es_percent_method1 = es_method1 / investment * 100
+                    st.metric(f"{method1_name} VaR", f"{var_percent_method1:.2f}%")
+                    st.metric(f"{method1_name} ES", f"{es_percent_method1:.2f}%")
                 
                 with percent_col2:
                     var_percent_mc = var_monte_carlo / investment * 100
@@ -668,54 +715,70 @@ with tab2:
                     horizons_to_analyze = [1, 5, 10, 20, 30, forecast_days]
                     horizons_to_analyze = sorted(set(horizons_to_analyze))
                     
-                    parametric_vars, parametric_es_list = [], []
+                    method_vars, method_es_list = [], []
                     monte_carlo_vars, monte_carlo_es_list = [], []
                     
                     progress_bar2 = st.progress(0)
                     status_text2 = st.empty()
                     
                     for idx, horizon in enumerate(horizons_to_analyze):
-                            status_text2.text(f"Calculating for {horizon}-day horizon...")
- 
-                            # Use the simplified function
-                            var_para, es_para = calculate_var_es(
+                        status_text2.text(f"Calculating for {horizon}-day horizon...")
+
+                        if use_custom_params:
+                            # For custom parameters: use parametric method
+                            var_method, es_method = calculate_var_es(
                                 portfolio_value=investment,
                                 mu_daily=mean_return,
                                 sigma_daily=std_dev,
                                 confidence=confidence_level/100,
                                 horizon_days=horizon,
                                 method='parametric',
-                                lognormal=False
+                                lognormal=use_log_returns
                             )
-                            parametric_vars.append(var_para)
-                            parametric_es_list.append(es_para)
-                            
-                            var_mc, es_mc = calculate_var_es(
+                        else:
+                            # For historical data: use historical method
+                            var_method, es_method = calculate_var_es(
                                 portfolio_value=investment,
-                                mu_daily=mean_return,
-                                sigma_daily=std_dev,
+                                daily_returns=returns.values if returns is not None else None,
                                 confidence=confidence_level/100,
                                 horizon_days=horizon,
-                                method='monte_carlo',
-                                lognormal=False
+                                method='historical'
                             )
-                            monte_carlo_vars.append(var_mc)
-                            monte_carlo_es_list.append(es_mc)
-                            
-                            progress_bar2.progress((idx + 1) / len(horizons_to_analyze))
+                        
+                        method_vars.append(var_method)
+                        method_es_list.append(es_method)
+                        
+                        var_mc, es_mc = calculate_var_es(
+                            portfolio_value=investment,
+                            mu_daily=mean_return,
+                            sigma_daily=std_dev,
+                            daily_returns=returns.values if (returns is not None and not use_custom_params) else None,
+                            confidence=confidence_level/100,
+                            horizon_days=horizon,
+                            method='monte_carlo',
+                            lognormal=use_log_returns
+                        )
+                        monte_carlo_vars.append(var_mc)
+                        monte_carlo_es_list.append(es_mc)
+                        
+                        progress_bar2.progress((idx + 1) / len(horizons_to_analyze))
                     
                     fig3 = go.Figure()
                     
-                    fig3.add_trace(go.Scatter(x=horizons_to_analyze, y=parametric_vars, mode='lines+markers',
-                        name='Parametric VaR', line=dict(color='#1f77b4', width=2.5), marker=dict(size=8, symbol='circle')))
+                    # Set appropriate labels based on method
+                    method1_label = 'Parametric VaR' if use_custom_params else 'Historical VaR'
+                    method1_es_label = 'Parametric ES' if use_custom_params else 'Historical ES'
+                    
+                    fig3.add_trace(go.Scatter(x=horizons_to_analyze, y=method_vars, mode='lines+markers',
+                        name=method1_label, line=dict(color='#1f77b4', width=2.5), marker=dict(size=8, symbol='circle')))
                     fig3.add_trace(go.Scatter(x=horizons_to_analyze, y=monte_carlo_vars, mode='lines+markers',
                         name='Monte Carlo VaR', line=dict(color='#ff7f0e', width=2.5, dash='dash'), marker=dict(size=8, symbol='square')))
-                    fig3.add_trace(go.Scatter(x=horizons_to_analyze, y=parametric_es_list, mode='lines+markers',
-                        name='Parametric ES', line=dict(color='#2ca02c', width=2.5), marker=dict(size=8, symbol='diamond')))
+                    fig3.add_trace(go.Scatter(x=horizons_to_analyze, y=method_es_list, mode='lines+markers',
+                        name=method1_es_label, line=dict(color='#2ca02c', width=2.5), marker=dict(size=8, symbol='diamond')))
                     fig3.add_trace(go.Scatter(x=horizons_to_analyze, y=monte_carlo_es_list, mode='lines+markers',
                         name='Monte Carlo ES', line=dict(color='#d62728', width=2.5, dash='dot'), marker=dict(size=8, symbol='cross')))
                     
-                    sqrt_scaling = [parametric_vars[0] * np.sqrt(h) for h in horizons_to_analyze]
+                    sqrt_scaling = [method_vars[0] * np.sqrt(h) for h in horizons_to_analyze]
                     fig3.add_trace(go.Scatter(x=horizons_to_analyze, y=sqrt_scaling, mode='lines',
                         name='√n Scaling', line=dict(color='#7f7f7f', width=1.5, dash='dot'), opacity=0.6))
                     
@@ -743,19 +806,21 @@ with tab2:
                 st.markdown("---")
                 st.subheader("Export Results")
                 
+                method1_display = "Parametric" if use_custom_params else "Historical"
+                
                 results_df = pd.DataFrame({
                     'Parameter': [
                         'Stock Symbol', 'Initial Investment ($)', 'Time Horizon (Days)', 'Confidence Level (%)',
                         'Daily Mean Return (%)', 'Daily Standard Deviation (%)', f'{forecast_days}-Day Mean Return (%)',
-                        f'{forecast_days}-Day Volatility (%)', 'Parametric VaR ($)', 'Parametric VaR (%)',
-                        'Parametric ES ($)', 'Parametric ES (%)', 'Monte Carlo VaR ($)', 'Monte Carlo VaR (%)',
+                        f'{forecast_days}-Day Volatility (%)', f'{method1_display} VaR ($)', f'{method1_display} VaR (%)',
+                        f'{method1_display} ES ($)', f'{method1_display} ES (%)', 'Monte Carlo VaR ($)', 'Monte Carlo VaR (%)',
                         'Monte Carlo ES ($)', 'Monte Carlo ES (%)', 'Z-score', 'Number of Simulations'
                     ],
                     'Value': [
                         stock_symbol, f'{investment:,.2f}', forecast_days, f'{confidence_level}',
                         f'{mean_return*100:.2f}', f'{std_dev*100:.2f}', f'{scaled_mean*100:.2f}',
-                        f'{scaled_vol*100:.2f}', f'{var_parametric:,.2f}', f'{var_parametric/investment*100:.2f}',
-                        f'{es_parametric:,.2f}', f'{es_parametric/investment*100:.2f}', f'{var_monte_carlo:,.2f}',
+                        f'{scaled_vol*100:.2f}', f'{var_method1:,.2f}', f'{var_method1/investment*100:.2f}',
+                        f'{es_method1:,.2f}', f'{es_method1/investment*100:.2f}', f'{var_monte_carlo:,.2f}',
                         f'{var_monte_carlo/investment*100:.2f}', f'{es_monte_carlo:,.2f}', f'{es_monte_carlo/investment*100:.2f}',
                         f'{z_score:.4f}', f'{n_simulations:,}'
                     ]
