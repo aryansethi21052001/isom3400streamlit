@@ -212,8 +212,9 @@ with tab1:
         will not exceed \$1 million in one day (or 5% chance of exceeding it).
         """)
         
-        st.markdown("#### Formula (Normal Distribution):")
+        st.markdown("#### Formulas:")
         st.latex(r"VaR = P \times (Z_{\alpha} \sigma \sqrt{T} - \mu T)")
+        st.latex(r"VaR_{\text{lognormal}} = P \times \left(1 - e^{\mu T + Z_{\alpha} \sigma \sqrt{T}}\right)")
         
         st.markdown("**Where:**")
         st.markdown(r"""
@@ -235,8 +236,9 @@ with tab1:
         in the worst 5% of cases is \$1.5M.
         """)
         
-        st.markdown("#### Formula (Normal Distribution):")
+        st.markdown("#### Formulas:")
         st.latex(r"ES = P \times \left(-\mu T + \sigma \sqrt{T} \frac{\phi(Z_{\alpha})}{\alpha}\right)")
+        st.latex(r"ES_{\text{lognormal}} = P \times \left(1 - e^{\mu T + \frac{\sigma^2 T}{2}} \times \frac{\Phi(Z_{\alpha} - \sigma \sqrt{T})}{\alpha}\right)")
         
         st.markdown("**Where:**")
         st.markdown(r"""
