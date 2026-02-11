@@ -30,9 +30,6 @@ def fetch_stock_data(symbol, start_date, end_date):
     return stock_data
 
 @st.cache_data
-import numpy as np
-from scipy import stats
-
 def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confidence_level, use_log_returns=True):
     """
     Calculate VaR and Expected Shortfall using parametric method.
