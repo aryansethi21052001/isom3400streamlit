@@ -30,14 +30,17 @@ def fetch_stock_data(symbol, start_date, end_date):
     return stock_data
 
 @st.cache_data
+import numpy as np
+from scipy import stats
+
 def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confidence_level, use_log_returns=True):
     """
     Calculate VaR and Expected Shortfall using parametric method.
     
     Parameters:
         investment: Initial investment amount
-        mean_return: Annualized mean return (decimal)
-        std_dev: Annualized standard deviation (decimal)
+        mean_return: Daily mean return (decimal)
+        std_dev: Daily standard deviation (decimal)
         n_days: Time horizon in days
         confidence_level: Confidence level (e.g., 95 for 95%)
         use_log_returns: True for log returns, False for simple returns
@@ -51,33 +54,39 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
     horizon_std = std_dev * np.sqrt(n_days)
     
     # Z-score for tail probability (negative for VaR calculation)
-    z_score = stats.norm.ppf(alpha)  # This gives the z-score for the tail
+    # For α=0.05, z_α ≈ -1.645
+    z_alpha = stats.norm.ppf(alpha)
     
     if use_log_returns:
         # Log returns (log-normal distribution)
-        var = investment * (1 - np.exp(horizon_mean + z_score * horizon_std))
+        # For log returns, VaR formula: P * (1 - exp(μ*n + z_α*σ*sqrt(n)))
+        var = investment * (1 - np.exp(horizon_mean + z_alpha * horizon_std))
         
         # ES for log-normal distribution
-        # Note: Using z_score (which is negative) and alpha (tail probability)
+        # ES = P * (1 - e^{μ+σ²/2} * Φ(z_α - σ) / α)
+        # where Φ is the standard normal CDF
         es = investment * (1 - np.exp(horizon_mean + 0.5 * horizon_std**2) * 
-                          stats.norm.cdf(z_score - horizon_std) / alpha)
+                          stats.norm.cdf(z_alpha - horizon_std) / alpha)
     else:
         # Simple returns (normal distribution)
-        # VaR = -investment * (horizon_mean + z_score * horizon_std)
-        var = -investment * (horizon_mean + z_score * horizon_std)
+        # For simple returns, VaR formula: P * (-μ*n + σ*sqrt(n)*z_α)
+        # Note: z_alpha is negative, so this gives positive loss
+        var = investment * (-horizon_mean + horizon_std * z_alpha)
         
         # ES for normal distribution
-        # ES = investment * (-horizon_mean + horizon_std * φ(z_score)/α)
+        # ES = P * (-μ*n + σ*sqrt(n) * φ(z_α) / α)
         # where φ is the standard normal PDF
-        es = investment * (-horizon_mean + horizon_std * stats.norm.pdf(z_score) / alpha)
+        es = investment * (-horizon_mean + horizon_std * stats.norm.pdf(z_alpha) / alpha)
     
-    return var, es, z_score
+    return abs(var), abs(es), z_alpha
 
-@st.cache_data
+
 def calculate_monte_carlo_var_es(investment, mean_return, std_dev, n_days, confidence_level, n_simulations, use_log_returns=True):
     """Calculate VaR and ES using Monte Carlo simulation"""
     
     np.random.seed(42)
+    
+    alpha = 1 - (confidence_level / 100)  # tail probability
     
     if use_log_returns:
         # Simulate daily log returns
@@ -98,17 +107,17 @@ def calculate_monte_carlo_var_es(investment, mean_return, std_dev, n_days, confi
     # Sort losses from smallest to largest
     sorted_losses = np.sort(portfolio_losses)
     
-    # Calculate index for VaR (α percentile of losses, or (1-α) percentile of returns)
-    alpha = 1 - (confidence_level / 100)
-    var_idx = int(np.ceil((alpha) * n_simulations)) - 1
+    # Calculate index for VaR (α percentile of losses)
+    # For α=5%, we want the 95th percentile of returns (5th percentile of losses)
+    var_idx = int(alpha * n_simulations) - 1
     
     # Ensure index is within bounds
     var_idx = max(0, min(var_idx, n_simulations - 1))
     
-    # VaR is the loss at the (1-α) percentile
+    # VaR is the loss at the α percentile (worst α% of losses)
     var_mc = sorted_losses[var_idx]
     
-    # Calculate ES as average of losses greater than VaR
+    # Calculate ES as average of losses in the worst α% (tail)
     tail_losses = sorted_losses[var_idx:]
     if len(tail_losses) > 0:
         es_mc = tail_losses.mean()
@@ -122,8 +131,8 @@ def calculate_monte_carlo_var_es(investment, mean_return, std_dev, n_days, confi
     else:
         daily_returns_for_viz = daily_simple_returns
     
-    return var_mc, es_mc, portfolio_returns, daily_returns_for_viz
-
+    return abs(var_mc), abs(es_mc), portfolio_returns, daily_returns_for_viz
+    
 def generate_distinct_colors(n):
     """Generate n visually distinct colors"""
     colors = []
