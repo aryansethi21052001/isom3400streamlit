@@ -2,7 +2,7 @@ import streamlit as st
 import yfinance as yf
 import numpy as np
 import pandas as pd
-from scipy import stats
+from scipy import stats, integrate
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import warnings
@@ -58,25 +58,59 @@ def calculate_parametric_var_es(investment, mean_return, std_dev, n_days, confid
         # Log returns (log-normal distribution)
         # For log returns, VaR formula: P * (1 - exp(μ*n + z_α*σ*sqrt(n)))
         var = investment * (1 - np.exp(horizon_mean + z_alpha * horizon_std))
+
+        r_var = np.log(1 - var/investment)
         
-        # ES for log-normal distribution
-        # ES = P * (1 - e^{μ+σ²/2} * Φ(z_α - σ) / α)
-        # where Φ is the standard normal CDF
-        es = investment * (1 - np.exp(horizon_mean + 0.5 * horizon_std**2) * 
-                          stats.norm.cdf(z_alpha - horizon_std) / alpha)
+        def integrand(r):
+            """Integrand for log-normal ES: P*(1-exp(r)) * normal PDF"""
+            return investment * (1 - np.exp(r)) * stats.norm.pdf(r, loc=horizon_mean, scale=horizon_std)
+        
+        # Integrate from -∞ to r_var
+        try:
+            # Use scipy's integration with appropriate bounds
+            es_integral, error = integrate.quad(
+                integrand,
+                -np.inf,
+                r_var,
+                limit=100,
+                epsabs=1e-12,
+                epsrel=1e-12
+            )
+            
+            # ES = (1/α) * integral
+            es = es_integral / alpha
+            
+            # ES should be positive (loss)
+            es = abs(es)
+            
+        except Exception as e:
+            # Fallback to analytical approximation if integration fails
+            print(f"Integration failed: {e}. Using analytical approximation.")
+            es = investment * (1 - np.exp(horizon_mean + 0.5 * horizon_std**2) * 
+                              stats.norm.cdf(z_alpha - horizon_std) / alpha)
     else:
         # Simple returns (normal distribution)
         # For simple returns, VaR formula: P * (-μ*n + σ*sqrt(n)*z_α)
         # Note: z_alpha is negative, so this gives positive loss
-        var = investment * (-horizon_mean + horizon_std * z_alpha)
-        
-        # ES for normal distribution
-        # ES = P * (-μ*n + σ*sqrt(n) * φ(z_α) / α)
-        # where φ is the standard normal PDF
-        es = investment * (-horizon_mean + horizon_std * stats.norm.pdf(z_alpha) / alpha)
+        var = investment * max(0, -horizon_mean + horizon_std * z_alpha)
+
+        r_threshold = -var / investment
+
+        def integrand_normal(r):
+            """Integrand for normal ES: -P*r * normal PDF"""
+            return -investment * r * stats.norm.pdf(r, loc=horizon_mean, scale=horizon_std)
+            
+        a = (r_threshold - horizon_mean) / horizon_std  # Standardized threshold
+
+        if alpha > 0:
+            conditional_expectation = -stats.norm.pdf(a) / alpha
+            expected_return_tail = horizon_mean + horizon_std * conditional_expectation
+            es = -investment * expected_return_tail
+            es = max(var, es)
+        else:
+            es = var
     
     return abs(var), abs(es), z_alpha
-
 
 def calculate_monte_carlo_var_es(investment, mean_return, std_dev, n_days, confidence_level, n_simulations, use_log_returns=True):
     """Calculate VaR and ES using Monte Carlo simulation"""
