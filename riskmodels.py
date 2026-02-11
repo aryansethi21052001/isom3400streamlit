@@ -100,7 +100,7 @@ def calculate_monte_carlo_var_es(investment, mean_return, std_dev, n_days, confi
     
     # Calculate index for VaR (α percentile of losses, or (1-α) percentile of returns)
     alpha = 1 - (confidence_level / 100)
-    var_idx = int(np.ceil((1 - alpha) * n_simulations)) - 1
+    var_idx = int(np.ceil((alpha) * n_simulations)) - 1
     
     # Ensure index is within bounds
     var_idx = max(0, min(var_idx, n_simulations - 1))
