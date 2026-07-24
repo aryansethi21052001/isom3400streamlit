@@ -1,0 +1,306 @@
+# ============================================
+# PYTHON
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.pyc
+*.pyo
+*.pyd
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# pdm
+.pdm.toml
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# ============================================
+# STREAMLIT SPECIFIC
+# ============================================
+.streamlit/secrets.toml
+.streamlit/cache/
+.streamlit/config.toml
+
+# ============================================
+# PROJECT SPECIFIC - VECTOR DATABASE
+# ============================================
+chroma_db/
+chroma_db_*/
+*.chroma
+chroma/
+chroma-data/
+vector_store/
+faiss_index/
+index/
+*.bin
+*.pkl
+*.pickle
+
+# ============================================
+# PROJECT SPECIFIC - COURSE MATERIALS
+# ============================================
+docs/
+extracted_files/
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.gz
+
+# Downloaded files
+downloads/
+temp/
+tmp/
+
+# ============================================
+# IDE / EDITOR
+# ============================================
+# VS Code
+.vscode/
+*.code-workspace
+.vscode-test/
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+.idea_modules/
+
+# Eclipse
+.settings/
+.classpath
+.project
+
+# NetBeans
+nbproject/
+nbbuild/
+dist/
+nbdist/
+
+# Visual Studio
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Atom
+.atom/
+
+# Vim
+*.swp
+*.swo
+*~
+*.un~
+
+# ============================================
+# OS / SYSTEM FILES
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Linux
+*.orig
+*.rej
+*~
+*.old
+*.bak
+
+# ============================================
+# LOGS & TEMPORARY FILES
+# ============================================
+logs/
+*.log
+*.tmp
+*.temp
+*.cache
+*.cached
+
+# ============================================
+# DATA FILES
+# ============================================
+*.db
+*.sqlite
+*.sqlite3
+*.csv
+*.parquet
+*.arrow
+*.feather
+
+# ============================================
+# MISC
+# ============================================
+# Large files
+*.h5
+*.hdf5
+*.pb
+*.onnx
+*.pickle
+*.joblib
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Reports
+reports/
+outputs/
+*.html
+*.xml
+
+# ============================================
+# DEPLOYMENT
+# ============================================
+# Streamlit Cloud
+.streamlitcloud/
+
+# Docker
+*.pid
+*.pid.lock
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
